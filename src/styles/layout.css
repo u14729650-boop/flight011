@@ -129,6 +129,7 @@
   color: rgba(255, 255, 255, 0.8);
   transition: color 0.2s;
   white-space: nowrap;
+  flex: none;
 }
 .topbar__links a:hover {
   color: #fff;
@@ -147,6 +148,11 @@
 .topbar__icon:hover {
   background: rgba(255, 255, 255, 0.14);
 }
+@media (max-width: 1180px) {
+  .topbar__msg-text {
+    display: none;
+  }
+}
 @media (max-width: 900px) {
   .topbar__msg {
     display: none;
@@ -157,8 +163,8 @@
     gap: 12px;
   }
 }
-@media (max-width: 560px) {
-  .topbar__links a:nth-child(2) {
+@media (max-width: 700px) {
+  .topbar__links .topbar__email {
     display: none;
   }
 }

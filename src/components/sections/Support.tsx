@@ -54,7 +54,11 @@ export function SupportSection() {
             <SupportCard
               icon={<MailIcon />}
               title="Email"
-              text={CONTACT.email}
+              text={<>{CONTACT.emails.map((e) => (
+                <span key={e} className="support-card__line">
+                  {e.split('@')[0]}@<wbr />{e.split('@')[1]}
+                </span>
+              ))}</>}
               action={
                 <a href={CONTACT.emailHref} {...EMAIL_LINK} className="support-card__go arrow-host" aria-label="Email support">
                   <AnimatedArrow direction="up-right" />

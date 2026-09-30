@@ -9,6 +9,7 @@ import { COMPANY, CONTACT } from '../config/site';
 import { SERVICES } from '../config/services';
 import { useSeo } from '../lib/seo';
 import { EMAIL_LINK } from '../lib/links';
+import { EmailLinks } from '../components/ui/EmailLinks';
 
 const GENERAL_FAQS = [
   { q: 'How do I get a price?', a: 'Use the calculator: choose the transport mode, pickup and destination states, weight, cargo type and speed. You will see the base price, every adjustment and the estimated delivery time.' },
@@ -17,7 +18,7 @@ const GENERAL_FAQS = [
   { q: 'How do I track my shipment?', a: 'Enter your tracking ID (for example YA2-2026-001284) on the Track Shipment page, or open the shipment from your dashboard.' },
   { q: 'Which states do you serve?', a: 'Pickup and delivery are available across all 28 States and 8 Union Territories. Remote and island locations can take longer.' },
   { q: 'Which payment methods are supported?', a: 'UPI, credit card, debit card, net banking and wallets. The website currently runs in demo payment mode while the payment gateway is being set up — no money is charged.' },
-  { q: 'Can I change or cancel a booking?', a: `Contact support before pickup at ${CONTACT.phoneDisplay} or ${CONTACT.email} and we will help you reschedule or cancel.` },
+  { q: 'Can I change or cancel a booking?', a: `Contact support before pickup at ${CONTACT.phoneDisplay}, ${CONTACT.emails.join(' or ')} and we will help you reschedule or cancel.` },
 ];
 
 export function FaqPage() {
@@ -86,7 +87,7 @@ export function TermsPage() {
       <p>Our liability for loss or damage is limited as set out in the booking confirmation. Transit insurance can be arranged on request based on declared value.</p>
       <h2>7. Contact</h2>
       <p>
-        Questions about these terms: <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>{CONTACT.email}</a>.
+        Questions about these terms: <EmailLinks />.
       </p>
     </LegalPage>
   );
@@ -108,9 +109,7 @@ export function PrivacyPage() {
       <h2>Your choices</h2>
       <p>
         You can update your profile in your dashboard or ask us to access, correct or delete your data at{' '}
-        <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>
-          {CONTACT.email}
-        </a>
+        <EmailLinks />
         .
       </p>
     </LegalPage>
@@ -135,9 +134,7 @@ export function CareersPage() {
             <h4>No open roles are listed right now</h4>
             <p>
               Send your CV and the role you are interested in to{' '}
-              <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>
-                {CONTACT.email}
-              </a>{' '}
+              <EmailLinks />{' '}
               and we will reach out when a matching position opens.
             </p>
             <ButtonLink href={CONTACT.emailHref} {...EMAIL_LINK} arrow="up-right">

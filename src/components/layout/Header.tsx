@@ -32,15 +32,17 @@ export function Header() {
           <div className="container header__container topbar__inner">
             <p className="topbar__msg">
               <span className="badge badge--emerald badge--dot badge--live">Pan-India</span>
-              Air · Road · Movers &amp; Packers across all 36 States &amp; UTs
+              <span className="topbar__msg-text">Air · Road · Movers &amp; Packers across all 36 States &amp; UTs</span>
             </p>
             <div className="topbar__links">
               <a href={CONTACT.phoneHref}>
                 <PhoneIcon /> {CONTACT.phoneDisplay}
               </a>
-              <a href={CONTACT.emailHref} {...EMAIL_LINK}>
-                <MailIcon /> {CONTACT.email}
-              </a>
+              {CONTACT.emails.map((e) => (
+                <a key={e} href={CONTACT.emailHref} {...EMAIL_LINK} className="topbar__email">
+                  <MailIcon /> {e}
+                </a>
+              ))}
               <WhatsAppLink className="topbar__icon" label="WhatsApp">
                 <WhatsAppIcon />
               </WhatsAppLink>

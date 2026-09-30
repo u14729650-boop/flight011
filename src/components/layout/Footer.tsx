@@ -22,9 +22,11 @@ export function Footer() {
               <a href={CONTACT.phoneHref} className="arrow-host">
                 <PhoneIcon /> {CONTACT.phoneDisplay}
               </a>
-              <a href={CONTACT.emailHref} {...EMAIL_LINK} className="arrow-host">
-                <MailIcon /> {CONTACT.email}
-              </a>
+              {CONTACT.emails.map((e) => (
+                <a key={e} href={CONTACT.emailHref} {...EMAIL_LINK} className="arrow-host">
+                  <MailIcon /> {e}
+                </a>
+              ))}
             </div>
             <div className="footer__social">
               <InstagramLink className="footer__social-link">

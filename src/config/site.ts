@@ -22,7 +22,10 @@ export const COMPANY = {
 } as const;
 
 export const CONTACT = {
-  email: 'ljpun072@gmail.com',
+  /** Contact emails, shown together everywhere. */
+  emails: ['indracomputers33@gmail.com', 'ljpun072@gmail.com'],
+  /** Primary address (used where only one fits). */
+  email: 'indracomputers33@gmail.com',
   /** Clicking the email address opens Gmail online. */
   emailHref: 'https://mail.google.com/',
   phoneDisplay: '+1 (555) 019-9238',

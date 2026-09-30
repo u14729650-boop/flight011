@@ -67,9 +67,11 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
             <a href={CONTACT.phoneHref}>
               <PhoneIcon width={16} /> {CONTACT.phoneDisplay}
             </a>
-            <a href={CONTACT.emailHref} {...EMAIL_LINK}>
-              <MailIcon width={16} /> {CONTACT.email}
-            </a>
+            {CONTACT.emails.map((e) => (
+              <a key={e} href={CONTACT.emailHref} {...EMAIL_LINK}>
+                <MailIcon width={16} /> {e}
+              </a>
+            ))}
           </div>
           <div className="mm__row">
             <div className="mm__social">

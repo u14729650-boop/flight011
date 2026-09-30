@@ -2022,6 +2022,11 @@
   font-weight: 700;
   overflow-wrap: anywhere;
 }
+.support-card__line {
+  display: block;
+  overflow-wrap: normal;
+  word-break: normal;
+}
 .support-card__icon {
   flex: none;
   display: grid;

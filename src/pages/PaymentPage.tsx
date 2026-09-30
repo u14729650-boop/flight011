@@ -143,7 +143,7 @@ function Receipt({ r }: { r: PaymentReceipt }) {
           <strong className="tabular">{formatINR(r.amount)}</strong>
         </div>
         <p className="xs muted">
-          Questions? {CONTACT.phoneDisplay} · {CONTACT.email}
+          Questions? {CONTACT.phoneDisplay} · {CONTACT.emails.join(' · ')}
         </p>
       </div>
       <div className="receipt__actions no-print">

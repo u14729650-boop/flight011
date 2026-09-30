@@ -14,7 +14,7 @@ import { EMAIL_LINK } from '../lib/links';
 const empty = { name: '', email: '', phone: '', subject: '', message: '' };
 
 export default function ContactPage() {
-  useSeo({ title: 'Contact YA²', description: `Contact YA² Transport by phone ${CONTACT.phoneDisplay}, email ${CONTACT.email}, WhatsApp or Instagram.` });
+  useSeo({ title: 'Contact YA²', description: `Contact YA² Transport by phone ${CONTACT.phoneDisplay}, email ${CONTACT.emails.join(' or ')}, WhatsApp or Instagram.` });
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,11 @@ export default function ContactPage() {
             <SupportCard
               icon={<MailIcon />}
               title="Email"
-              text={CONTACT.email}
+              text={<>{CONTACT.emails.map((e) => (
+                <span key={e} className="support-card__line">
+                  {e.split('@')[0]}@<wbr />{e.split('@')[1]}
+                </span>
+              ))}</>}
               action={
                 <a href={CONTACT.emailHref} {...EMAIL_LINK} className="support-card__go arrow-host" aria-label="Send an email">
                   <AnimatedArrow direction="up-right" />
