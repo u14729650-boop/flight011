@@ -8,6 +8,9 @@ export async function initStore(): Promise<Store> {
   if (ENV.dbClient === 'oracle') {
     const { createOracleStore } = await import('./oracleStore');
     store = await createOracleStore();
+  } else if (ENV.dbClient === 'sqlite') {
+    const { createSqliteStore } = await import('./sqliteStore');
+    store = createSqliteStore(ENV.sqliteFile);
   } else {
     store = createFileStore(ENV.dataDir);
   }

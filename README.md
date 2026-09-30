@@ -45,6 +45,24 @@ to an account that isn't the company's.
   - Prices are always recomputed on the server; the browser never sets the amount.
   - Storage goes through the `Store` interface (`server/db/types.ts`).
 
+## Database (SQL)
+
+By default everything is stored in **SQLite**, a real SQL database kept in one file:
+`server/.data/ya2.db`. It is created automatically on first start and needs no installation (Node 22.5+ has
+SQLite built in). Tables: `users`, `sessions`, `password_resets`, `addresses`, `quotes`, `shipments`,
+`shipment_events`, `payments`, `contact_messages` (schema: `server/db/schema.sqlite.sql`).
+
+```bash
+npm run db                                                   # tables and row counts
+npm run db -- "SELECT name, email, created_at FROM users"    # any SQL query
+npm run db -- "SELECT tracking_id, status, price FROM shipments"
+```
+
+You can also open `server/.data/ya2.db` in any SQLite tool (for example DB Browser for SQLite or the VS Code
+SQLite extension). Password hashes and session tokens are one-way hashes and are masked by `npm run db`.
+
+Back up the database by copying the `.db` file while the API is stopped.
+
 ## Connecting Oracle Database
 
 1. Run `server/db/schema.oracle.sql` in your schema.

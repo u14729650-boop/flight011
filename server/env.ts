@@ -18,9 +18,10 @@ export const ENV = {
   /** Public URL of the site (used in emails and OAuth redirects). */
   appUrl: (e.APP_URL ?? 'http://localhost:5173').replace(/\/$/, ''),
 
-  /** 'file' (default, JSON file in server/.data) or 'oracle'. */
-  dbClient: (e.DB_CLIENT ?? 'file') as 'file' | 'oracle',
+  /** 'sqlite' (default, SQL database file), 'oracle', or 'file' (plain JSON, prototype only). */
+  dbClient: (e.DB_CLIENT ?? 'sqlite') as 'sqlite' | 'oracle' | 'file',
   dataDir: e.DATA_DIR ?? path.resolve(process.cwd(), 'server/.data'),
+  sqliteFile: e.SQLITE_FILE ?? path.resolve(process.cwd(), 'server/.data/ya2.db'),
   oracle: {
     user: e.ORACLE_USER ?? '',
     password: e.ORACLE_PASSWORD ?? '',
