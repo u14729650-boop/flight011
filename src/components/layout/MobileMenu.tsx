@@ -8,6 +8,7 @@ import { ButtonLink } from '../ui/Button';
 import { CloseIcon, MailIcon, PhoneIcon } from '../ui/Icons';
 import { InstagramLink, WhatsAppLink } from '../ui/Social';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { EMAIL_LINK } from '../../lib/links';
 
 export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuth();
@@ -66,7 +67,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
             <a href={CONTACT.phoneHref}>
               <PhoneIcon width={16} /> {CONTACT.phoneDisplay}
             </a>
-            <a href={CONTACT.emailHref}>
+            <a href={CONTACT.emailHref} {...EMAIL_LINK}>
               <MailIcon width={16} /> {CONTACT.email}
             </a>
           </div>

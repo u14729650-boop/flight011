@@ -8,6 +8,7 @@ import { MailIcon, MenuIcon, PhoneIcon, UserIcon, WhatsAppIcon } from '../ui/Ico
 import { InstagramLink, WhatsAppLink } from '../ui/Social';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { MobileMenu } from './MobileMenu';
+import { EMAIL_LINK } from '../../lib/links';
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,7 +38,7 @@ export function Header() {
               <a href={CONTACT.phoneHref}>
                 <PhoneIcon /> {CONTACT.phoneDisplay}
               </a>
-              <a href={CONTACT.emailHref}>
+              <a href={CONTACT.emailHref} {...EMAIL_LINK}>
                 <MailIcon /> {CONTACT.email}
               </a>
               <WhatsAppLink className="topbar__icon" label="WhatsApp">

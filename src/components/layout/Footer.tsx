@@ -4,6 +4,7 @@ import { Logo } from '../brand/Logo';
 import { AnimatedArrow } from '../ui/AnimatedArrow';
 import { InstagramIcon, MailIcon, PhoneIcon, WhatsAppIcon } from '../ui/Icons';
 import { InstagramLink, WhatsAppLink } from '../ui/Social';
+import { EMAIL_LINK } from '../../lib/links';
 
 export function Footer() {
   return (
@@ -21,7 +22,7 @@ export function Footer() {
               <a href={CONTACT.phoneHref} className="arrow-host">
                 <PhoneIcon /> {CONTACT.phoneDisplay}
               </a>
-              <a href={CONTACT.emailHref} className="arrow-host">
+              <a href={CONTACT.emailHref} {...EMAIL_LINK} className="arrow-host">
                 <MailIcon /> {CONTACT.email}
               </a>
             </div>

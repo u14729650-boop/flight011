@@ -9,6 +9,7 @@ import { InstagramLink, WhatsAppLink } from '../components/ui/Social';
 import { CONTACT } from '../config/site';
 import { api, ApiError } from '../lib/api';
 import { useSeo } from '../lib/seo';
+import { EMAIL_LINK } from '../lib/links';
 
 const empty = { name: '', email: '', phone: '', subject: '', message: '' };
 
@@ -74,7 +75,7 @@ export default function ContactPage() {
               title="Email"
               text={CONTACT.email}
               action={
-                <a href={CONTACT.emailHref} className="support-card__go arrow-host" aria-label="Send an email">
+                <a href={CONTACT.emailHref} {...EMAIL_LINK} className="support-card__go arrow-host" aria-label="Send an email">
                   <AnimatedArrow direction="up-right" />
                 </a>
               }

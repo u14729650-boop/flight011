@@ -8,6 +8,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { COMPANY, CONTACT } from '../config/site';
 import { SERVICES } from '../config/services';
 import { useSeo } from '../lib/seo';
+import { EMAIL_LINK, gmailCompose } from '../lib/links';
 
 const GENERAL_FAQS = [
   { q: 'How do I get a price?', a: 'Use the calculator: choose the transport mode, pickup and destination states, weight, cargo type and speed. You will see the base price, every adjustment and the estimated delivery time.' },
@@ -85,7 +86,7 @@ export function TermsPage() {
       <p>Our liability for loss or damage is limited as set out in the booking confirmation. Transit insurance can be arranged on request based on declared value.</p>
       <h2>7. Contact</h2>
       <p>
-        Questions about these terms: <a className="text-link" href={CONTACT.emailHref}>{CONTACT.email}</a>.
+        Questions about these terms: <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>{CONTACT.email}</a>.
       </p>
     </LegalPage>
   );
@@ -107,7 +108,7 @@ export function PrivacyPage() {
       <h2>Your choices</h2>
       <p>
         You can update your profile in your dashboard or ask us to access, correct or delete your data at{' '}
-        <a className="text-link" href={CONTACT.emailHref}>
+        <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>
           {CONTACT.email}
         </a>
         .
@@ -134,12 +135,12 @@ export function CareersPage() {
             <h4>No open roles are listed right now</h4>
             <p>
               Send your CV and the role you are interested in to{' '}
-              <a className="text-link" href={`${CONTACT.emailHref}?subject=${encodeURIComponent('Careers at YA²')}`}>
+              <a className="text-link" href={gmailCompose('Careers at YA²')} {...EMAIL_LINK}>
                 {CONTACT.email}
               </a>{' '}
               and we will reach out when a matching position opens.
             </p>
-            <ButtonLink href={`${CONTACT.emailHref}?subject=${encodeURIComponent('Careers at YA²')}`} arrow="up-right">
+            <ButtonLink href={gmailCompose('Careers at YA²')} {...EMAIL_LINK} arrow="up-right">
               Email your CV
             </ButtonLink>
           </div>

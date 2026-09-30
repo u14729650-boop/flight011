@@ -32,6 +32,7 @@ import { formatDate, formatINR, formatKg } from '../lib/format';
 import { calculateQuote } from '../lib/pricing';
 import { findCity } from '../data/cities';
 import { useSeo } from '../lib/seo';
+import { EMAIL_LINK } from '../lib/links';
 
 type Tab = 'shipments' | 'track' | 'quotes' | 'addresses' | 'profile' | 'support';
 const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
@@ -480,7 +481,7 @@ function SupportTab() {
         <ButtonLink href={CONTACT.phoneHref} icon={<PhoneIcon width={18} />} arrow="right">
           Call Support
         </ButtonLink>
-        <ButtonLink href={CONTACT.emailHref} variant="secondary" icon={<MailIcon width={18} />} arrow="up-right">
+        <ButtonLink href={CONTACT.emailHref} {...EMAIL_LINK} variant="secondary" icon={<MailIcon width={18} />} arrow="up-right">
           Email Support
         </ButtonLink>
         <WhatsAppButton text="WhatsApp Us" />

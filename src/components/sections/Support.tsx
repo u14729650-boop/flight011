@@ -6,6 +6,7 @@ import { ButtonLink } from '../ui/Button';
 import { HeadsetIcon, MailIcon, PhoneIcon, WhatsAppIcon } from '../ui/Icons';
 import { Reveal } from '../ui/Reveal';
 import { WhatsAppButton, WhatsAppLink } from '../ui/Social';
+import { EMAIL_LINK } from '../../lib/links';
 
 export function SupportCard({ icon, title, text, action }: { icon: ReactNode; title: string; text: ReactNode; action: ReactNode }) {
   return (
@@ -33,7 +34,7 @@ export function SupportSection() {
               <ButtonLink href={CONTACT.phoneHref} variant="light" icon={<PhoneIcon width={18} />} arrow="right">
                 Call Support
               </ButtonLink>
-              <ButtonLink href={CONTACT.emailHref} variant="outline-light" icon={<MailIcon width={18} />} arrow="up-right">
+              <ButtonLink href={CONTACT.emailHref} {...EMAIL_LINK} variant="outline-light" icon={<MailIcon width={18} />} arrow="up-right">
                 Email Support
               </ButtonLink>
               <WhatsAppButton text="WhatsApp Us" />
@@ -55,7 +56,7 @@ export function SupportSection() {
               title="Email"
               text={CONTACT.email}
               action={
-                <a href={CONTACT.emailHref} className="support-card__go arrow-host" aria-label="Email support">
+                <a href={CONTACT.emailHref} {...EMAIL_LINK} className="support-card__go arrow-host" aria-label="Email support">
                   <AnimatedArrow direction="up-right" />
                 </a>
               }

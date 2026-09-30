@@ -30,8 +30,9 @@ Demo tracking IDs: `YA2-2026-001284`, `YA2-2026-001285`, `YA2-2026-001290`, `YA2
 | Photos | `src/config/media.ts` + `public/images/` |
 | Colour tokens (light + dark) | `src/styles/tokens.css` |
 
-Until a WhatsApp number or Instagram username is set, those buttons show a "coming soon" message instead of linking
-to an account that isn't the company's.
+Contact links: phone opens the dialler (`tel:`), email opens Gmail compose in a new tab, and WhatsApp opens a chat with
+the company phone number (+1 555 019 9238, change it with `VITE_WHATSAPP_NUMBER`). Until an Instagram username is set,
+the Instagram buttons show a "coming soon" message instead of linking to an account that isn't the company's.
 
 ## Architecture
 
@@ -131,7 +132,7 @@ script loads automatically). Stripe has a stub in `server/payments/index.ts`.
 
 - An email provider for password-reset emails (`server/lib/mail.ts`). In development the reset link is printed in the
   API log and shown on screen.
-- Google OAuth credentials, a payment gateway, and the real WhatsApp and Instagram accounts.
+- Google OAuth credentials, a payment gateway, and the real Instagram account.
 - Photography: every photo slot currently shows a branded 3D illustration. Add licensed photos in `src/config/media.ts`.
 - Stats, testimonials and the 4.8 rating are sample values and are marked as such on the site
   (`SHOW_SAMPLE_NOTICES` in `site.ts`).

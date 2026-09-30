@@ -23,7 +23,8 @@ export const COMPANY = {
 
 export const CONTACT = {
   email: 'ljpun072@gmail.com',
-  emailHref: 'mailto:ljpun072@gmail.com',
+  /** Opens Gmail in the browser with the address filled in (use gmailCompose() for a subject). */
+  emailHref: 'https://mail.google.com/mail/?view=cm&fs=1&to=ljpun072%40gmail.com',
   phoneDisplay: '+1 (555) 019-9238',
   phoneHref: 'tel:+15550199238',
   /** EDITABLE — shown on the contact page. */
@@ -31,7 +32,7 @@ export const CONTACT = {
 } as const;
 
 /**
- * Social profiles. Leave empty until the real company accounts are supplied —
+ * Social profiles. WhatsApp uses the company phone number. Leave Instagram empty until the real account is supplied —
  * the UI then explains that the channel is coming soon instead of linking to
  * an account that is not ours.
  *
@@ -40,7 +41,7 @@ export const CONTACT = {
  * Both can also be set at build time with VITE_WHATSAPP_NUMBER / VITE_INSTAGRAM_USERNAME.
  */
 export const SOCIAL = {
-  whatsappNumber: (env.VITE_WHATSAPP_NUMBER ?? '').replace(/\D/g, ''),
+  whatsappNumber: (env.VITE_WHATSAPP_NUMBER ?? '15550199238').replace(/\D/g, ''),
   whatsappDefaultMessage: 'Hello YA² Transport, I would like help with a shipment.',
   instagramUsername: (env.VITE_INSTAGRAM_USERNAME ?? '').replace(/^@/, ''),
 } as const;

@@ -1,4 +1,12 @@
-import { SOCIAL } from '../config/site';
+import { CONTACT, SOCIAL } from '../config/site';
+
+/** Gmail compose link to the company address, optionally with a subject. */
+export function gmailCompose(subject?: string): string {
+  return subject ? `${CONTACT.emailHref}&su=${encodeURIComponent(subject)}` : CONTACT.emailHref;
+}
+
+/** Email links open Gmail in a new tab. */
+export const EMAIL_LINK = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 /** Official WhatsApp click-to-chat link, or null until a business number is configured. */
 export function whatsappLink(message: string = SOCIAL.whatsappDefaultMessage): string | null {
