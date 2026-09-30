@@ -725,11 +725,6 @@
 .auth__google {
   gap: 12px;
 }
-.auth__gsi {
-  display: flex;
-  justify-content: center;
-  min-height: 44px;
-}
 .auth__hint,
 .auth__legal {
   font-size: 0.8rem;

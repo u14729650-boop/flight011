@@ -154,27 +154,37 @@ async function findOrCreateGoogleUser(info: GoogleProfile) {
 }
 
 /**
- * Official "Sign in with Google" button (Google Identity Services): the browser
- * sends Google's signed ID token, and Google's tokeninfo endpoint verifies it.
+ * "Continue with Google" popup (Google Identity Services token client): the
+ * browser sends the access token Google issued to our Client ID; Google's own
+ * endpoints confirm it was issued for us and return the verified profile.
  */
 authRouter.post(
   '/google/token',
   limiter,
   route(async (req, res) => {
     if (!ENV.google.clientId) throw new HttpError(503, 'Google sign-in is not configured yet.');
-    const credential = str(req.body.credential, 4096);
-    if (!credential) throw new HttpError(400, 'Missing Google credential.');
-    const r = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`).catch(() => {
-      throw new HttpError(502, 'Could not reach Google. Please try again.');
-    });
-    if (!r.ok) throw new HttpError(401, 'Google sign-in did not complete. Please try again.');
-    const t = (await r.json()) as { aud?: string; iss?: string; sub?: string; email?: string; email_verified?: string | boolean; name?: string; exp?: string };
-    const validIssuer = t.iss === 'accounts.google.com' || t.iss === 'https://accounts.google.com';
-    if (t.aud !== ENV.google.clientId || !validIssuer || !t.sub || !t.email || Number(t.exp) * 1000 < Date.now()) {
-      throw new HttpError(401, 'Google sign-in did not complete. Please try again.');
-    }
-    if (t.email_verified !== true && t.email_verified !== 'true') throw new HttpError(401, 'Your Google email address is not verified.');
-    const user = await findOrCreateGoogleUser({ sub: t.sub, email: t.email, name: t.name });
+    const accessToken = str(req.body.accessToken, 4096);
+    if (!accessToken) throw new HttpError(400, 'Missing Google access token.');
+    const google = (url: string, init?: RequestInit) =>
+      fetch(url, init).catch(() => {
+        throw new HttpError(502, 'Could not reach Google. Please try again.');
+      });
+    const failed = new HttpError(401, 'Google sign-in did not complete. Please try again.');
+
+    // 1. The token must have been issued to YA²'s Client ID (not to some other site).
+    const infoRes = await google(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`);
+    if (!infoRes.ok) throw failed;
+    const info = (await infoRes.json()) as { aud?: string; expires_in?: string };
+    if (info.aud !== ENV.google.clientId || !(Number(info.expires_in) > 0)) throw failed;
+
+    // 2. Who signed in.
+    const meRes = await google('https://openidconnect.googleapis.com/v1/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!meRes.ok) throw failed;
+    const me = (await meRes.json()) as { sub?: string; email?: string; email_verified?: boolean; name?: string };
+    if (!me.sub || !me.email) throw failed;
+    if (me.email_verified !== true) throw new HttpError(401, 'Your Google email address is not verified.');
+
+    const user = await findOrCreateGoogleUser({ sub: me.sub, email: me.email, name: me.name });
     await startSession(res, user.id);
     res.json({ user: toPublicUser(user) });
   }),
