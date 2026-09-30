@@ -20,7 +20,15 @@ A flight booking website written in **Python** with **Flask** and **SQLite**. It
 | 🧊 **3-D effects** | Cards tilt and move in 3-D as you scroll, a ring of destination cards spins as you scroll, a spinning 3-D globe, and cards tilt under the mouse |
 | 🎧 **Help centre** | Email `skyvoyage.helpdesk@gmail.com` · Phone `+91 98765 43210` · WhatsApp `+91 91234 56780` (sample contact details) |
 
-## Run it
+## Run it on a Mac (easiest)
+
+1. Download the project (green **Code** button → **Download ZIP**) and unzip it.
+2. Double-click **`start_mac.command`**. If macOS blocks it, right-click it → **Open** → **Open**.
+3. Your browser opens **http://127.0.0.1:5000**. Close the Terminal window to stop the site.
+
+Python 3 must be installed ([python.org](https://www.python.org/downloads/macos/)).
+
+## Run it (any computer)
 
 ```bash
 pip install -r requirements.txt
