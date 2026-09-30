@@ -9,7 +9,7 @@
   --font-body: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
 
   --bg: #eef3f9;
-  --surface: rgba(255, 255, 255, 0.78);
+  --surface: rgba(255, 255, 255, 0.82);
   --surface-strong: rgba(255, 255, 255, 0.94);
   --surface-solid: #ffffff;
   --text: #0b1b33;
@@ -24,7 +24,7 @@
   --ok: #0e8a55;
   --warn: #b86e00;
   --danger: #c62f2f;
-  --veil: linear-gradient(180deg, rgba(238, 243, 249, 0.86) 0%, rgba(238, 243, 249, 0.93) 60%, rgba(238, 243, 249, 0.97) 100%);
+  --veil: linear-gradient(180deg, rgba(238, 243, 249, 0.70) 0%, rgba(238, 243, 249, 0.80) 55%, rgba(238, 243, 249, 0.88) 100%);
   --shadow-sm: 0 1px 2px rgba(11, 27, 51, 0.06), 0 2px 8px rgba(11, 27, 51, 0.05);
   --shadow: 0 12px 32px -12px rgba(11, 27, 51, 0.22), 0 2px 6px rgba(11, 27, 51, 0.05);
   --shadow-lg: 0 30px 70px -25px rgba(6, 22, 52, 0.45);
@@ -53,7 +53,7 @@
   --ok: #34c486;
   --warn: #f0a93b;
   --danger: #f06a6a;
-  --veil: linear-gradient(180deg, rgba(10, 20, 38, 0.80) 0%, rgba(10, 20, 38, 0.90) 60%, rgba(10, 20, 38, 0.96) 100%);
+  --veil: linear-gradient(180deg, rgba(10, 20, 38, 0.66) 0%, rgba(10, 20, 38, 0.78) 55%, rgba(10, 20, 38, 0.88) 100%);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 30px 70px -25px rgba(0, 0, 0, 0.75);
@@ -98,7 +98,7 @@ img { max-width: 100%; display: block; }
   animation: drift 60s ease-in-out infinite alternate;
   will-change: transform;
 }
-.bg-veil { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.bg-veil { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
 @keyframes drift { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-2%, -1.5%, 0); } }
 
 /* ---------------------------------------------------- glass panel */
@@ -417,8 +417,31 @@ main { min-height: 60vh; }
 .stat .i { color: var(--accent); }
 .stat b { font: 700 1.7rem var(--font-display); }
 .stat small { color: var(--muted); font-weight: 600; }
+.place-strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 260px); gap: 1rem; overflow-x: auto; padding-bottom: .6rem; scroll-snap-type: x mandatory; }
+.place-card { position: relative; height: 230px; border-radius: 16px; overflow: hidden; color: #fff; scroll-snap-align: start; box-shadow: var(--shadow); background: #0b2447; }
+.place-card:hover { text-decoration: none; }
+.place-photo { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform .6s ease; }
+.place-card:hover .place-photo { transform: scale(1.07); }
+.place-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(3, 12, 30, .05) 30%, rgba(3, 12, 30, .85)); }
+.place-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 1rem; display: grid; gap: .25rem; justify-items: start; }
+.place-body h3 { color: #fff; font-size: 1.3rem; margin: .2rem 0 0; }
+.place-body span:last-child { font-size: .82rem; opacity: .9; }
+.place-body .badge { background: rgba(255, 255, 255, .92); }
+.booking { display: grid; grid-template-columns: 200px 1fr; gap: 1.4rem; padding: 1rem; scroll-margin-top: 90px; }
+.booking-photo { border-radius: 12px; background-size: cover; background-position: center; min-height: 180px; position: relative; overflow: hidden; }
+.booking-photo span { position: absolute; left: .8rem; bottom: .7rem; color: #fff; font: 700 1rem var(--font-display); text-shadow: 0 2px 8px rgba(0, 0, 0, .5); z-index: 1; }
+.booking-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(3, 12, 30, .7)); }
+.booking[data-state="Cancelled"] .booking-photo { filter: grayscale(.8); }
+.booking-content { min-width: 0; padding: .3rem .4rem .3rem 0; }
+.ticket-banner { position: relative; overflow: hidden; border-radius: 18px 18px 0 0; min-height: 220px; display: flex; align-items: flex-end; color: #fff; margin-bottom: -1px; }
+.ticket-banner::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4, 16, 38, .82), rgba(4, 16, 38, .25)); }
+.ticket-banner-text { position: relative; z-index: 2; padding: 2rem; }
+.ticket-banner h1 { color: #fff; font-size: clamp(1.6rem, 3vw, 2.4rem); margin: 0 0 .3rem; }
+.ticket-banner p { color: rgba(255, 255, 255, .88); margin: 0; }
+.ticket-banner .eyebrow { color: #9cc2ff; }
+.ticket-banner + .ticket { border-top-left-radius: 0; border-top-right-radius: 0; }
 .history-tabs { display: flex; gap: .5rem; margin: 2rem 0 1.2rem; flex-wrap: wrap; }
-.booking { padding: 1.3rem 1.5rem; margin-bottom: 1rem; border-left: 4px solid var(--accent); }
+.booking { margin-bottom: 1rem; border-left: 4px solid var(--accent); }
 .booking[data-state="Completed"] { border-left-color: var(--ok); }
 .booking[data-state="Cancelled"] { border-left-color: var(--danger); opacity: .8; }
 .booking-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .6rem; }
@@ -545,6 +568,9 @@ main { min-height: 60vh; }
   .auth-media { min-height: 260px; }
   .contact-grid, .counters, .steps { grid-template-columns: 1fr 1fr; }
   .ticket { grid-template-columns: 1fr; }
+  .booking { grid-template-columns: 1fr; }
+  .booking-photo { min-height: 150px; }
+  .booking-content { padding: 0 .3rem .3rem; }
   .ticket-stub { border-left: 0; border-top: 2px dashed var(--line-strong); }
   .ticket-grid { grid-template-columns: 1fr 1fr; }
   .gallery-pin { height: auto; }
@@ -570,6 +596,7 @@ main { min-height: 60vh; }
 /* ---------------------------------------------------- print (e-ticket) */
 @media print {
   .bg, .nav, .footer, .flashes, .ticket-actions { display: none !important; }
+  .ticket-banner { display: none !important; }
   body { background: #fff; color: #000; }
   .panel { backdrop-filter: none; box-shadow: none; border: 1px solid #999; background: #fff; }
   .reveal, .tilt { transform: none !important; }

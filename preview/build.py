@@ -49,7 +49,8 @@ for key in keys:
 data = {
     "airports": fd.AIRPORTS, "airlines": fd.AIRLINES, "cabins": fd.CABINS,
     "currencies": fd.CURRENCIES, "hubs": fd.HUBS, "help": HELP_CENTRE,
-    "icons": ui.ICONS, "photos": photos, "destinations": DESTINATIONS, "popular": POPULAR_ROUTES,
+    "icons": ui.ICONS, "photos": photos,
+    "airport_photo": {c: ui.airport_photo_key(c, fd.AIRPORTS) for c in fd.AIRPORTS}, "destinations": DESTINATIONS, "popular": POPULAR_ROUTES,
 }
 parts = {
     "/*LEAFLET_CSS*/": read("static", "vendor", "leaflet", "leaflet.css"),

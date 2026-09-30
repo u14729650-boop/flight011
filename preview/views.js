@@ -3,6 +3,7 @@
   const icon = (name, size = 20, cls = "") =>
     `<svg class="i ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${D.icons[name]}</svg>`;
   const photo = (key) => D.photos[key] || D.photos.hero;
+  const destPhoto = (code) => photo(D.airport_photo[code]);
 
   /* ================================================= flash + routing */
   let flashes = [];
@@ -409,13 +410,36 @@
     const kmSum = list.filter((b) => b.state !== "Cancelled").reduce((s, b) => s + Math.round(km(b.origin, b.dest)), 0);
     const stats = [["Total bookings", list.length, "ticket"], ["Upcoming", count("Upcoming"), "takeoff"], ["Completed", count("Completed"), "landing"],
       ["Cancelled", count("Cancelled"), "x"], ["Kilometres booked", kmSum.toLocaleString(), "globe"]];
-    return pageHead("hero", "My trips", "Booking history", "Every flight you have booked with SkyVoyage: upcoming trips, completed journeys and cancellations.") + `
+    const places = {};
+    [...list].sort((a, b) => a.departure.localeCompare(b.departure)).forEach((b) => {
+      if (b.state === "Cancelled" || b.trip_leg === "Return") return;
+      const p = places[b.dest] ||= { code: b.dest, trips: 0, next: null, state: b.state };
+      p.trips += 1;
+      if (b.state === "Upcoming" && !p.next) { p.next = b.departure; p.state = "Upcoming"; }
+    });
+    const placeList = Object.values(places).sort((a, b) => (a.next ? 0 : 1) - (b.next ? 0 : 1) || (a.next || "").localeCompare(b.next || ""));
+    const upcoming = list.filter((b) => b.state === "Upcoming").sort((a, b) => a.departure.localeCompare(b.departure));
+    const header = upcoming.length ? upcoming[0].dest : null;
+    const head = `
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: ${header ? destPhoto(header) : photo("hero")}"></div>
+  <div class="page-head-inner"><span class="eyebrow">My trips</span><h1>${header ? "Next stop: " + esc(A[header][0]) : "Booking history"}</h1>
+    <p>Every flight you have booked with SkyVoyage: upcoming trips, completed journeys and cancellations.</p></div>
+</section>`;
+    return head + `
 <section class="container section-tight">
   <div class="stats">${stats.map(([l, v, ic]) => `<div class="stat panel reveal" data-depth="0.1">${icon(ic, 22)}<b class="num">${v}</b><small>${l}</small></div>`).join("")}</div>
+  ${placeList.length ? `<div class="section-head" style="margin:2.5rem 0 1rem"><div><span class="eyebrow">Your destinations</span><h2 style="font-size:1.4rem">Places you're flying to</h2></div></div>
+  <div class="place-strip">${placeList.map((p) => `<a class="place-card reveal" data-depth="0.1" href="#trips" data-scroll="trip-${p.code}">
+    <div class="place-photo" style="background-image: ${destPhoto(p.code)}"></div>
+    <div class="place-body"><span class="badge badge-${p.state.toLowerCase()}">${p.state}</span><h3>${esc(A[p.code][0])}</h3>
+      <span>${esc(A[p.code][2])} · ${p.trips} trip${p.trips > 1 ? "s" : ""}${p.next ? " · " + pad(new Date(p.next).getDate()) + " " + MON[new Date(p.next).getMonth()] : ""}</span></div></a>`).join("")}</div>` : ""}
   <div class="history-tabs">${["All", "Upcoming", "Completed", "Cancelled"].map((t, i) => `<button type="button" class="chip ${i ? "" : "active"}" data-filter="${t}">${t}</button>`).join("")}</div>
   ${list.length ? "" : `<div class="panel empty"><h3>No trips yet</h3><p class="muted">When you book a flight it will appear here with its e-ticket.</p><a class="btn" ${link("home")}>${icon("search", 16)} Search flights</a></div>`}
   ${list.map((b) => { const dep = new Date(b.departure), arr = new Date(b.arrival); return `
-  <article class="booking panel" data-state="${b.state}">
+  <article class="booking panel" data-state="${b.state}" id="trip-${b.dest}">
+    <div class="booking-photo" style="background-image: ${destPhoto(b.dest)}"><span>${esc(A[b.dest][0])}</span></div>
+    <div class="booking-content">
     <div class="booking-top"><div><span class="badge badge-${b.state.toLowerCase()}">${b.state}</span><span class="badge">${b.trip_leg}</span>
       <span class="muted small">Booking reference <b>${b.pnr}</b> · booked ${dFull(new Date(b.booked_at))}</span></div>
       <span class="price num">${money(b.total, b.symbol)}</span></div>
@@ -428,10 +452,15 @@
     <div class="booking-actions"><a class="btn btn-sm" ${link("ticket", { pnr: b.pnr })}>${icon("ticket", 16)} View e-ticket</a>
       ${b.state === "Upcoming" ? `<button type="button" class="btn btn-sm btn-ghost" data-cancel="${b.pnr}">Cancel booking</button>` : ""}
       <a class="btn btn-sm btn-ghost" ${link("results", { origin: b.origin, dest: b.dest, depart: b.state === "Upcoming" ? b.departure.slice(0, 10) : iso(addDays(today(), 7)) })}>Book again</a></div>
+    </div>
   </article>`; }).join("")}
 </section>`;
   };
   pages.history.init = () => {
+    $$("[data-scroll]").forEach((a) => a.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
     $$(".history-tabs .chip").forEach((btn) => btn.addEventListener("click", () => {
       $$(".history-tabs .chip").forEach((b) => b.classList.toggle("active", b === btn));
       $$(".booking").forEach((b) => { b.hidden = !(btn.dataset.filter === "All" || b.dataset.state === btn.dataset.filter); });
@@ -454,6 +483,11 @@
     const bars = Array.from(b.pnr.repeat(5)).map((ch, i) => `<i style="width:${1 + (ch.charCodeAt(0) * (i + 3)) % 4}px"></i>`).join("");
     return `
 <section class="container section-tight">
+  <div class="ticket-banner">
+    <div class="band-media" data-parallax="0.15" style="background-image: ${destPhoto(b.dest)}"></div>
+    <div class="ticket-banner-text"><span class="eyebrow">Your trip to</span><h1>${esc(A[b.dest][0])}, ${esc(A[b.dest][2])}</h1>
+      <p>${dLong(dep)} · ${esc(b.airline)} ${b.flight_no}</p></div>
+  </div>
   <div class="ticket panel panel-solid">
     <div class="ticket-main">
       <div class="ticket-head"><span class="brand">${brandHtml}</span><span class="badge badge-${b.state.toLowerCase()}">${b.state}</span></div>

@@ -2,6 +2,11 @@
 {% block title %}E-ticket {{ b.pnr }}{% endblock %}
 {% block content %}
 <section class="container section-tight">
+  <div class="ticket-banner">
+    <div class="band-media" data-parallax="0.15" style="background-image: {{ dest_photo(b.dest, 1800) }}"></div>
+    <div class="ticket-banner-text"><span class="eyebrow">Your trip to</span><h1>{{ airports[b.dest][0] }}, {{ airports[b.dest][2] }}</h1>
+      <p>{{ b.departure|dt('%A, %d %B %Y') }} · {{ b.airline }} {{ b.flight_no }}</p></div>
+  </div>
   <div class="ticket panel panel-solid">
     <div class="ticket-main">
       <div class="ticket-head">

@@ -3,10 +3,10 @@
 {% block body_class %}has-hero{% endblock %}
 {% block content %}
 <section class="page-head">
-  <div class="band-media" data-parallax="0.3" style="background-image: {{ photo('hero', 2000) }}"></div>
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ dest_photo(header, 2000) if header else photo('hero', 2000) }}"></div>
   <div class="page-head-inner">
     <span class="eyebrow">My trips</span>
-    <h1>Booking history</h1>
+    <h1>{% if header %}Next stop: {{ airports[header][0] }}{% else %}Booking history{% endif %}</h1>
     <p>Every flight you have booked with SkyVoyage: upcoming trips, completed journeys and cancellations.</p>
   </div>
 </section>
@@ -18,6 +18,22 @@
       <div class="stat panel reveal" data-depth="0.1">{{ icon(ic, size=22) }}<b class="num">{{ value }}</b><small>{{ label }}</small></div>
     {% endfor %}
   </div>
+
+  {% if places %}
+  <div class="section-head" style="margin:2.5rem 0 1rem"><div><span class="eyebrow">Your destinations</span><h2 style="font-size:1.4rem">Places you're flying to</h2></div></div>
+  <div class="place-strip">
+    {% for p in places %}
+    <a class="place-card reveal" data-depth="0.1" href="#trip-{{ p.code }}">
+      <div class="place-photo" style="background-image: {{ dest_photo(p.code, 700) }}"></div>
+      <div class="place-body">
+        <span class="badge badge-{{ p.state|lower }}">{{ p.state }}</span>
+        <h3>{{ airports[p.code][0] }}</h3>
+        <span>{{ airports[p.code][2] }} · {{ p.trips }} trip{{ 's' if p.trips > 1 }}{% if p.next %} · {{ p.next|dt('%d %b') }}{% endif %}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <div class="history-tabs">
     {% for t in ['All', 'Upcoming', 'Completed', 'Cancelled'] %}
@@ -34,7 +50,11 @@
   {% endif %}
 
   {% for b in bookings %}
-  <article class="booking panel" data-state="{{ b.state }}">
+  <article class="booking panel" data-state="{{ b.state }}" id="trip-{{ b.dest }}">
+    <div class="booking-photo" style="background-image: {{ dest_photo(b.dest, 700) }}">
+      <span>{{ airports[b.dest][0] }}</span>
+    </div>
+    <div class="booking-content">
     <div class="booking-top">
       <div>
         <span class="badge badge-{{ b.state|lower }}">{{ b.state }}</span>
@@ -60,6 +80,7 @@
       </form>
       {% endif %}
       <a class="btn btn-sm btn-ghost" href="{{ url_for('search', origin=b.origin, dest=b.dest, depart=(today if b.state != 'Upcoming' else b.departure[:10])) }}">Book again</a>
+    </div>
     </div>
   </article>
   {% endfor %}

@@ -173,6 +173,7 @@ def inject_globals():
         "background": background_image(),
         "icon": ui.icon,
         "photo": ui.photo,
+        "dest_photo": lambda code, width=900: ui.photo(ui.airport_photo_key(code, fd.AIRPORTS), width),
         "user": current_user(),
         "help": HELP_CENTRE,
         "airports": fd.AIRPORTS,
@@ -438,7 +439,19 @@ def history():
         "cancelled": sum(b["state"] == "Cancelled" for b in bookings),
         "km": sum(round(fd.haversine_km(b["origin"], b["dest"])) for b in bookings if b["state"] != "Cancelled"),
     }
-    return render_template("history.html", bookings=bookings, stats=stats)
+    places = {}
+    for b in sorted(bookings, key=lambda b: b["departure"]):
+        if b["state"] == "Cancelled" or b["trip_leg"] == "Return":
+            continue
+        p = places.setdefault(b["dest"], {"code": b["dest"], "trips": 0, "next": None, "state": b["state"]})
+        p["trips"] += 1
+        if b["state"] == "Upcoming" and p["next"] is None:
+            p["next"] = b["departure"]
+            p["state"] = "Upcoming"
+    places = sorted(places.values(), key=lambda p: (p["next"] is None, p["next"] or ""))
+    upcoming = [b for b in bookings if b["state"] == "Upcoming"]
+    header = min(upcoming, key=lambda b: b["departure"])["dest"] if upcoming else None
+    return render_template("history.html", bookings=bookings, stats=stats, places=places, header=header)
 
 
 @app.route("/ticket/<pnr>")

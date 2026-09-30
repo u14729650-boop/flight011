@@ -96,6 +96,27 @@ FALLBACK = {
     "beach": "linear-gradient(135deg,#0f5e7a,#6cc4d6)",
 }
 
+# Airports without their own photo use the closest match by country.
+COUNTRY_PHOTO = {
+    "India": "india", "Nepal": "india", "Sri Lanka": "MLE", "Maldives": "MLE",
+    "UAE": "DXB", "Qatar": "DXB", "Egypt": "IST", "Turkey": "IST",
+    "United Kingdom": "LHR", "France": "CDG", "Germany": "CDG", "Netherlands": "CDG", "Switzerland": "CDG",
+    "Italy": "FCO", "Spain": "FCO",
+    "USA": "JFK", "Canada": "JFK", "Mexico": "beach", "Brazil": "beach", "Argentina": "beach",
+    "Japan": "NRT", "South Korea": "NRT", "China": "SIN", "Hong Kong": "SIN", "Singapore": "SIN",
+    "Malaysia": "SIN", "Thailand": "BKK", "Australia": "SYD", "New Zealand": "SYD",
+    "South Africa": "beach", "Kenya": "beach",
+}
+
+
+def airport_photo_key(code, airports):
+    """Photo key for an airport: its own photo, else one from the same country or region."""
+    if code in PHOTOS:
+        return code
+    country = airports.get(code, ("", "", ""))[2]
+    return COUNTRY_PHOTO.get(country, "hero")
+
+
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 
