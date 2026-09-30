@@ -8,7 +8,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { COMPANY, CONTACT } from '../config/site';
 import { SERVICES } from '../config/services';
 import { useSeo } from '../lib/seo';
-import { EMAIL_LINK, gmailCompose } from '../lib/links';
+import { EMAIL_LINK } from '../lib/links';
 
 const GENERAL_FAQS = [
   { q: 'How do I get a price?', a: 'Use the calculator: choose the transport mode, pickup and destination states, weight, cargo type and speed. You will see the base price, every adjustment and the estimated delivery time.' },
@@ -135,12 +135,12 @@ export function CareersPage() {
             <h4>No open roles are listed right now</h4>
             <p>
               Send your CV and the role you are interested in to{' '}
-              <a className="text-link" href={gmailCompose('Careers at YA²')} {...EMAIL_LINK}>
+              <a className="text-link" href={CONTACT.emailHref} {...EMAIL_LINK}>
                 {CONTACT.email}
               </a>{' '}
               and we will reach out when a matching position opens.
             </p>
-            <ButtonLink href={gmailCompose('Careers at YA²')} {...EMAIL_LINK} arrow="up-right">
+            <ButtonLink href={CONTACT.emailHref} {...EMAIL_LINK} arrow="up-right">
               Email your CV
             </ButtonLink>
           </div>

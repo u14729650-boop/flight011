@@ -30,9 +30,9 @@ Demo tracking IDs: `YA2-2026-001284`, `YA2-2026-001285`, `YA2-2026-001290`, `YA2
 | Photos | `src/config/media.ts` + `public/images/` |
 | Colour tokens (light + dark) | `src/styles/tokens.css` |
 
-Contact links: phone opens the dialler (`tel:`), email opens Gmail compose in a new tab, and WhatsApp opens a chat with
-the company phone number (+1 555 019 9238, change it with `VITE_WHATSAPP_NUMBER`). Until an Instagram username is set,
-the Instagram buttons show a "coming soon" message instead of linking to an account that isn't the company's.
+Contact links open the online sites in a new tab: email → Gmail (mail.google.com), WhatsApp → WhatsApp Web,
+Instagram → instagram.com. Set `VITE_WHATSAPP_NUMBER` / `VITE_INSTAGRAM_USERNAME` to open a chat with the company number
+or the company profile instead. Phone opens the dialler (`tel:`).
 
 ## Architecture
 
