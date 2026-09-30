@@ -17,7 +17,10 @@ import flight_data as fd
 import ui_assets as ui
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.environ.get("SKYVOYAGE_DB", os.path.join(BASE_DIR, "skyvoyage.db"))
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+# Vercel's file system is read-only except /tmp, which is wiped when the server sleeps.
+DB_PATH = os.environ.get("SKYVOYAGE_DB") or (
+    "/tmp/skyvoyage.db" if ON_VERCEL else os.path.join(BASE_DIR, "skyvoyage.db"))
 
 HELP_CENTRE = {
     "email": "skyvoyage.helpdesk@gmail.com",
@@ -44,7 +47,10 @@ DESTINATIONS = [
 ]
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SKYVOYAGE_SECRET", "dev-" + secrets.token_hex(16))
+# Set SKYVOYAGE_SECRET in the hosting dashboard. Without it, a fixed key keeps logins working
+# across Vercel's server instances (fine for a demo, not for real customer accounts).
+app.config["SECRET_KEY"] = os.environ.get("SKYVOYAGE_SECRET") or (
+    "skyvoyage-demo-key-change-me" if ON_VERCEL else "dev-" + secrets.token_hex(16))
 
 
 # ---------------------------------------------------------------- database

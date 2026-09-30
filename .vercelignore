@@ -1,0 +1,6 @@
+preview/
+tests/
+*.db
+__pycache__/
+.venv/
+venv/

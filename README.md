@@ -28,6 +28,18 @@ A flight booking website written in **Python** with **Flask** and **SQLite**. It
 
 Python 3 must be installed ([python.org](https://www.python.org/downloads/macos/)).
 
+## Put it online free with Vercel
+
+1. Merge this branch into `main` on GitHub (open the pull request and click **Merge**).
+2. Go to [vercel.com](https://vercel.com), choose **Sign up → Continue with GitHub**, and allow access to this repository.
+3. Click **Add New… → Project**, pick `flight011`, and click **Import**. Leave every setting as it is (Vercel reads `vercel.json`).
+4. Optional but recommended: under **Environment Variables** add `SKYVOYAGE_SECRET` with any long random text.
+5. Click **Deploy**. After about a minute your site is live at a free address such as `https://flight011.vercel.app`.
+
+Every later push to `main` updates the live site automatically.
+
+**Note on data:** Vercel runs the site without permanent disk storage, so accounts and bookings are kept only while a server is awake and reset after it sleeps. That is fine for a demo or submission. For real customers, connect a hosted database (for example Vercel Postgres or Neon).
+
 ## Run it (any computer)
 
 ```bash
@@ -53,6 +65,7 @@ To use your own photos, put them in `static/img/photos/` (see the README there f
 
 ```
 app.py              Flask routes: search, booking, history, login/register, API
+api/index.py        Vercel entry point (vercel.json sends every request to it)
 flight_data.py      Airports, airlines, flight schedule generator and fare engine
 templates/          Jinja2 HTML pages
 ui_assets.py        Line icons and the photo list
