@@ -5,13 +5,15 @@ import type { ShipmentRecord } from '../db/types';
 import { requireAuth } from '../auth/auth';
 import { HttpError, PHONE_RE, newId, route, str } from '../lib/http';
 import { addBusinessDays, atHour } from '../lib/dates';
+import { logActivity } from '../lib/activity';
+import { formatINR } from '../../src/lib/format';
 import { paymentProvider } from '../payments';
 import { demoTracking } from '../demoShipments';
 import { calculateQuote, QuoteError } from '../../src/lib/pricing';
 import { findCity } from '../../src/data/cities';
 import { getState, PINCODE_PATTERN } from '../../src/data/indiaStates';
 import { CARGO_TYPES, DELIVERY_SPEEDS, TRANSPORT_MODES, type CargoType, type DeliverySpeed, type TransportMode } from '../../src/config/pricing';
-import type { PartyDetails, PaymentReceipt, Shipment, TrackingResult } from '../../src/lib/apiTypes';
+import { PAYMENT_METHODS, type PartyDetails, type PaymentReceipt, type Shipment, type TrackingResult } from '../../src/lib/apiTypes';
 
 export const shipmentsRouter = Router();
 
@@ -92,6 +94,13 @@ shipmentsRouter.post(
       createdAt: new Date().toISOString(),
       paidAt: null,
     });
+    await logActivity(
+      req.user!.id,
+      'BOOKING',
+      `Booking created: ${shipment.bookingId}`,
+      `${TRANSPORT_MODES[mode].label} · ${sender.city} → ${receiver.city} · ${weightKg} kg · ${formatINR(shipment.price)} · awaiting payment`,
+      shipment.bookingId,
+    );
     res.status(201).json({ shipment: publicShipment(shipment) });
   }),
 );
@@ -164,6 +173,7 @@ shipmentsRouter.post(
     const result = await provider.verify(payment.orderId, req.body ?? {});
     if (!result.ok) {
       await db().payments.update(payment.id, { status: 'FAILED', method: result.method });
+      await logActivity(req.user!.id, 'PAYMENT', `Payment failed: ${formatINR(payment.amount)}`, `${PAYMENT_METHODS[result.method] ?? result.method} · booking ${shipment.bookingId}`, shipment.bookingId);
       throw new HttpError(402, result.error ?? 'Payment failed.');
     }
 
@@ -205,6 +215,13 @@ shipmentsRouter.post(
       isDemo: payment.provider === 'demo',
       shipment: publicShipment(updated!),
     };
+    await logActivity(
+      req.user!.id,
+      'PAYMENT',
+      `Payment successful: ${formatINR(payment.amount)}`,
+      `${PAYMENT_METHODS[result.method] ?? result.method} · booking ${shipment.bookingId} · tracking ID ${trackingId}`,
+      trackingId,
+    );
     res.json({ receipt });
   }),
 );

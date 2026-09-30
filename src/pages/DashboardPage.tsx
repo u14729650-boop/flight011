@@ -2,12 +2,14 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import { bookingLink } from '../components/calculator/QuoteResult';
+import { HistoryTab } from '../components/dashboard/HistoryTab';
 import { LocationFields } from '../components/location/LocationSelector';
 import { Cargo3D } from '../components/three-d/Objects3D';
 import { AnimatedArrow } from '../components/ui/AnimatedArrow';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { FormAlert, PasswordField, TextField } from '../components/ui/Fields';
 import {
+  ClockIcon,
   DocumentIcon,
   EditIcon,
   HeadsetIcon,
@@ -34,11 +36,12 @@ import { findCity } from '../data/cities';
 import { useSeo } from '../lib/seo';
 import { EMAIL_LINK } from '../lib/links';
 
-type Tab = 'shipments' | 'track' | 'quotes' | 'addresses' | 'profile' | 'support';
+type Tab = 'shipments' | 'track' | 'quotes' | 'history' | 'addresses' | 'profile' | 'support';
 const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
   { id: 'shipments', label: 'My Shipments', icon: <PackageIcon /> },
   { id: 'track', label: 'Track Shipment', icon: <SearchIcon /> },
   { id: 'quotes', label: 'My Quotes', icon: <DocumentIcon /> },
+  { id: 'history', label: 'History', icon: <ClockIcon /> },
   { id: 'addresses', label: 'Saved Addresses', icon: <HomeIcon /> },
   { id: 'profile', label: 'Profile', icon: <UserIcon /> },
   { id: 'support', label: 'Support', icon: <HeadsetIcon /> },
@@ -97,6 +100,7 @@ export default function DashboardPage({ initialTab }: { initialTab?: Tab }) {
           {tab === 'shipments' && <ShipmentsTab />}
           {tab === 'track' && <TrackTab />}
           {tab === 'quotes' && <QuotesTab />}
+          {tab === 'history' && <HistoryTab />}
           {tab === 'addresses' && <AddressesTab />}
           {tab === 'profile' && <ProfileTab />}
           {tab === 'support' && <SupportTab />}

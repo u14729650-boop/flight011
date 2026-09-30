@@ -2,7 +2,7 @@
  * Storage contract. Every backend (JSON file today, Oracle Database next)
  * implements this interface; routes only ever talk to `Store`.
  */
-import type { Address, AddressInput, SavedQuote, Shipment } from '../../src/lib/apiTypes';
+import type { ActivityItem, Address, AddressInput, SavedQuote, Shipment } from '../../src/lib/apiTypes';
 
 export interface UserRecord {
   id: string;
@@ -113,5 +113,11 @@ export interface Store {
 
   contact: {
     create(m: ContactRecord): Promise<ContactRecord>;
+  };
+
+  /** Per-account history: each user only ever reads their own entries. */
+  activity: {
+    add(userId: string, item: ActivityItem): Promise<void>;
+    list(userId: string, limit: number): Promise<ActivityItem[]>;
   };
 }

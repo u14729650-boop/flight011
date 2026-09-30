@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ContactRecord, PaymentRecord, ResetRecord, SessionRecord, ShipmentRecord, Store, UserRecord } from './types';
-import type { Address, SavedQuote, ShipmentEvent } from '../../src/lib/apiTypes';
+import type { ActivityItem, Address, SavedQuote, ShipmentEvent } from '../../src/lib/apiTypes';
 import { ENV } from '../env';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -180,11 +180,18 @@ export async function createOracleStore(): Promise<Store> {
 
   return {
     async init() {
-      const found = await one(`SELECT COUNT(*) AS n FROM user_tables WHERE table_name = 'YA2_USERS'`);
-      if (Number(found?.N ?? 0) > 0) return;
-      console.info('[oracle] Creating YA² tables (first start)…');
-      for (const stmt of schemaStatements()) await q(stmt);
-      console.info('[oracle] Tables created.');
+      // Creates whatever tables are missing: all of them on first start, or tables added in later versions (e.g. ya2_activity).
+      const existing = new Set((await q(`SELECT table_name FROM user_tables`)).map((r) => String(r.TABLE_NAME)));
+      const stmts = schemaStatements();
+      const tableOf = (stmt: string) => /^CREATE\s+(?:TABLE|INDEX\s+\w+\s+ON)\s+(\w+)/i.exec(stmt)?.[1]?.toUpperCase();
+      const missing = new Set(stmts.map(tableOf).filter((t): t is string => Boolean(t) && !existing.has(t!)));
+      if (!missing.size) return;
+      console.info(`[oracle] Creating tables: ${[...missing].map((t) => t.toLowerCase()).join(', ')}`);
+      for (const stmt of stmts) {
+        const t = tableOf(stmt);
+        if (t ? missing.has(t) : !existing.has('YA2_USERS')) await q(stmt); // the tracking sequence is created with the first install
+      }
+      console.info('[oracle] Tables ready.');
     },
     async close() {
       sharedPool = null;
@@ -374,6 +381,19 @@ export async function createOracleStore(): Promise<Store> {
           { id: m.id, n: m.name, e: m.email, p: m.phone, s: m.subject, m: m.message, c: ts(m.createdAt) },
         );
         return m;
+      },
+    },
+
+    activity: {
+      async add(userId, a) {
+        await q(
+          `INSERT INTO ya2_activity (id, user_id, type, title, detail, ref, created_at) VALUES (:id, :u, :t, :ti, :d, :r, :c)`,
+          { id: a.id, u: userId, t: a.type, ti: a.title, d: a.detail, r: a.ref, c: ts(a.createdAt) },
+        );
+      },
+      async list(userId, limit) {
+        const rows = await q(`SELECT * FROM ya2_activity WHERE user_id = :u ORDER BY created_at DESC FETCH FIRST :n ROWS ONLY`, { u: userId, n: limit });
+        return rows.map((r): ActivityItem => ({ id: r.ID, type: r.TYPE, title: r.TITLE, detail: r.DETAIL, ref: r.REF, createdAt: iso(r.CREATED_AT)! }));
       },
     },
   };

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import type { ContactRecord, PaymentRecord, ResetRecord, SessionRecord, ShipmentRecord, Store, UserRecord } from './types';
-import type { Address, PartyDetails, SavedQuote, ShipmentEvent } from '../../src/lib/apiTypes';
+import type { ActivityItem, ActivityType, Address, PartyDetails, SavedQuote, ShipmentEvent } from '../../src/lib/apiTypes';
 
 type Row = Record<string, SQLInputValue>;
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -310,6 +310,17 @@ export function createSqliteStore(file: string): Store {
           m.id, m.name, m.email, m.phone, m.subject, m.message, m.createdAt,
         );
         return m;
+      },
+    },
+
+    activity: {
+      async add(userId, a) {
+        run('INSERT INTO activity (id, user_id, type, title, detail, ref, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', a.id, userId, a.type, a.title, a.detail, a.ref, a.createdAt);
+      },
+      async list(userId, limit) {
+        return all('SELECT * FROM activity WHERE user_id = ? ORDER BY created_at DESC LIMIT ?', userId, limit).map(
+          (r): ActivityItem => ({ id: String(r.id), type: r.type as ActivityType, title: String(r.title), detail: str(r.detail), ref: str(r.ref), createdAt: String(r.created_at) }),
+        );
       },
     },
   };

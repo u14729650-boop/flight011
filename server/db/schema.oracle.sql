@@ -124,3 +124,14 @@ CREATE TABLE ya2_contact_messages (
   message     VARCHAR2(4000) NOT NULL,
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL
 );
+
+CREATE TABLE ya2_activity (
+  id          VARCHAR2(36)  PRIMARY KEY,
+  user_id     VARCHAR2(36)  NOT NULL REFERENCES ya2_users (id) ON DELETE CASCADE,
+  type        VARCHAR2(20)  NOT NULL,
+  title       VARCHAR2(200) NOT NULL,
+  detail      VARCHAR2(500),
+  ref         VARCHAR2(40),
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL
+);
+CREATE INDEX ya2_activity_user_ix ON ya2_activity (user_id, created_at);

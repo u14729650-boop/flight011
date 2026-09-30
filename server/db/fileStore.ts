@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ContactRecord, PaymentRecord, ResetRecord, SessionRecord, ShipmentRecord, Store, UserRecord } from './types';
-import type { Address, SavedQuote } from '../../src/lib/apiTypes';
+import type { ActivityItem, Address, SavedQuote } from '../../src/lib/apiTypes';
 
 interface Data {
   users: UserRecord[];
@@ -16,6 +16,7 @@ interface Data {
   shipments: ShipmentRecord[];
   payments: PaymentRecord[];
   contact: ContactRecord[];
+  activity: (ActivityItem & { userId: string })[];
   trackingSeq: number;
 }
 
@@ -28,6 +29,7 @@ const empty = (): Data => ({
   shipments: [],
   payments: [],
   contact: [],
+  activity: [],
   trackingSeq: 1400,
 });
 
@@ -219,6 +221,20 @@ export function createFileStore(dir: string): Store {
         data.contact.push(m);
         await persist();
         return m;
+      },
+    },
+
+    activity: {
+      async add(userId, a) {
+        data.activity.push({ ...a, userId });
+        await persist();
+      },
+      async list(userId, limit) {
+        return data.activity
+          .filter((a) => a.userId === userId)
+          .sort((x, y) => y.createdAt.localeCompare(x.createdAt))
+          .slice(0, limit)
+          .map(strip);
       },
     },
   };

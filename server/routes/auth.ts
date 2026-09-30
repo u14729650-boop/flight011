@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { db } from '../db';
 import { ENV } from '../env';
+import { deviceOf, logActivity } from '../lib/activity';
 import { sendMail } from '../lib/mail';
 import { EMAIL_RE, HttpError, PHONE_RE, newId, rateLimit, route, str } from '../lib/http';
 import { endSession, hashPassword, passwordProblem, sha256, startSession, toPublicUser, verifyPassword } from '../auth/auth';
@@ -50,6 +51,7 @@ authRouter.post(
       updatedAt: now,
     });
     await startSession(res, user.id);
+    await logActivity(user.id, 'ACCOUNT', 'Account created', `Signed up with email · ${deviceOf(req)}`);
     res.status(201).json({ user: toPublicUser(user) });
   }),
 );
@@ -64,10 +66,12 @@ authRouter.post(
     const user = await db().users.findByEmail(email);
     const ok = user ? await verifyPassword(password, user.passwordHash) : await hashPassword(password).then(() => false);
     if (!user || !ok) {
+      if (user) await logActivity(user.id, 'SECURITY', 'Failed sign-in attempt', `Wrong password · ${deviceOf(req)}`);
       if (user && !user.passwordHash) throw new HttpError(401, 'This account uses Google sign-in. Continue with Google, or reset your password to add one.');
       throw new HttpError(401, 'Incorrect email or password.');
     }
     await startSession(res, user.id);
+    await logActivity(user.id, 'SIGN_IN', 'Signed in', `Email and password · ${deviceOf(req)}`);
     res.json({ user: toPublicUser(user) });
   }),
 );
@@ -75,6 +79,7 @@ authRouter.post(
 authRouter.post(
   '/logout',
   route(async (req, res) => {
+    if (req.user) await logActivity(req.user.id, 'SIGN_OUT', 'Signed out', deviceOf(req));
     await endSession(req, res);
     res.json({ ok: true });
   }),
@@ -125,6 +130,7 @@ authRouter.post(
     await db().resets.markUsed(rec.tokenHash);
     await db().sessions.deleteForUser(rec.userId);
     await startSession(res, rec.userId);
+    await logActivity(rec.userId, 'SECURITY', 'Password reset', `Reset link used · other devices signed out · ${deviceOf(req)}`);
     const user = await db().users.findById(rec.userId);
     res.json({ user: user && toPublicUser(user) });
   }),
@@ -141,7 +147,7 @@ async function findOrCreateGoogleUser(info: GoogleProfile) {
   if (user && !user.googleId) user = await db().users.update(user.id, { googleId: info.sub });
   if (user) return user;
   const now = new Date().toISOString();
-  return db().users.create({
+  const created = await db().users.create({
     id: newId(),
     name: info.name ?? info.email.split('@')[0],
     email: info.email.toLowerCase(),
@@ -151,6 +157,8 @@ async function findOrCreateGoogleUser(info: GoogleProfile) {
     createdAt: now,
     updatedAt: now,
   });
+  await logActivity(created.id, 'ACCOUNT', 'Account created', 'Signed up with Google');
+  return created;
 }
 
 /**
@@ -186,6 +194,7 @@ authRouter.post(
 
     const user = await findOrCreateGoogleUser({ sub: me.sub, email: me.email, name: me.name });
     await startSession(res, user.id);
+    await logActivity(user.id, 'SIGN_IN', 'Signed in', `Google · ${deviceOf(req)}`);
     res.json({ user: toPublicUser(user) });
   }),
 );
@@ -239,6 +248,7 @@ authRouter.get(
 
     const user = await findOrCreateGoogleUser(info);
     await startSession(res, user.id);
+    await logActivity(user.id, 'SIGN_IN', 'Signed in', `Google · ${deviceOf(req)}`);
     res.redirect(next.startsWith('/') ? next : '/dashboard');
   }),
 );

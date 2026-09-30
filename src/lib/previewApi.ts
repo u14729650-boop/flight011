@@ -8,7 +8,10 @@ import { findCity } from '../data/cities';
 import { getState, PINCODE_PATTERN } from '../data/indiaStates';
 import { demoTracking } from '../../server/demoShipments';
 import { addBusinessDays, atHour } from '../../server/lib/dates';
-import type { Address, PublicUser, SavedQuote, Shipment, TrackingResult } from './apiTypes';
+import { PAYMENT_METHODS, type ActivityItem, type ActivityType, type Address, type PaymentMethod, type PublicUser, type SavedQuote, type Shipment, type TrackingResult } from './apiTypes';
+import { describeDevice } from './device';
+import { formatINR } from './format';
+import { TRANSPORT_MODES } from '../config/pricing';
 
 class PreviewError extends Error {
   constructor(public status: number, message: string, public fields: Record<string, string> = {}) {
@@ -28,6 +31,7 @@ interface Db {
   orders: Record<string, string>;
   seq: number;
   contact?: { id: string; name: string; email: string; phone: string; subject: string; message: string; created_at: string }[];
+  activity?: (ActivityItem & { userId: string })[];
   payments?: { order_id: string; amount: number; method: string; status: string; provider: string; created_at: string; paid_at: string; shipment_id: string }[];
 }
 
@@ -52,6 +56,12 @@ const save = () => {
 };
 
 const id = () => crypto.randomUUID();
+
+/** Same per-account history the real API records (dashboard → History). */
+function log(userId: string, type: ActivityType, title: string, detail: string | null = null, ref: string | null = null) {
+  (db().activity ??= []).push({ id: id(), userId, type, title, detail, ref, createdAt: new Date().toISOString() });
+}
+const device = () => describeDevice(navigator.userAgent);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?[0-9 ()-]{7,20}$/;
 async function hash(pw: string, email: string) {
@@ -133,16 +143,25 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const u: User = { id: id(), name: b.name.trim(), email, phone: b.phone, authProvider: 'password', createdAt: now.toISOString(), hash: await hash(b.password, email) };
     d.users.push(u);
     d.session = u.id;
+    log(u.id, 'ACCOUNT', 'Account created', `Signed up with email · ${device()}`);
     return { user: pub(u) };
   }
   if (path === '/auth/login') {
     const email = String(b.email ?? '').trim().toLowerCase();
     const u = d.users.find((x) => x.email === email);
-    if (!u || u.hash !== (await hash(b.password ?? '', email))) throw new PreviewError(401, 'Incorrect email or password.');
+    if (!u || u.hash !== (await hash(b.password ?? '', email))) {
+      if (u) {
+        log(u.id, 'SECURITY', 'Failed sign-in attempt', `Wrong password · ${device()}`);
+        save();
+      }
+      throw new PreviewError(401, 'Incorrect email or password.');
+    }
     d.session = u.id;
+    log(u.id, 'SIGN_IN', 'Signed in', `Email and password · ${device()}`);
     return { user: pub(u) };
   }
   if (path === '/auth/logout') {
+    if (d.session) log(d.session, 'SIGN_OUT', 'Signed out', device());
     d.session = null;
     return { ok: true };
   }
@@ -157,12 +176,17 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     if (pe) throw new PreviewError(400, pe, { password: pe });
     u.hash = await hash(b.password, u.email);
     d.session = u.id;
+    log(u.id, 'SECURITY', 'Password reset', `Reset link used · ${device()}`);
     return { user: pub(u) };
   }
   if (path === '/account/profile') {
     const u = need();
-    u.name = String(b.name ?? u.name).trim();
-    u.phone = b.phone || null;
+    const name = String(b.name ?? u.name).trim();
+    const phone = b.phone || null;
+    const changed = [name !== u.name && 'name', phone !== u.phone && 'phone'].filter(Boolean).join(' and ');
+    u.name = name;
+    u.phone = phone;
+    if (changed) log(u.id, 'PROFILE', 'Profile updated', `Changed ${changed}`);
     return { user: pub(u) };
   }
   if (path === '/account/password') {
@@ -171,6 +195,7 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const pe = pwProblem(b.newPassword ?? '');
     if (pe) throw new PreviewError(400, pe, { newPassword: pe });
     u.hash = await hash(b.newPassword, u.email);
+    log(u.id, 'SECURITY', 'Password changed', device());
     return { ok: true };
   }
 
@@ -179,6 +204,8 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const aid = path.split('/')[2];
     if (method === 'GET') return { addresses: d.addresses.filter((a) => a.userId === u.id).map(strip) };
     if (method === 'DELETE') {
+      const before = d.addresses.find((a) => a.id === aid && a.userId === u.id);
+      if (before) log(u.id, 'ADDRESS', `Address removed: ${before.label}`, `${before.city}, ${before.state}`);
       d.addresses = d.addresses.filter((a) => !(a.id === aid && a.userId === u.id));
       return { ok: true };
     }
@@ -193,11 +220,15 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const input = { label: b.label || 'Address', name: b.name, phone: b.phone, line1: b.line1, city: b.city, state: b.state, pincode: b.pincode };
     if (method === 'PUT') {
       const a = d.addresses.find((x) => x.id === aid && x.userId === u.id);
-      if (a) Object.assign(a, input);
+      if (a) {
+        Object.assign(a, input);
+        log(u.id, 'ADDRESS', `Address updated: ${a.label}`, `${a.line1}, ${a.city}, ${a.state} ${a.pincode}`);
+      }
       return { address: a };
     }
     const a = { ...input, id: id(), createdAt: now.toISOString(), userId: u.id };
     d.addresses.push(a);
+    log(u.id, 'ADDRESS', `Address saved: ${a.label}`, `${a.line1}, ${a.city}, ${a.state} ${a.pincode}`);
     return { address: strip(a) };
   }
 
@@ -205,6 +236,8 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const u = need();
     if (method === 'GET') return { quotes: d.quotes.filter((q) => q.userId === u.id).map(strip).reverse() };
     if (method === 'DELETE') {
+      const before = d.quotes.find((q) => q.id === path.split('/')[2] && q.userId === u.id);
+      if (before) log(u.id, 'QUOTE', 'Quote removed', `${formatINR(before.total)} · ${before.pickupCity ?? before.pickupState} → ${before.destinationCity ?? before.destinationState}`);
       d.quotes = d.quotes.filter((q) => !(q.id === path.split('/')[2] && q.userId === u.id));
       return { ok: true };
     }
@@ -216,6 +249,7 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     });
     const saved = { ...b, id: id(), weightKg: Number(b.weightKg), total: q.total, transitLabel: q.transitLabel, createdAt: now.toISOString(), userId: u.id };
     d.quotes.push(saved);
+    log(u.id, 'QUOTE', `Quote saved: ${formatINR(q.total)}`, `${TRANSPORT_MODES[q.input.mode].label} · ${b.pickupCity ?? b.pickupState} → ${b.destinationCity ?? b.destinationState} · ${saved.weightKg} kg`);
     return { quote: strip(saved) };
   }
 
@@ -255,7 +289,18 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
       paidAt: null,
     };
     d.shipments.push(s);
+    log(u.id, 'BOOKING', `Booking created: ${s.bookingId}`, `${TRANSPORT_MODES[s.mode as keyof typeof TRANSPORT_MODES].label} · ${sender.city} → ${receiver.city} · ${s.weightKg} kg · ${formatINR(s.price)} · awaiting payment`, s.bookingId);
     return { shipment: strip(s) };
+  }
+  if (path === '/activity') {
+    const u = need();
+    return {
+      activity: (d.activity ?? [])
+        .filter((a) => a.userId === u.id)
+        .map(strip)
+        .reverse()
+        .slice(0, 300),
+    };
   }
   if (path === '/shipments') {
     const u = need();
@@ -282,7 +327,12 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     const u = need();
     const s = d.shipments.find((x) => x.id === d.orders[b.orderId] && x.userId === u.id);
     if (!s) throw new PreviewError(404, 'Payment order not found.');
-    if (b.simulateFailure) throw new PreviewError(402, 'The demo payment was declined (test failure scenario).');
+    const methodLabel = PAYMENT_METHODS[b.method as PaymentMethod] ?? String(b.method);
+    if (b.simulateFailure) {
+      log(u.id, 'PAYMENT', `Payment failed: ${formatINR(s.price)}`, `${methodLabel} · booking ${s.bookingId}`, s.bookingId);
+      save();
+      throw new PreviewError(402, 'The demo payment was declined (test failure scenario).');
+    }
     d.seq += 1;
     const pickupDay = atHour(addBusinessDays(now, 1), 10);
     const from = `${s.sender.city}, ${s.sender.state}`;
@@ -296,6 +346,7 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
         { stage: 'PICKUP_SCHEDULED', at: new Date(now.getTime() + 60_000).toISOString(), location: from, note: 'Pickup planned for the next business day, 10 AM – 6 PM' },
       ],
     });
+    log(u.id, 'PAYMENT', `Payment successful: ${formatINR(s.price)}`, `${methodLabel} · booking ${s.bookingId} · tracking ID ${s.trackingId}`, s.trackingId);
     (d.payments ??= []).push({ order_id: b.orderId, amount: s.price, method: b.method, status: 'PAID', provider: 'demo', created_at: now.toISOString(), paid_at: now.toISOString(), shipment_id: s.id });
     return {
       receipt: { paymentId: `demo_pay_${id().slice(0, 12)}`, provider: 'demo', method: b.method, amount: s.price, paidAt: now.toISOString(), isDemo: true, shipment: strip(s) },
@@ -326,6 +377,7 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
   if (path === '/contact') {
     const m = { id: id(), name: String(b.name ?? ''), email: String(b.email ?? ''), phone: String(b.phone ?? ''), subject: String(b.subject ?? ''), message: String(b.message ?? ''), created_at: now.toISOString() };
     (d.contact ??= []).push(m);
+    if (d.session) log(d.session, 'ACCOUNT', `Enquiry sent: ${m.subject}`, null, `MSG-${m.id.slice(0, 8).toUpperCase()}`);
     return { ok: true, reference: `MSG-${m.id.slice(0, 8).toUpperCase()}` };
   }
 

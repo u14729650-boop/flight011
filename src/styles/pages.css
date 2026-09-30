@@ -1329,11 +1329,12 @@
 }
 @media (max-width: 900px) {
   .dash__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); /* the scrolling tab row must not widen the page */
   }
   .dash__nav {
     position: static;
     padding: 12px;
+    min-width: 0;
   }
   .dash__nav nav {
     display: flex;
@@ -1615,5 +1616,95 @@
 @media (max-width: 640px) {
   .adm-status li {
     grid-template-columns: 110px 1fr 32px;
+  }
+}
+
+/* Dashboard → History */
+.history__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.history__title {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.history__filters {
+  margin: 18px 0 8px;
+}
+.history__filters .badge {
+  cursor: pointer;
+  border: 0;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+.history__day + .history__day {
+  margin-top: 8px;
+}
+.history__date {
+  margin: 20px 0 6px;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.history__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 12px 0;
+}
+.history__item + .history__item {
+  border-top: 1px solid var(--border);
+}
+.history__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.history__icon svg {
+  width: 18px;
+  height: 18px;
+}
+.history__icon--blue {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.history__icon--green {
+  background: var(--success-soft);
+  color: var(--success-strong);
+}
+.history__icon--gold {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.history__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.history__item time {
+  padding-top: 2px;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .history__head {
+    flex-direction: column;
   }
 }

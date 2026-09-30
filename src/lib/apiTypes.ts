@@ -151,3 +151,15 @@ export interface PaymentReceipt {
   isDemo: boolean;
   shipment: Shipment;
 }
+
+/** One entry in an account's history (dashboard → History). */
+export type ActivityType = 'ACCOUNT' | 'SIGN_IN' | 'SIGN_OUT' | 'BOOKING' | 'PAYMENT' | 'QUOTE' | 'ADDRESS' | 'PROFILE' | 'SECURITY';
+export interface ActivityItem {
+  id: string;
+  type: ActivityType;
+  title: string;
+  detail: string | null;
+  /** Booking/tracking ID the entry is about, when there is one. */
+  ref: string | null;
+  createdAt: string;
+}

@@ -126,6 +126,18 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   created_at  TEXT NOT NULL
 );
 
+-- Per-account history (dashboard → History)
+CREATE TABLE IF NOT EXISTS activity (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  type        TEXT NOT NULL,
+  title       TEXT NOT NULL,
+  detail      TEXT,
+  ref         TEXT,
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS activity_user_ix ON activity (user_id, created_at);
+
 CREATE TABLE IF NOT EXISTS counters (
   name   TEXT PRIMARY KEY,
   value  INTEGER NOT NULL
