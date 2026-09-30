@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-art scroll-3d" data-depth="0.6" aria-hidden="true">
+    <div class="boarding-3d tilt">
+      <span class="code big">HELLO</span>
+      <svg viewBox="0 0 64 64"><use href="#plane-icon"/></svg>
+      <span class="code big">WORLD</span>
+    </div>
+  </div>
+  <form method="post" class="auth-card glass tilt">
+    <h1>Welcome back 👋</h1>
+    <p class="muted">Log in to book flights and see your booking history.</p>
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>Email<input type="email" name="email" required autofocus placeholder="you@example.com"></label>
+    <label>Password
+      <span class="pw"><input type="password" name="password" required placeholder="••••••••">
+      <button type="button" class="pw-toggle" aria-label="Show password">👁</button></span>
+    </label>
+    <button class="btn btn-search" type="submit">Login</button>
+    <p class="muted small center">New to SkyVoyage? <a href="{{ url_for('register', next=next) }}">Create an account</a></p>
+  </form>
+</section>
+{% endblock %}

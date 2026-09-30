@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Complete your booking{% endblock %}
+{% block content %}
+{% set sym = currencies[currency][0] %}
+<section class="container book-layout">
+  <form method="post" class="book-form glass scroll-3d" data-depth="0.2">
+    <h1>Complete your booking</h1>
+    <input type="hidden" name="out" value="{{ legs[0][1].id }}">
+    {% if legs|length > 1 %}<input type="hidden" name="ret" value="{{ legs[1][1].id }}">{% endif %}
+    {% for k in ['cabin', 'currency'] %}<input type="hidden" name="{{ k }}" value="{{ cabin if k == 'cabin' else currency }}">{% endfor %}
+    {% for k, v in pax.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+
+    <h3>👥 Passenger details</h3>
+    {% for kind in kinds %}{% set i = loop.index0 %}
+    <fieldset class="pax-row">
+      <legend>Passenger {{ loop.index }} · {{ kind }}</legend>
+      <select name="title_{{ i }}">
+        {% for t in (['Mr', 'Ms', 'Mrs', 'Dr'] if kind == 'Adult' else ['Master', 'Miss']) %}
+          <option {{ 'selected' if form.get('title_' ~ i) == t }}>{{ t }}</option>
+        {% endfor %}
+      </select>
+      <input name="first_{{ i }}" placeholder="First name" required value="{{ form.get('first_' ~ i, '') }}">
+      <input name="last_{{ i }}" placeholder="Last name" required value="{{ form.get('last_' ~ i, '') }}">
+    </fieldset>
+    {% endfor %}
+
+    <h3>📇 Contact details</h3>
+    <div class="two">
+      <input type="email" name="email" placeholder="Email for e-ticket" required value="{{ form.get('email', '') }}">
+      <input name="phone" placeholder="Mobile number" required value="{{ form.get('phone', '') }}">
+    </div>
+
+    <h3>💺 Seat preference</h3>
+    <div class="seat-pref">
+      {% for val, label in [('window', '🪟 Window'), ('aisle', '🚶 Aisle'), ('any', '🎲 No preference')] %}
+        <label class="chip glass"><input type="radio" name="seat_pref" value="{{ val }}" {{ 'checked' if form.get('seat_pref', 'window') == val }}> {{ label }}</label>
+      {% endfor %}
+    </div>
+
+    <h3>💳 Payment</h3>
+    <p class="muted small">Demo site — no real payment is taken. Any card details below are ignored.</p>
+    <div class="two">
+      <input placeholder="Card number (demo)" inputmode="numeric" maxlength="19" autocomplete="off">
+      <input placeholder="MM/YY  CVV (demo)" autocomplete="off">
+    </div>
+    <button class="btn btn-search" type="submit">Pay {{ grand_total|money(sym) }} &amp; confirm</button>
+  </form>
+
+  <aside class="summary glass scroll-3d" data-depth="0.35">
+    <h3>Trip summary</h3>
+    {% for (leg, f), p in zip(legs, prices) %}
+      <div class="sum-leg">
+        <span class="badge">{{ leg }}</span>
+        <p><b>{{ f.origin }} → {{ f.dest }}</b> · {{ f.airline }} {{ f.flight_no }}</p>
+        <p class="muted small">{{ f.departure.strftime('%a %d %b, %H:%M') }} → {{ f.arrival.strftime('%a %d %b, %H:%M') }}</p>
+        <p class="muted small">{{ fmt_duration(f.duration_min) }} · {{ 'Non-stop' if not f.stops else '1 stop via ' ~ f.via }} · {{ cabins[cabin][0] }}</p>
+        <p class="row"><span>Base fare</span><span>{{ p.base|money(sym) }}</span></p>
+        <p class="row"><span>Taxes &amp; fees</span><span>{{ (p.taxes + p.fees)|money(sym) }}</span></p>
+        <p class="row"><span>Leg total</span><span>{{ p.total|money(sym) }}</span></p>
+      </div>
+    {% endfor %}
+    <p class="row total"><span>Grand total</span><span>{{ grand_total|money(sym) }}</span></p>
+    <p class="muted small">Need help? 📞 {{ help.phone }} · ✉️ {{ help.email }}</p>
+  </aside>
+</section>
+{% endblock %}

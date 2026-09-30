@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Book cheap flights{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-text scroll-3d" data-depth="0.6">
+    <span class="pill glass">✨ Live fares · {{ airports|length }} cities · 20 airlines</span>
+    <h1>Fly anywhere.<br><span class="grad-text">Pay the perfect price.</span></h1>
+    <p class="lead">Compare flight times, arrivals, departures, flight numbers and real-time prices, then book in under a minute.</p>
+  </div>
+  <div class="hero-3d scene" aria-hidden="true">
+    <div class="globe">
+      <div class="globe-ring r1"></div><div class="globe-ring r2"></div><div class="globe-ring r3"></div>
+      <div class="globe-core"></div>
+      <div class="orbit"><svg class="orbit-plane" viewBox="0 0 64 64"><use href="#plane-icon"/></svg></div>
+      <div class="orbit orbit-2"><svg class="orbit-plane" viewBox="0 0 64 64"><use href="#plane-icon"/></svg></div>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  {% include "_search_form.html" %}
+</section>
+
+<!-- 3D ring of destinations that rotates as you scroll -->
+<section class="ring-section" id="ringSection">
+  <div class="ring-sticky">
+    <h2 class="section-title center">Trending destinations <span class="muted small">— scroll to spin ✈</span></h2>
+    <div class="ring-stage">
+      <div class="ring" id="ring">
+        {% set spots = [
+          ('DXB', '🏙️', 'Burj Khalifa & desert safaris', 'linear-gradient(135deg,#f6d365,#fda085)'),
+          ('CDG', '🗼', 'Eiffel Tower & cafés', 'linear-gradient(135deg,#a1c4fd,#c2e9fb)'),
+          ('JFK', '🗽', 'The city that never sleeps', 'linear-gradient(135deg,#84fab0,#8fd3f4)'),
+          ('NRT', '🏯', 'Temples & cherry blossoms', 'linear-gradient(135deg,#fbc2eb,#a6c1ee)'),
+          ('MLE', '🏝️', 'Overwater villas', 'linear-gradient(135deg,#43e97b,#38f9d7)'),
+          ('LHR', '🎡', 'Big Ben & the Thames', 'linear-gradient(135deg,#667eea,#b794f4)'),
+          ('SYD', '🦘', 'Opera House & beaches', 'linear-gradient(135deg,#ff9a9e,#fecfef)'),
+          ('SIN', '🌆', 'Gardens by the Bay', 'linear-gradient(135deg,#30cfd0,#6a82fb)'),
+          ('IST', '🕌', 'Where East meets West', 'linear-gradient(135deg,#f093fb,#f5576c)'),
+          ('CAI', '🐪', 'Pyramids of Giza', 'linear-gradient(135deg,#fad0c4,#ffd1ff)'),
+        ] %}
+        {% for code, icon, tag, grad in spots %}
+        <a class="ring-card" style="--i: {{ loop.index0 }}; --n: {{ spots|length }}; --g: {{ grad }}"
+           href="{{ url_for('search', origin='DEL', dest=code, depart=when.isoformat()) }}"
+           data-dest="{{ code }}">
+          <span class="ring-icon">{{ icon }}</span>
+          <strong>{{ airports[code][0] }}</strong>
+          <span>{{ airports[code][2] }}</span>
+          <em>{{ tag }}</em>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <h2 class="section-title">🔥 Cheapest fares this month</h2>
+  <div class="deal-grid">
+    {% for deal in deals %}
+    <a class="deal glass tilt scroll-3d" data-depth="{{ 0.3 + (loop.index0 % 4) * 0.12 }}"
+       href="{{ url_for('search', origin=deal.o, dest=deal.d, depart=deal.date.isoformat()) }}">
+      <div class="deal-route">
+        <span class="code">{{ deal.o }}</span>
+        <span class="deal-line"><svg viewBox="0 0 64 64"><use href="#plane-icon"/></svg></span>
+        <span class="code">{{ deal.d }}</span>
+      </div>
+      <p class="deal-cities">{{ airports[deal.o][0] }} → {{ airports[deal.d][0] }}</p>
+      <p class="muted small">{{ deal.flight.airline }} · {{ fmt_duration(deal.flight.duration_min) }} · {{ 'Non-stop' if deal.flight.stops == 0 else '1 stop' }}</p>
+      <p class="muted small">{{ deal.date.strftime('%a, %d %b') }}</p>
+      <p class="deal-price">from <b>{{ deal.price|money }}</b></p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="container">
+  <div class="map-card glass scroll-3d" data-depth="0.4">
+    <div class="map-head">
+      <div>
+        <h2 class="section-title">🌍 Explore the world map</h2>
+        <p class="muted">Click one airport for <b>From</b>, another for <b>To</b> — we'll show the route and today's best fare.</p>
+      </div>
+      <a class="btn btn-ghost" href="{{ url_for('world_map') }}">Open full map →</a>
+    </div>
+    <div id="homeMap" class="map" data-map></div>
+    <div class="map-info" id="mapInfo"></div>
+  </div>
+</section>
+
+<section class="container features">
+  {% for icon, title, text in [
+    ('💸', 'Real-time pricing', 'Fares move with demand, booking window, weekday, time of day and seats left — just like real airlines.'),
+    ('🛡️', 'Secure booking', 'Passwords are hashed and every booking gets a unique PNR & e-ticket.'),
+    ('🕑', 'Booking history', 'All your trips in one place: upcoming, completed and cancelled.'),
+    ('🎧', '24×7 help centre', 'Reach us any time on ' ~ help.phone ~ ' or ' ~ help.email ~ '.'),
+  ] %}
+  <div class="feature glass tilt scroll-3d" data-depth="{{ 0.25 + loop.index0 * 0.15 }}">
+    <span class="feature-icon">{{ icon }}</span>
+    <h3>{{ title }}</h3>
+    <p class="muted">{{ text }}</p>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

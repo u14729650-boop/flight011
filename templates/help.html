@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Help Centre{% endblock %}
+{% block content %}
+<section class="container">
+  <h1 class="page-title">🎧 Help Centre</h1>
+  <div class="contact-grid">
+    <a class="contact glass tilt scroll-3d" data-depth="0.3" href="mailto:{{ help.email }}">
+      <span class="feature-icon">✉️</span><h3>Email us</h3><p>{{ help.email }}</p><p class="muted small">Bookings: {{ help.support_email }}</p>
+    </a>
+    <a class="contact glass tilt scroll-3d" data-depth="0.45" href="tel:{{ help.phone|replace(' ', '') }}">
+      <span class="feature-icon">📞</span><h3>Call us</h3><p>{{ help.phone }}</p><p class="muted small">International: {{ help.phone_intl }}</p>
+    </a>
+    <div class="contact glass tilt scroll-3d" data-depth="0.6">
+      <span class="feature-icon">💬</span><h3>WhatsApp</h3><p>{{ help.whatsapp }}</p><p class="muted small">Open {{ help.hours }}</p>
+    </div>
+  </div>
+
+  <div class="help-layout">
+    <div class="faq glass scroll-3d" data-depth="0.25">
+      <h2>Frequently asked questions</h2>
+      {% for q, a in [
+        ('How are ticket prices calculated?', 'Prices depend on distance, how many days before departure you book, weekday (Fridays & Sundays cost more), time of day, the airline, stops, cabin class and how many seats are left. Book 3–6 weeks ahead for the best fares.'),
+        ('How do I see my old bookings?', 'Log in and open “My Bookings”. You will see upcoming, completed and cancelled trips with their e-tickets.'),
+        ('Can I cancel a booking?', 'Yes — any upcoming booking can be cancelled from My Bookings. Refunds reach you in 5–7 working days.'),
+        ('What baggage is included?', 'Short-haul flights include 15 kg check-in + 7 kg cabin bag. Long-haul flights include 30 kg + 7 kg.'),
+        ('Children and infant fares?', 'Children (2–11) pay 75% of the adult fare, infants under 2 travelling on a lap pay 10%.'),
+        ('When should I reach the airport?', '2 hours before domestic and 3 hours before international flights. Boarding closes 45 minutes before departure.'),
+      ] %}
+      <details><summary>{{ q }}</summary><p class="muted">{{ a }}</p></details>
+      {% endfor %}
+    </div>
+    <form class="glass contact-form scroll-3d" data-depth="0.35" method="post">
+      <h2>Raise a support ticket</h2>
+      <input name="name" placeholder="Your name" required value="{{ user['name'] if user else '' }}">
+      <input type="email" name="email" placeholder="Your email" required value="{{ user['email'] if user else '' }}">
+      <input name="pnr" placeholder="PNR (optional)">
+      <select name="topic"><option>Booking issue</option><option>Refund / cancellation</option><option>Baggage</option><option>Payment</option><option>Other</option></select>
+      <textarea name="message" rows="4" placeholder="How can we help?" required></textarea>
+      <button class="btn btn-search">Send message</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

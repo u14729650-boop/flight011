@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}About us{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="about-hero glass scroll-3d" data-depth="0.5">
+    <h1>Hello! We are <span class="grad-text">SkyVoyage</span> 👋</h1>
+    <p class="lead">We help travellers find the right flight at the right price — with honest fares, clear flight details and a booking flow that takes under a minute.</p>
+  </div>
+
+  <div class="about-grid">
+    {% for icon, title, text in [
+      ('🎯', 'Our mission', 'Make flying simple and transparent: every time, arrival, departure, flight number and fee shown upfront.'),
+      ('📈', 'How our prices work', 'Fares are calculated from route distance, how early you book, day of the week, time of day, airline, number of stops, cabin class and seats remaining.'),
+      ('🌐', 'Worldwide network', airports|length ~ ' airports across 6 continents and 20 partner airlines, from IndiGo to Emirates.'),
+      ('🔒', 'Your data is safe', 'Passwords are stored as salted hashes. Bookings are private to your account.'),
+    ] %}
+    <div class="feature glass tilt scroll-3d" data-depth="{{ 0.2 + loop.index0 * 0.15 }}">
+      <span class="feature-icon">{{ icon }}</span><h3>{{ title }}</h3><p class="muted">{{ text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="counters glass scroll-3d" data-depth="0.3">
+    {% for n, label in [(2400000, 'happy travellers'), (airports|length, 'airports'), (20, 'airlines'), (24, 'hour support')] %}
+      <div><b class="counter" data-to="{{ n }}">0</b><span class="muted">{{ label }}</span></div>
+    {% endfor %}
+  </div>
+
+  <h2 class="section-title">Meet the team</h2>
+  <div class="team">
+    {% for name, role, emoji in [('Riya Kapoor', 'Founder & CEO', '👩‍✈️'), ('Arjun Mehta', 'Head of Engineering', '👨‍💻'),
+                                 ('Sara Khan', 'Customer Happiness', '🎧'), ('Leo Fernandes', 'Design Lead', '🎨')] %}
+      <div class="member glass tilt scroll-3d" data-depth="{{ 0.25 + loop.index0 * 0.1 }}">
+        <span class="avatar">{{ emoji }}</span><b>{{ name }}</b><small class="muted">{{ role }}</small>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
