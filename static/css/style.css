@@ -59,7 +59,8 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+.hero-3d { overflow: clip; }
 body {
   margin: 0;
   font-family: "Poppins", system-ui, sans-serif;
