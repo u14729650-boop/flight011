@@ -9,6 +9,7 @@
     "dev:api": "tsx watch server/index.ts",
     "build": "tsc -p tsconfig.json && vite build",
     "start": "NODE_ENV=production tsx server/index.ts",
+    "build:preview": "VITE_PREVIEW=1 vite build --outDir dist-preview",
     "typecheck": "tsc -p tsconfig.json",
     "map:build": "node scripts/build-india-map.mjs"
   },

@@ -297,9 +297,9 @@ export function ForgotPasswordPage() {
           {devUrl && (
             <FormAlert kind="warning">
               <strong>Development mode:</strong> no email service is configured yet, so here is the reset link (also printed in the API log).{' '}
-              <a className="text-link" href={devUrl.replace(/^https?:\/\/[^/]+/, '')}>
+              <Link className="text-link" to={devUrl.replace(/^https?:\/\/[^/]+/, '')}>
                 Open reset link
-              </a>
+              </Link>
             </FormAlert>
           )}
           <Link to="/login" className="btn btn--secondary btn--block">

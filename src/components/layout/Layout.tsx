@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { WhatsAppFloat } from '../ui/Social';
+import { IS_PREVIEW } from '../../lib/api';
 import { Footer } from './Footer';
 import { Header } from './Header';
 
@@ -23,6 +24,11 @@ export function Layout() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
+      {IS_PREVIEW && (
+        <p className="preview-bar">
+          Preview build: accounts, bookings and payments are simulated and stay in this browser.
+        </p>
+      )}
       <Header />
       <main id="main" key={pathname} className="page">
         <Outlet />

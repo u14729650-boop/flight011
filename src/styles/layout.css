@@ -650,3 +650,13 @@
     padding-bottom: 72px;
   }
 }
+
+.preview-bar {
+  margin: 0;
+  padding: 8px var(--gutter);
+  background: var(--accent-soft);
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}

@@ -6,7 +6,18 @@ export class ApiError extends Error {
   }
 }
 
+export const IS_PREVIEW = import.meta.env.VITE_PREVIEW === '1';
+
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
+  if (IS_PREVIEW) {
+    const { previewRequest, PreviewError } = await import('./previewApi');
+    try {
+      return (await previewRequest(method, url, body)) as T;
+    } catch (e) {
+      if (e instanceof PreviewError) throw new ApiError(e.status, e.message, e.fields);
+      throw e;
+    }
+  }
   let res: Response;
   try {
     res = await fetch(`/api${url}`, {

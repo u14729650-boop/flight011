@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
+import { IS_PREVIEW } from './lib/api';
 import { Layout } from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -27,12 +28,15 @@ const PageFallback = () => (
 );
 const S = ({ children }: { children: ReactNode }) => <Suspense fallback={<PageFallback />}>{children}</Suspense>;
 
+// The hosted preview has no server to answer deep links, so it keeps routing in memory.
+const Router = IS_PREVIEW ? MemoryRouter : BrowserRouter;
+
 export function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <BrowserRouter>
+          <Router>
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
@@ -60,7 +64,7 @@ export function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Routes>
-          </BrowserRouter>
+          </Router>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>
