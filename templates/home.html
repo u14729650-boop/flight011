@@ -6,16 +6,24 @@
   <div class="hero-media" data-parallax="0.35" style="background-image: {{ photo('hero', 2400) }}"></div>
   <div class="hero-veil"></div>
   <div class="hero-inner">
-    <span class="eyebrow">Flights to {{ airports|length }} cities worldwide</span>
-    <h1>Your next journey starts at the right fare.</h1>
-    <p class="lead">Compare schedules, flight numbers and live prices across 20 airlines, then book in under a minute with an instant e-ticket.</p>
-    {% include "_search_form.html" %}
-    <div class="hero-points">
-      <span>{{ icon('shield', size=18) }} Secure checkout</span>
-      <span>{{ icon('tag', size=18) }} No hidden fees</span>
-      <span>{{ icon('refund', size=18) }} Easy cancellations</span>
-      <span>{{ icon('headset', size=18) }} 24/7 support</span>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <span class="eyebrow">Live fares · {{ airports|length }} destinations · 20 airlines</span>
+        <h1>Your next journey starts at the <span class="accent">right fare.</span></h1>
+        <p class="lead">Choose your route and dates. We price every flight in real time from distance, demand, cabin and how soon you fly, then issue your seats and e-ticket instantly.</p>
+        <div class="hero-points">
+          <span>{{ icon('shield', size=18) }} Secure checkout</span>
+          <span>{{ icon('tag', size=18) }} No hidden fees</span>
+          <span>{{ icon('headset', size=18) }} 24/7 support</span>
+        </div>
+      </div>
+      <div class="hero-windows" id="heroWindows" aria-hidden="true">
+        <div class="window w1" data-depth="0.9"><div class="window-photo" style="background-image: {{ photo('window-wing', 900) }}"></div></div>
+        <div class="window w2" data-depth="0.5"><div class="window-photo" style="background-image: {{ photo('window-clouds', 900) }}"></div></div>
+        <div class="window-chip" data-depth="1.2">{{ icon('plane', size=16) }} <span>DEL → DXB</span> <b>from {{ deals[0].price|money }}</b></div>
+      </div>
     </div>
+    {% include "_search_form.html" %}
   </div>
 </section>
 

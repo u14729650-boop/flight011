@@ -24,6 +24,11 @@
   const galleryActive = () => track && matchMedia("(min-width: 861px)").matches;
 
   const scenes = $$(".bg .bg-photo");
+  const heroWindows = $("#heroWindows"), windowEls = heroWindows ? $$(".window, .window-chip", heroWindows) : [];
+  const mouse = { x: 0, y: 0 };
+  if (heroWindows && !reduceMotion && matchMedia("(pointer: fine)").matches) {
+    addEventListener("mousemove", (e) => { mouse.x = e.clientX / innerWidth - 0.5; mouse.y = e.clientY / innerHeight - 0.5; request(); });
+  }
   function frame() {
     const vh = innerHeight, sy = scrollY;
     nav?.classList.toggle("scrolled", sy > 40);
@@ -43,6 +48,21 @@
       });
     }
     if (reduceMotion) return;
+
+    // hero plane windows: each floats at its own depth as the page scrolls
+    if (heroWindows) {
+      const r = heroWindows.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < vh) {
+        const p = Math.max(-1, Math.min(1.5, -r.top / vh + 0.2));
+        for (const w of windowEls) {
+          const d = parseFloat(w.dataset.depth), base = w.classList.contains("w1") ? [16, -6] : w.classList.contains("w2") ? [-14, 4] : [0, 0];
+          w.style.transform = `translate3d(${(mouse.x * 18 * d).toFixed(1)}px, ${(-p * 120 * d + mouse.y * 14 * d).toFixed(1)}px, 0) ` +
+            `rotateY(${(base[0] + mouse.x * 8 - p * 10 * d).toFixed(2)}deg) rotateZ(${(base[1] + p * 4 * d).toFixed(2)}deg) rotateX(${(mouse.y * -6).toFixed(2)}deg)`;
+          const photoEl = w.querySelector(".window-photo");
+          if (photoEl) photoEl.style.transform = `translate3d(${(-mouse.x * 14).toFixed(1)}px, ${(p * 40).toFixed(1)}px, 0) scale(1.08)`;
+        }
+      }
+    }
 
     // photo parallax: the image drifts slower than the page
     for (const el of parallax) {

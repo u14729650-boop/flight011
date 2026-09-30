@@ -163,12 +163,20 @@
   <div class="hero-media" data-parallax="0.35" style="background-image: ${photo("hero")}"></div>
   <div class="hero-veil"></div>
   <div class="hero-inner">
-    <span class="eyebrow">Flights to ${Object.keys(A).length} cities worldwide</span>
-    <h1>Your next journey starts at the right fare.</h1>
-    <p class="lead">Compare schedules, flight numbers and live prices across 20 airlines, then book in under a minute with an instant e-ticket.</p>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <span class="eyebrow">Live fares · ${Object.keys(A).length} destinations · 20 airlines</span>
+        <h1>Your next journey starts at the <span class="accent">right fare.</span></h1>
+        <p class="lead">Choose your route and dates. We price every flight in real time from distance, demand, cabin and how soon you fly, then issue your seats and e-ticket instantly.</p>
+        <div class="hero-points"><span>${icon("shield", 18)} Secure checkout</span><span>${icon("tag", 18)} No hidden fees</span><span>${icon("headset", 18)} 24/7 support</span></div>
+      </div>
+      <div class="hero-windows" id="heroWindows" aria-hidden="true">
+        <div class="window w1" data-depth="0.9"><div class="window-photo" style="background-image: ${photo("window-wing")}"></div></div>
+        <div class="window w2" data-depth="0.5"><div class="window-photo" style="background-image: ${photo("window-clouds")}"></div></div>
+        <div class="window-chip" data-depth="1.2">${icon("plane", 16)} <span>DEL → DXB</span> <b>from ${money(price(cheapest("DEL", "DXB")).total)}</b></div>
+      </div>
+    </div>
     ${searchForm({})}
-    <div class="hero-points"><span>${icon("shield", 18)} Secure checkout</span><span>${icon("tag", 18)} No hidden fees</span>
-      <span>${icon("refund", 18)} Easy cancellations</span><span>${icon("headset", 18)} 24/7 support</span></div>
   </div>
 </section>
 <section class="container section-tight"><div class="trust">${trust.map(([ic, b, s]) => `<div class="trust-item panel reveal" data-depth="0.15">${icon(ic, 28)}<div><b>${b}</b><span>${s}</span></div></div>`).join("")}</div></section>
@@ -674,12 +682,17 @@
   }
 
   /* ================================================= scroll motion */
-  let parallax = [], reveals = [], track = null, pin = null, bar = null, cards = [];
+  let parallax = [], reveals = [], track = null, pin = null, bar = null, cards = [], heroWindows = null, windowEls = [];
+  const mouse = { x: 0, y: 0 };
+  if (!reduceMotion && matchMedia("(pointer: fine)").matches) {
+    addEventListener("mousemove", (e) => { mouse.x = e.clientX / innerWidth - 0.5; mouse.y = e.clientY / innerHeight - 0.5; if (heroWindows) request(); });
+  }
   function collectMotion() {
     parallax = $$("[data-parallax]");
     reveals = $$(".reveal").map((el) => ({ el, depth: parseFloat(el.dataset.depth || "0.12") }));
     track = $("#galleryTrack"); pin = $("#gallery"); bar = $("#galleryProgress");
     cards = track ? $$(".dest-card", track) : [];
+    heroWindows = $("#heroWindows"); windowEls = heroWindows ? $$(".window, .window-chip", heroWindows) : [];
     if (!reduceMotion && matchMedia("(pointer: fine)").matches) {
       $$(".tilt").forEach((el) => {
         el.addEventListener("mousemove", (e) => {
@@ -710,6 +723,21 @@
       });
     }
     if (reduceMotion) return;
+    // hero plane windows: each floats at its own depth as the page scrolls
+    if (heroWindows) {
+      const r = heroWindows.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < vh) {
+        const p = Math.max(-1, Math.min(1.5, -r.top / vh + 0.2));
+        for (const w of windowEls) {
+          const d = parseFloat(w.dataset.depth), base = w.classList.contains("w1") ? [16, -6] : w.classList.contains("w2") ? [-14, 4] : [0, 0];
+          w.style.transform = `translate3d(${(mouse.x * 18 * d).toFixed(1)}px, ${(-p * 120 * d + mouse.y * 14 * d).toFixed(1)}px, 0) ` +
+            `rotateY(${(base[0] + mouse.x * 8 - p * 10 * d).toFixed(2)}deg) rotateZ(${(base[1] + p * 4 * d).toFixed(2)}deg) rotateX(${(mouse.y * -6).toFixed(2)}deg)`;
+          const photoEl = w.querySelector(".window-photo");
+          if (photoEl) photoEl.style.transform = `translate3d(${(-mouse.x * 14).toFixed(1)}px, ${(p * 40).toFixed(1)}px, 0) scale(1.08)`;
+        }
+      }
+    }
+
     for (const el of parallax) {
       const host = el.parentElement.getBoundingClientRect();
       if (host.bottom < 0 || host.top > vh) continue;

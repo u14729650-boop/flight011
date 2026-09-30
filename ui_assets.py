@@ -82,6 +82,9 @@ PHOTOS = {
     "BKK": "1508009603885-50cf7c579365",       # Bangkok temple
     "india": "1524492412937-b28074a5d7da",     # Taj Mahal
     "beach": "1507525428034-b723cf961d3e",     # tropical beach
+    # plane-window views in the home hero (local crops; online fallback is the hero photo)
+    "window-wing": "1436491865332-7a61a109cc05",
+    "window-clouds": "1436491865332-7a61a109cc05",
     # flight photos for the scrolling site background
     "bg-wing": "1436491865332-7a61a109cc05",   # wing above the clouds
     "bg-takeoff": "1474302770737-173ee21bab63",  # aircraft climbing at sunset
@@ -104,6 +107,8 @@ FALLBACK = {
     "BKK": "linear-gradient(135deg,#6b4a12,#caa048)", "india": "linear-gradient(135deg,#5c3b1e,#d7a86e)",
     "beach": "linear-gradient(135deg,#0f5e7a,#6cc4d6)",
     "bg-wing": "linear-gradient(180deg,#3a6fb0 0%,#8fb8e6 55%,#dfe9f5 100%)",
+    "window-wing": "linear-gradient(160deg,#5d8fc9,#c9d9ec)",
+    "window-clouds": "linear-gradient(180deg,#8fb6e3,#f3dcc0 35%,#b9c7da)",
     "bg-takeoff": "linear-gradient(180deg,#2b2350 0%,#b0576a 55%,#f2a65a 100%)",
     "bg-window": "linear-gradient(180deg,#1d4f86 0%,#6aa2d8 60%,#f1f5fb 100%)",
     "bg-terminal": "linear-gradient(180deg,#2d3a4f 0%,#6f7f96 60%,#c9d2de 100%)",
