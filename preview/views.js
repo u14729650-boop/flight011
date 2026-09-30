@@ -144,7 +144,7 @@
     const deals = D.popular.map(([o, d], i) => {
       const f = cheapest(o, d);
       return `<a class="deal panel reveal tilt" data-depth="${0.12 + (i % 4) * 0.05}" ${link("results", { origin: o, dest: d, depart: iso(when) })}>
-        <div class="deal-photo" style="background-image: ${photo(d)}"></div>
+        <div class="deal-photo" style="background-image: ${destPhoto(d)}"></div>
         <div class="deal-body"><div class="deal-route"><span>${o}</span><span class="line">${icon("plane", 16)}</span><span>${d}</span></div>
           <span class="deal-meta">${esc(A[o][0])} to ${esc(A[d][0])}</span>
           <span class="deal-meta">${esc(f.airline)} · ${fmtDur(f.duration_min)} · ${f.stops ? "1 stop" : "Non-stop"}</span>
@@ -695,19 +695,25 @@
   function frame() {
     const vh = innerHeight;
     $("#nav").classList.toggle("scrolled", scrollY > 40);
-    if (scenes.length > 1) {
-      const pos = Math.max(0, Math.min(1, scrollY / Math.max(1, document.documentElement.scrollHeight - vh))) * (scenes.length - 1);
+    // site background: the photo glides and zooms as the page scrolls, like flying forward;
+    // with several photos they also dissolve into one another
+    if (scenes.length) {
+      const prog = Math.max(0, Math.min(1, scrollY / Math.max(1, document.documentElement.scrollHeight - vh)));
+      const pos = prog * (scenes.length - 1);
       scenes.forEach((el, i) => {
-        const d = pos - i, op = Math.max(0, 1 - Math.abs(d));
+        const d = pos - i, op = scenes.length > 1 ? Math.max(0, 1 - Math.abs(d)) : 1;
         el.style.opacity = op.toFixed(3);
-        if (!reduceMotion && op > 0) el.style.transform = `translate3d(0, ${(-d * 3).toFixed(2)}%, 0) scale(${(1.04 + (1 - op) * 0.08).toFixed(3)})`;
+        if (!reduceMotion && op > 0) {
+          const ty = -prog * 14, tx = -prog * 8 + Math.sin(prog * Math.PI * 2) * 2, sc = 1.02 + prog * 0.22;
+          el.style.transform = `translate3d(${tx.toFixed(2)}%, ${ty.toFixed(2)}%, 0) scale(${sc.toFixed(3)})`;
+        }
       });
     }
     if (reduceMotion) return;
     for (const el of parallax) {
       const host = el.parentElement.getBoundingClientRect();
       if (host.bottom < 0 || host.top > vh) continue;
-      el.style.transform = `translate3d(0, ${(-host.top * parseFloat(el.dataset.parallax)).toFixed(1)}px, 0) scale(1.06)`;
+      el.style.transform = `translate3d(0, ${(-host.top * parseFloat(el.dataset.parallax)).toFixed(1)}px, 0) scale(${(1.06 + Math.max(0, -host.top) / vh * 0.18).toFixed(3)})`;
     }
     for (const it of reveals) {
       const r = it.el.getBoundingClientRect();

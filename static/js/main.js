@@ -28,13 +28,18 @@
     const vh = innerHeight, sy = scrollY;
     nav?.classList.toggle("scrolled", sy > 40);
 
-    // site background: flight photos dissolve into one another as the page scrolls
-    if (scenes.length > 1) {
-      const pos = Math.max(0, Math.min(1, sy / Math.max(1, document.documentElement.scrollHeight - vh))) * (scenes.length - 1);
+    // site background: the photo glides and zooms as the page scrolls, like flying forward;
+    // with several photos they also dissolve into one another
+    if (scenes.length) {
+      const prog = Math.max(0, Math.min(1, sy / Math.max(1, document.documentElement.scrollHeight - vh)));
+      const pos = prog * (scenes.length - 1);
       scenes.forEach((el, i) => {
-        const d = pos - i, op = Math.max(0, 1 - Math.abs(d));
+        const d = pos - i, op = scenes.length > 1 ? Math.max(0, 1 - Math.abs(d)) : 1;
         el.style.opacity = op.toFixed(3);
-        if (!reduceMotion && op > 0) el.style.transform = `translate3d(0, ${(-d * 3).toFixed(2)}%, 0) scale(${(1.04 + (1 - op) * 0.08).toFixed(3)})`;
+        if (!reduceMotion && op > 0) {
+          const ty = -prog * 14, tx = -prog * 8 + Math.sin(prog * Math.PI * 2) * 2, sc = 1.02 + prog * 0.22;
+          el.style.transform = `translate3d(${tx.toFixed(2)}%, ${ty.toFixed(2)}%, 0) scale(${sc.toFixed(3)})`;
+        }
       });
     }
     if (reduceMotion) return;
@@ -44,7 +49,7 @@
       const host = el.parentElement.getBoundingClientRect();
       if (host.bottom < 0 || host.top > vh) continue;
       const k = parseFloat(el.dataset.parallax);
-      el.style.transform = `translate3d(0, ${(-host.top * k).toFixed(1)}px, 0) scale(1.06)`;
+      el.style.transform = `translate3d(0, ${(-host.top * k).toFixed(1)}px, 0) scale(${(1.06 + Math.max(0, -host.top) / vh * 0.18).toFixed(3)})`;
     }
 
     // gentle 3-D reveal: panels settle flat as they reach the middle of the screen

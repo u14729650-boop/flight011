@@ -65,7 +65,7 @@
   <div class="deal-grid">
     {% for deal in deals %}
     <a class="deal panel reveal tilt" data-depth="{{ 0.12 + (loop.index0 % 4) * 0.05 }}" href="{{ url_for('search', origin=deal.o, dest=deal.d, depart=deal.date.isoformat()) }}">
-      <div class="deal-photo" style="background-image: {{ photo(deal.d, 700) }}"></div>
+      <div class="deal-photo" style="background-image: {{ dest_photo(deal.d, 700) }}"></div>
       <div class="deal-body">
         <div class="deal-route"><span>{{ deal.o }}</span><span class="line">{{ icon('plane', size=16) }}</span><span>{{ deal.d }}</span></div>
         <span class="deal-meta">{{ airports[deal.o][0] }} to {{ airports[deal.d][0] }}</span>

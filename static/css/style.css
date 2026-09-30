@@ -93,10 +93,13 @@ img { max-width: 100%; display: block; }
 /* ---------------------------------------------------- background photo (whole site) */
 .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .bg-photo {
-  position: absolute; inset: -6%;
+  position: absolute; inset: -18%;
   background-size: cover; background-position: center;
   opacity: 0; will-change: opacity, transform;
+  /* gentle drift of its own; scrolling adds a much bigger move (see main.js) */
+  animation: cruise 26s ease-in-out infinite alternate;
 }
+@keyframes cruise { from { translate: 0 0; scale: 1; } to { translate: -2.5% -1.5%; scale: 1.05; } }
 .bg-veil { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
 
 /* ---------------------------------------------------- glass panel */
@@ -205,7 +208,7 @@ main { min-height: 60vh; }
 
 /* ---------------------------------------------------- hero */
 .hero { position: relative; min-height: clamp(640px, 92vh, 860px); color: #fff; overflow: hidden; display: flex; align-items: flex-end; }
-.hero-media { position: absolute; inset: -8% 0 -8% 0; background-size: cover; background-position: center 40%; will-change: transform; }
+.hero-media { position: absolute; inset: -14% 0 -14% 0; animation: cruise 22s ease-in-out infinite alternate; background-size: cover; background-position: center 40%; will-change: transform; }
 .hero-veil { position: absolute; inset: 0;
   background: linear-gradient(90deg, rgba(4, 16, 38, .82) 0%, rgba(4, 16, 38, .55) 45%, rgba(4, 16, 38, .15) 100%),
               linear-gradient(180deg, rgba(4, 16, 38, .55) 0%, rgba(4, 16, 38, 0) 30%, rgba(4, 16, 38, 0) 60%, rgba(4, 16, 38, .6) 100%); }
@@ -303,7 +306,7 @@ main { min-height: 60vh; }
 
 /* ---------------------------------------------------- photo band (alerts, page headers) */
 .band { position: relative; overflow: hidden; border-radius: 22px; color: #fff; }
-.band-media { position: absolute; inset: -10% 0; background-size: cover; background-position: center; will-change: transform; }
+.band-media { position: absolute; inset: -16% 0; background-size: cover; background-position: center; will-change: transform; animation: cruise 24s ease-in-out infinite alternate; }
 .band::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4, 16, 38, .88), rgba(4, 16, 38, .45)); }
 .band-inner { position: relative; z-index: 2; padding: clamp(2rem, 5vw, 3.5rem); display: grid; grid-template-columns: 1.1fr 1fr; gap: 2rem; align-items: center; }
 .band h2 { color: #fff; }
@@ -311,7 +314,7 @@ main { min-height: 60vh; }
 .band form { display: flex; gap: .6rem; }
 .band input { background: rgba(255, 255, 255, .96); color: #0b1b33; border-color: transparent; }
 .page-head { position: relative; overflow: hidden; color: #fff; }
-.page-head .band-media { inset: -15% 0; }
+.page-head .band-media { inset: -22% 0; }
 .page-head::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4, 16, 38, .85), rgba(4, 16, 38, .35)); }
 .page-head-inner { position: relative; z-index: 2; width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding-block: 128px 56px; }
 .page-head h1 { color: #fff; }
