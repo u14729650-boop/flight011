@@ -1,4 +1,5 @@
-import { QuickQuote } from '../components/calculator/QuickQuote';
+import { SkyBackdrop } from '../components/immersive/SkyBackdrop';
+import { ScrollGallery } from '../components/sections/ScrollGallery';
 import { PickupDrop } from '../components/location/LocationSelector';
 import { CTASection, StepsSection } from '../components/sections/CTASection';
 import { Hero } from '../components/sections/Hero';
@@ -18,7 +19,8 @@ export default function Home() {
       'YA² Transport moves cargo, parcels and household goods across India by air and road, with movers & packers, instant price estimates and online shipment tracking.',
   });
   return (
-    <>
+    <div className="immersive">
+      <SkyBackdrop />
       <Hero />
       <div className="marquee" aria-hidden>
         <div className="marquee__track">
@@ -30,23 +32,8 @@ export default function Home() {
           ))}
         </div>
       </div>
+      <ScrollGallery />
       <ServicesSection />
-
-      <section className="section" id="quote">
-        <div className="container">
-          <div className="quote-band">
-            <SectionHeading
-              eyebrow="Instant estimate"
-              title="What will it cost?"
-              text="Pickup, drop, weight and mode — that is all we need for an indicative price and delivery window."
-            />
-            <Reveal>
-              <QuickQuote />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
       <NetworkSection />
       <AirPricing />
       <RoadPricing />
@@ -69,6 +56,6 @@ export default function Home() {
       <TestimonialsSection />
       <SupportSection />
       <CTASection />
-    </>
+    </div>
   );
 }

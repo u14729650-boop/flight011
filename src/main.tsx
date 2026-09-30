@@ -7,6 +7,7 @@ import './styles/components.css';
 import './styles/layout.css';
 import './styles/sections.css';
 import './styles/pages.css';
+import './styles/immersive.css';
 import { App } from './App';
 
 createRoot(document.getElementById('root')!).render(

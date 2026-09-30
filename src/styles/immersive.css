@@ -1,0 +1,452 @@
+/* ==========================================================================
+   Immersive home: fixed real-time 3D sky behind glass content
+   ========================================================================== */
+
+.immersive {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 24px 60px -30px rgba(7, 26, 47, 0.45);
+  --scrim-color: 238, 243, 250;
+  position: relative;
+  isolation: isolate;
+}
+[data-theme='dark'] .immersive {
+  --glass-bg: rgba(7, 18, 34, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.7);
+  --scrim-color: 4, 10, 20;
+}
+
+.sky-bg {
+  --scrim-color: 238, 243, 250;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, #1b2c4d 0%, #5d5470 45%, #d98c5f 70%, #2a2f45 100%);
+}
+[data-theme='dark'] .sky-bg {
+  --scrim-color: 4, 10, 20;
+}
+.sky-bg__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sky-bg__canvas {
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out);
+}
+.sky-bg__canvas.is-ready {
+  opacity: 1;
+}
+.sky-bg__scrim {
+  --scrim: 0;
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--scrim-color), calc(0.08 + var(--scrim) * 0.34));
+  pointer-events: none;
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Sections become transparent; their panels become glass */
+.immersive .section,
+.immersive .section--alt {
+  background: transparent;
+}
+.immersive .section--deep {
+  background: rgba(4, 12, 24, 0.6);
+  backdrop-filter: blur(6px);
+}
+.immersive .marquee {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(14px);
+}
+.immersive .sh {
+  width: fit-content;
+  max-width: min(760px, 100%);
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.immersive .section--deep .sh {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.immersive .sh--split {
+  width: auto;
+  max-width: none;
+}
+.immersive .card,
+.immersive .step,
+.immersive .stat-card,
+.immersive .faq,
+.immersive .rate-strip,
+.immersive .qq__form {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.immersive .price-card--featured {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--primary) 16%, transparent), var(--glass-bg) 60%);
+}
+.immersive .svc-visual {
+  background: radial-gradient(circle at 50% 110%, rgba(20, 110, 245, 0.22), transparent 60%), color-mix(in srgb, var(--surface-2) 70%, transparent);
+}
+.immersive .pricing-note,
+.immersive .sample-note {
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+}
+.immersive .rating {
+  background: linear-gradient(170deg, rgba(11, 42, 74, 0.9), rgba(7, 26, 47, 0.92));
+}
+
+/* ---------------------------------- hero ---------------------------------- */
+.ihero {
+  position: relative;
+  padding: clamp(28px, 5vw, 64px) 0 clamp(48px, 6vw, 88px);
+  min-height: calc(100vh - 116px);
+  display: grid;
+  align-content: center;
+  gap: 28px;
+}
+.ihero__grid {
+  --s: 0;
+  --px: 0;
+  --py: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+.ihero__panel {
+  padding: clamp(24px, 3.4vw, 44px);
+  border-radius: 28px;
+  transform: translate3d(0, calc(var(--s) * -40px), 0);
+  animation: result-in 0.9s var(--ease-out) both;
+}
+.ihero__eyebrow {
+  margin-bottom: 20px;
+  font-size: 0.7rem;
+}
+[data-theme='dark'] .ihero__eyebrow {
+  color: #7fb2ff;
+}
+.ihero__title {
+  font-size: clamp(2.5rem, 1.3rem + 3.4vw, 4.4rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin-bottom: 20px;
+  text-wrap: balance;
+}
+.ihero__lead {
+  max-width: 520px;
+  margin-bottom: 28px;
+  font-size: var(--fs-lead);
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.immersive .hero__ctas .btn--outline-light {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 40%, transparent);
+}
+.ihero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin: 28px 0 0;
+  padding: 20px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.ihero__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ihero__facts svg {
+  width: 18px;
+  height: 18px;
+  color: var(--primary);
+}
+
+/* floating tilted cards (keep the middle clear so the aircraft shows) */
+.ihero__float {
+  position: relative;
+  height: min(62vh, 560px);
+  perspective: 1200px;
+}
+.tilt-card {
+  position: absolute;
+  display: grid;
+  gap: 8px;
+  width: min(290px, 70%);
+  padding: 18px 20px;
+  border-radius: 22px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease-out);
+  animation: card-in 1s 0.4s var(--ease-out) both;
+}
+.tilt-card strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.tilt-card--a {
+  top: 0;
+  right: 0;
+  transform: rotateY(-22deg) rotateX(8deg) translate3d(calc(var(--px) * -18px), calc(var(--s) * -90px + var(--py) * -12px), 0);
+}
+.tilt-card--b {
+  bottom: 0;
+  right: 14%;
+  width: min(240px, 60%);
+  transform: rotateY(-14deg) rotateX(-6deg) translate3d(calc(var(--px) * -28px), calc(var(--s) * -160px + var(--py) * -18px), 30px);
+  animation-delay: 0.6s;
+}
+.tilt-card__route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.tilt-card__route .ya-arrow {
+  color: var(--primary);
+}
+.tilt-card__bar {
+  height: 5px;
+  border-radius: 5px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.tilt-card__bar span {
+  display: block;
+  width: 64%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+  animation: progress 2.4s 1.2s var(--ease-out) both;
+}
+.tilt-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.tilt-card__meta svg {
+  width: 14px;
+  height: 14px;
+  color: var(--success);
+}
+.tilt-card__label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.tilt-card__price {
+  font-size: 2rem !important;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.tilt-card .badge {
+  width: fit-content;
+}
+
+.ihero__search {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px 20px;
+  border-radius: 24px;
+  animation: result-in 0.9s 0.3s var(--ease-out) both;
+}
+.ihero__search-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.ihero__search-note {
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.ihero__search .qq__form {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  align-items: end;
+  padding: 0;
+  background: none !important;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none !important;
+}
+.ihero__search .qq__submit {
+  grid-column: auto;
+}
+
+@media (max-width: 1024px) {
+  .ihero__grid {
+    grid-template-columns: 1fr;
+  }
+  .ihero__float {
+    height: 46vh;
+  }
+  .tilt-card--a {
+    right: auto;
+    left: 0;
+  }
+  .tilt-card--b {
+    right: 0;
+  }
+  .ihero__search .qq__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ihero__search .qq__submit {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .ihero__float {
+    height: 52vh;
+  }
+  .tilt-card {
+    width: 78%;
+  }
+  .ihero__search .qq__form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------ scroll gallery ------------------------------ */
+.gallery {
+  --t: 0;
+  position: relative;
+  padding: clamp(64px, 8vw, 112px) 0;
+  overflow: hidden;
+}
+.gallery__head {
+  max-width: 720px;
+  padding: 26px 30px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 44px;
+}
+.gallery__head h2 {
+  margin: 14px 0 10px;
+}
+.gallery__head p {
+  color: var(--text-2);
+}
+.gallery__track {
+  display: flex;
+  gap: 24px;
+  padding: 30px var(--gutter) 60px;
+  width: max-content;
+  perspective: 1400px;
+  transform: translate3d(calc((0.45 - var(--t)) * 60vw), 0, 0);
+  will-change: transform;
+}
+.lane-card {
+  --i: 0;
+  display: grid;
+  gap: 8px;
+  width: 300px;
+  padding: 16px 16px 20px;
+  border-radius: 24px;
+  color: var(--text);
+  transform: translate3d(0, calc((var(--t) - 0.5) * (var(--i) - 2) * -60px + (var(--i) * 1) * 0px), 0)
+    rotateY(calc((var(--t) - 0.5) * -28deg + (var(--i) - 2) * 4deg)) rotateX(calc((var(--t) - 0.5) * 10deg));
+  transition: box-shadow 0.4s var(--ease-out), border-color 0.4s;
+}
+.lane-card:nth-child(even) {
+  margin-top: 60px;
+}
+.lane-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  box-shadow: 0 40px 80px -30px rgba(20, 110, 245, 0.45);
+}
+.lane-card__map {
+  height: 200px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 30%, rgba(20, 110, 245, 0.18), transparent 70%), color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+.lane-card__map .india-map {
+  height: 180px;
+  width: auto;
+  aspect-ratio: 1000 / 1120;
+}
+.lane-card__tag {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.lane-card__route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.lane-card__route .ya-arrow {
+  color: var(--primary);
+}
+.lane-card__meta {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.lane-card__price {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--success-strong);
+}
+@media (max-width: 560px) {
+  .lane-card {
+    width: 76vw;
+  }
+  .gallery__track {
+    transform: translate3d(calc((0.4 - var(--t)) * 260vw), 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery__track {
+    transform: none;
+    width: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .lane-card {
+    transform: none;
+  }
+}
