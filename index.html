@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>YA² Transport | Air, Road &amp; Logistics Across India</title>
+    <meta name="description" content="YA² Transport moves cargo, parcels and household goods across India by air and road, with movers &amp; packers, instant price estimates and online shipment tracking." />
+    <meta name="theme-color" content="#071A2F" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="YA² Transport" />
+    <meta property="og:title" content="YA² Transport | Air, Road &amp; Logistics Across India" />
+    <meta property="og:description" content="Reliable air, road and relocation solutions designed to move your business, cargo and belongings safely across India." />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Apply the saved theme before first paint (no flash).
+      (function () {
+        try {
+          var t = localStorage.getItem('ya2-theme');
+          if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.dataset.theme = t;
+        } catch (e) { document.documentElement.dataset.theme = 'light'; }
+      })();
+    </script>
+    <style>
+      #ya2-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#06111F;color:#fff;transition:opacity .45s ease,visibility .45s ease;font-family:'Manrope Variable',system-ui,-apple-system,'Segoe UI',sans-serif}
+      #ya2-loader.done{opacity:0;visibility:hidden}
+      #ya2-loader .ld{display:flex;flex-direction:column;align-items:center;gap:18px}
+      #ya2-loader .wm{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1}
+      #ya2-loader .wm sup{font-size:.5em;color:#19C58F;vertical-align:.85em;margin-left:2px}
+      #ya2-loader svg{width:220px;height:28px;overflow:visible}
+      #ya2-loader .rt{stroke:#267DFF;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;animation:ld-draw 1s .1s cubic-bezier(.6,0,.2,1) forwards}
+      #ya2-loader .pt{fill:#19C58F}
+      #ya2-loader .p2{opacity:0;animation:ld-in .2s 1s forwards}
+      #ya2-loader .tg{font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:#93A4B8;opacity:0;animation:ld-in .5s .7s forwards}
+      @keyframes ld-draw{to{stroke-dashoffset:0}}
+      @keyframes ld-in{to{opacity:1}}
+      @media (prefers-reduced-motion:reduce){#ya2-loader *{animation-duration:.01s!important;animation-delay:0s!important}}
+    </style>
+  </head>
+  <body>
+    <div id="ya2-loader" role="status" aria-label="Loading YA² Transport">
+      <div class="ld">
+        <div class="wm">YA<sup>2</sup></div>
+        <svg viewBox="0 0 220 28" aria-hidden="true">
+          <circle class="pt" cx="6" cy="20" r="5" />
+          <path class="rt" d="M6 20 C 60 -4, 110 36, 160 12 S 205 6, 214 8" />
+          <circle class="pt p2" cx="214" cy="8" r="5" />
+        </svg>
+        <div class="tg">Moving India Forward.</div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <noscript>YA² Transport needs JavaScript enabled to calculate prices, book and track shipments.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
