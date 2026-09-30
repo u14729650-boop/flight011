@@ -17,3 +17,10 @@ Replace any of them by saving your own photo with that name here.
 
 To add photos from your browser: open the repository on GitHub, go to `static/img/photos`,
 choose **Add file → Upload files**, drag in your photos with the names above, and commit.
+
+## Current files
+
+- `bg-wing.jpg`, `hero.jpg`: aircraft wing above the clouds, from the ImageNet sample image set
+  (github.com/EliSchwartz/imagenet-sample-images, class "wing"). ImageNet photos were collected from
+  Flickr for research, so their licence for commercial use is not confirmed. Fine for the preview and
+  submission; replace with your own or a licensed photo before using the site commercially.

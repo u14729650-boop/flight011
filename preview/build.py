@@ -46,6 +46,9 @@ for key in keys:
     wash = ui.FALLBACK.get(key, ui.FALLBACK["hero"])
     photos[key] = f"url('{uri}'), {wash}" if uri else wash
 
+# Only real photos take part in the scrolling background; colour washes are left out.
+scenes = [k for k in ui.BACKGROUND_SCENES if photos[k].startswith("url(")] or ui.BACKGROUND_SCENES[:1]
+
 data = {
     "airports": fd.AIRPORTS, "airlines": fd.AIRLINES, "cabins": fd.CABINS,
     "currencies": fd.CURRENCIES, "hubs": fd.HUBS, "help": HELP_CENTRE,
@@ -58,7 +61,7 @@ parts = {
     "/*PREVIEW_CSS*/": read("preview", "preview.css"),
     "/*BG_SCENES*/": "".join(
         f'<div class="bg-photo" style="background-image: {photos[k]}{"; opacity: 1" if i == 0 else ""}"></div>'
-        for i, k in enumerate(ui.BACKGROUND_SCENES)),
+        for i, k in enumerate(scenes)),
     "/*DATA*/": json.dumps(data, ensure_ascii=False),
     "/*WORLD*/": read("preview", "world.json"),
     "/*APP_JS*/": read("preview", "engine.js") + read("preview", "views.js"),
