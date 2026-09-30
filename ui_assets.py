@@ -82,7 +82,16 @@ PHOTOS = {
     "BKK": "1508009603885-50cf7c579365",       # Bangkok temple
     "india": "1524492412937-b28074a5d7da",     # Taj Mahal
     "beach": "1507525428034-b723cf961d3e",     # tropical beach
+    # flight photos for the scrolling site background
+    "bg-wing": "1436491865332-7a61a109cc05",   # wing above the clouds
+    "bg-takeoff": "1474302770737-173ee21bab63",  # aircraft climbing at sunset
+    "bg-window": "1464037866556-6812c9d1c72e",   # view from the cabin window
+    "bg-terminal": "1488085061387-422e29b40080", # traveller in the airport terminal
+    "bg-landing": "1569154941061-e231b4725ef1",  # aircraft on final approach
 }
+
+# Background photos shown one after another as the page scrolls (top to bottom).
+BACKGROUND_SCENES = ["bg-wing", "bg-takeoff", "bg-window", "bg-terminal", "bg-landing"]
 
 # Colour washes shown underneath each photo (and instead of it if it cannot load).
 FALLBACK = {
@@ -94,6 +103,11 @@ FALLBACK = {
     "FCO": "linear-gradient(135deg,#6b3f23,#c9905c)", "IST": "linear-gradient(135deg,#3d2a4f,#a06c8f)",
     "BKK": "linear-gradient(135deg,#6b4a12,#caa048)", "india": "linear-gradient(135deg,#5c3b1e,#d7a86e)",
     "beach": "linear-gradient(135deg,#0f5e7a,#6cc4d6)",
+    "bg-wing": "linear-gradient(180deg,#3a6fb0 0%,#8fb8e6 55%,#dfe9f5 100%)",
+    "bg-takeoff": "linear-gradient(180deg,#2b2350 0%,#b0576a 55%,#f2a65a 100%)",
+    "bg-window": "linear-gradient(180deg,#1d4f86 0%,#6aa2d8 60%,#f1f5fb 100%)",
+    "bg-terminal": "linear-gradient(180deg,#2d3a4f 0%,#6f7f96 60%,#c9d2de 100%)",
+    "bg-landing": "linear-gradient(180deg,#15254a 0%,#4b5f9a 55%,#e3a36a 100%)",
 }
 
 # Airports without their own photo use the closest match by country.

@@ -159,18 +159,21 @@ def assign_seats(flight, cabin, count, preference):
     return seats
 
 
-def background_image():
-    """Site-wide background: the owner's own static/img/background.* if present, else the hero photo."""
+def background_scenes():
+    """Site background photos, shown in turn as the page scrolls. The owner's own
+    static/img/background.* (if present) is used as the first one."""
+    scenes = [ui.photo(key, 2000) for key in ui.BACKGROUND_SCENES]
     for name in ("background.jpg", "background.jpeg", "background.png", "background.webp"):
         if os.path.exists(os.path.join(app.static_folder, "img", name)):
-            return Markup(f"url('{url_for('static', filename='img/' + name)}'), {ui.FALLBACK['hero']}")
-    return ui.photo("hero", 2000)
+            scenes[0] = Markup(f"url('{url_for('static', filename='img/' + name)}'), {ui.FALLBACK['bg-wing']}")
+            break
+    return scenes
 
 
 @app.context_processor
 def inject_globals():
     return {
-        "background": background_image(),
+        "background_scenes": background_scenes(),
         "icon": ui.icon,
         "photo": ui.photo,
         "dest_photo": lambda code, width=900: ui.photo(ui.airport_photo_key(code, fd.AIRPORTS), width),

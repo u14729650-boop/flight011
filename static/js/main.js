@@ -23,9 +23,20 @@
   const cards = track ? $$(".dest-card", track) : [];
   const galleryActive = () => track && matchMedia("(min-width: 861px)").matches;
 
+  const scenes = $$(".bg .bg-photo");
   function frame() {
     const vh = innerHeight, sy = scrollY;
     nav?.classList.toggle("scrolled", sy > 40);
+
+    // site background: flight photos dissolve into one another as the page scrolls
+    if (scenes.length > 1) {
+      const pos = Math.max(0, Math.min(1, sy / Math.max(1, document.documentElement.scrollHeight - vh))) * (scenes.length - 1);
+      scenes.forEach((el, i) => {
+        const d = pos - i, op = Math.max(0, 1 - Math.abs(d));
+        el.style.opacity = op.toFixed(3);
+        if (!reduceMotion && op > 0) el.style.transform = `translate3d(0, ${(-d * 3).toFixed(2)}%, 0) scale(${(1.04 + (1 - op) * 0.08).toFixed(3)})`;
+      });
+    }
     if (reduceMotion) return;
 
     // photo parallax: the image drifts slower than the page

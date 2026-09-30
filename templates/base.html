@@ -19,7 +19,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <div class="bg" aria-hidden="true">
-    <div class="bg-photo" style="background-image: {{ background }}"></div>
+    {% for scene in background_scenes %}<div class="bg-photo" style="background-image: {{ scene }}{{ '; opacity: 1' if loop.first }}"></div>{% endfor %}
     <div class="bg-veil"></div>
   </div>
 

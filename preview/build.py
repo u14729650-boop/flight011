@@ -39,10 +39,10 @@ def embedded_photo(key, width):
     return None
 
 
-keys = set(ui.PHOTOS) | {"hero"}
+keys = set(ui.PHOTOS) | {"hero"}  # includes the background scenes
 photos = {}
 for key in keys:
-    uri = embedded_photo(key, 1800 if key in ("hero", "beach", "india") else 900)
+    uri = embedded_photo(key, 1800 if key in ("hero", "beach", "india") or key.startswith("bg-") else 900)
     wash = ui.FALLBACK.get(key, ui.FALLBACK["hero"])
     photos[key] = f"url('{uri}'), {wash}" if uri else wash
 
@@ -56,7 +56,9 @@ parts = {
     "/*LEAFLET_CSS*/": read("static", "vendor", "leaflet", "leaflet.css"),
     "/*SITE_CSS*/": read("static", "css", "style.css"),
     "/*PREVIEW_CSS*/": read("preview", "preview.css"),
-    "/*BG*/": photos["hero"],
+    "/*BG_SCENES*/": "".join(
+        f'<div class="bg-photo" style="background-image: {photos[k]}{"; opacity: 1" if i == 0 else ""}"></div>'
+        for i, k in enumerate(ui.BACKGROUND_SCENES)),
     "/*DATA*/": json.dumps(data, ensure_ascii=False),
     "/*WORLD*/": read("preview", "world.json"),
     "/*APP_JS*/": read("preview", "engine.js") + read("preview", "views.js"),

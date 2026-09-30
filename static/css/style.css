@@ -93,13 +93,11 @@ img { max-width: 100%; display: block; }
 /* ---------------------------------------------------- background photo (whole site) */
 .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .bg-photo {
-  position: absolute; inset: -4%;
+  position: absolute; inset: -6%;
   background-size: cover; background-position: center;
-  animation: drift 60s ease-in-out infinite alternate;
-  will-change: transform;
+  opacity: 0; will-change: opacity, transform;
 }
 .bg-veil { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
-@keyframes drift { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-2%, -1.5%, 0); } }
 
 /* ---------------------------------------------------- glass panel */
 .panel {
