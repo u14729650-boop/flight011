@@ -14,7 +14,8 @@ authRouter.get('/me', (req, res) => {
 });
 
 authRouter.get('/providers', (_req, res) => {
-  res.json({ google: Boolean(ENV.google.clientId && ENV.google.clientSecret) });
+  // The official Google button only needs the Client ID; the secret is for the older redirect flow.
+  res.json({ google: Boolean(ENV.google.clientId), googleClientId: ENV.google.clientId || null });
 });
 
 authRouter.post(
@@ -132,6 +133,53 @@ authRouter.post(
 /* ---------------------------- Google OAuth 2.0 ---------------------------- */
 
 const GOOGLE_STATE_COOKIE = 'ya2_oauth_state';
+type GoogleProfile = { sub: string; email: string; name?: string };
+
+/** Signs in the Google account: same Google ID or same email → existing user, otherwise a new one. */
+async function findOrCreateGoogleUser(info: GoogleProfile) {
+  let user = (await db().users.findByGoogleId(info.sub)) ?? (await db().users.findByEmail(info.email.toLowerCase()));
+  if (user && !user.googleId) user = await db().users.update(user.id, { googleId: info.sub });
+  if (user) return user;
+  const now = new Date().toISOString();
+  return db().users.create({
+    id: newId(),
+    name: info.name ?? info.email.split('@')[0],
+    email: info.email.toLowerCase(),
+    phone: null,
+    passwordHash: null,
+    googleId: info.sub,
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
+/**
+ * Official "Sign in with Google" button (Google Identity Services): the browser
+ * sends Google's signed ID token, and Google's tokeninfo endpoint verifies it.
+ */
+authRouter.post(
+  '/google/token',
+  limiter,
+  route(async (req, res) => {
+    if (!ENV.google.clientId) throw new HttpError(503, 'Google sign-in is not configured yet.');
+    const credential = str(req.body.credential, 4096);
+    if (!credential) throw new HttpError(400, 'Missing Google credential.');
+    const r = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`).catch(() => {
+      throw new HttpError(502, 'Could not reach Google. Please try again.');
+    });
+    if (!r.ok) throw new HttpError(401, 'Google sign-in did not complete. Please try again.');
+    const t = (await r.json()) as { aud?: string; iss?: string; sub?: string; email?: string; email_verified?: string | boolean; name?: string; exp?: string };
+    const validIssuer = t.iss === 'accounts.google.com' || t.iss === 'https://accounts.google.com';
+    if (t.aud !== ENV.google.clientId || !validIssuer || !t.sub || !t.email || Number(t.exp) * 1000 < Date.now()) {
+      throw new HttpError(401, 'Google sign-in did not complete. Please try again.');
+    }
+    if (t.email_verified !== true && t.email_verified !== 'true') throw new HttpError(401, 'Your Google email address is not verified.');
+    const user = await findOrCreateGoogleUser({ sub: t.sub, email: t.email, name: t.name });
+    await startSession(res, user.id);
+    res.json({ user: toPublicUser(user) });
+  }),
+);
+
 const googleRedirectUri = () => `${ENV.appUrl}/api/auth/google/callback`;
 
 authRouter.get('/google', (req, res) => {
@@ -179,22 +227,8 @@ authRouter.get(
     const info = (await infoRes.json()) as { sub: string; email: string; email_verified: boolean; name?: string };
     if (!info.email_verified) return res.redirect('/login?error=google_unverified');
 
-    let user = (await db().users.findByGoogleId(info.sub)) ?? (await db().users.findByEmail(info.email));
-    if (user && !user.googleId) user = await db().users.update(user.id, { googleId: info.sub });
-    if (!user) {
-      const now = new Date().toISOString();
-      user = await db().users.create({
-        id: newId(),
-        name: info.name ?? info.email.split('@')[0],
-        email: info.email.toLowerCase(),
-        phone: null,
-        passwordHash: null,
-        googleId: info.sub,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-    await startSession(res, user!.id);
+    const user = await findOrCreateGoogleUser(info);
+    await startSession(res, user.id);
     res.redirect(next.startsWith('/') ? next : '/dashboard');
   }),
 );

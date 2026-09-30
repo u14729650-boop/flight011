@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/brand/Logo';
 import { IndiaMap } from '../components/map/IndiaMap';
@@ -9,6 +9,7 @@ import { CheckCircleIcon, CheckIcon, GoogleIcon, LockIcon, MailIcon, UserIcon, P
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { cityByName } from '../data/cities';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { api, ApiError } from '../lib/api';
 import type { PublicUser } from '../lib/apiTypes';
@@ -72,25 +73,102 @@ function AuthShell({ title, subtitle, children }: { title: ReactNode; subtitle: 
   );
 }
 
+type GoogleId = {
+  initialize: (o: { client_id: string; callback: (r: { credential: string }) => void; ux_mode?: string; context?: string }) => void;
+  renderButton: (el: HTMLElement, o: Record<string, unknown>) => void;
+};
+declare global {
+  interface Window {
+    google?: { accounts: { id: GoogleId } };
+  }
+}
+
+let gsiScript: Promise<void> | null = null;
+/** Loads Google Identity Services (the official "Sign in with Google" button) once. */
+function loadGoogleScript(): Promise<void> {
+  gsiScript ??= new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => {
+      gsiScript = null;
+      reject(new Error('Google script failed to load'));
+    };
+    document.head.appendChild(s);
+  });
+  return gsiScript;
+}
+
+/** Google's official sign-in button: the visitor picks their Google account in Google's own window. */
 function GoogleButton({ next }: { next: string }) {
-  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [clientId, setClientId] = useState<string | null | undefined>(undefined);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [notice, setNotice] = useState(false);
+  const slot = useRef<HTMLDivElement>(null);
+  const { setUser } = useAuth();
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+
   useEffect(() => {
     api
-      .get<{ google: boolean }>('/auth/providers')
-      .then((r) => setEnabled(r.google))
-      .catch(() => setEnabled(false));
+      .get<{ google: boolean; googleClientId?: string | null }>('/auth/providers')
+      .then((r) => setClientId(r.googleClientId ?? null))
+      .catch(() => setClientId(null));
   }, []);
+
+  useEffect(() => {
+    if (!clientId || !slot.current) return;
+    let cancelled = false;
+    loadGoogleScript()
+      .then(() => {
+        const gid = window.google?.accounts.id;
+        if (cancelled || !gid || !slot.current) return;
+        gid.initialize({
+          client_id: clientId,
+          context: 'signin',
+          callback: async ({ credential }) => {
+            setFailed(null);
+            try {
+              const { user } = await api.post<{ user: PublicUser }>('/auth/google/token', { credential });
+              setUser(user);
+              navigate(next, { replace: true });
+            } catch (e) {
+              setFailed(e instanceof ApiError ? e.message : 'Google sign-in did not complete. Please try again.');
+            }
+          },
+        });
+        slot.current.innerHTML = '';
+        gid.renderButton(slot.current, {
+          type: 'standard',
+          theme: theme === 'dark' ? 'filled_black' : 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          logo_alignment: 'center',
+          width: Math.min(400, Math.round(slot.current.getBoundingClientRect().width) || 360),
+        });
+      })
+      .catch(() => !cancelled && setFailed('Could not reach Google. Check your internet connection and try again.'));
+    return () => {
+      cancelled = true;
+    };
+  }, [clientId, theme, next, navigate, setUser]);
+
+  if (clientId) {
+    return (
+      <>
+        <div ref={slot} className="auth__gsi" />
+        {failed && <FormAlert>{failed}</FormAlert>}
+      </>
+    );
+  }
   return (
     <>
-      <a
-        href={`/api/auth/google?next=${encodeURIComponent(next)}`}
-        className="btn btn--secondary btn--block auth__google"
-        aria-disabled={enabled === false || undefined}
-        onClick={(e) => enabled === false && e.preventDefault()}
-      >
+      <button type="button" className="btn btn--secondary btn--block auth__google" onClick={() => setNotice(true)} disabled={clientId === undefined}>
         <GoogleIcon width={20} height={20} /> Continue with Google
-      </a>
-      {enabled === false && <p className="auth__hint">Google sign-in will be available once it is configured for YA². Use email for now.</p>}
+      </button>
+      {notice && <p className="auth__hint">Google sign-in will be switched on once YA²'s Google Client ID is added. Use email for now.</p>}
     </>
   );
 }

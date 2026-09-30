@@ -42,7 +42,7 @@ or the company profile instead. Phone opens the dialler (`tel:`).
   (the official Survey of India outline, all 36 States/UTs, CC BY 2.5 IN). Cities are placed with the same projection.
 - **API:** Express (`server/`), run with `tsx`.
   - Auth: passwords hashed with scrypt, server-side sessions in an httpOnly SameSite cookie, rate limiting,
-    password reset tokens (hashed, 30 min), optional Google OAuth 2.0.
+    password reset tokens (hashed, 30 min), Google sign-in with Google's official button (ID token verified by Google).
   - Prices are always recomputed on the server; the browser never sets the amount.
   - Storage goes through the `Store` interface (`server/db/types.ts`).
 
@@ -132,7 +132,7 @@ script loads automatically). Stripe has a stub in `server/payments/index.ts`.
 
 - An email provider for password-reset emails (`server/lib/mail.ts`). In development the reset link is printed in the
   API log and shown on screen.
-- Google OAuth credentials, a payment gateway, and the real Instagram account.
+- A Google Client ID (`GOOGLE_CLIENT_ID`, see `.env.example`), a payment gateway, and the real Instagram account.
 - Photography: every photo slot currently shows a branded 3D illustration. Add licensed photos in `src/config/media.ts`.
 - Stats, testimonials and the 4.8 rating are sample values and are marked as such on the site
   (`SHOW_SAMPLE_NOTICES` in `site.ts`).
