@@ -3,3 +3,4 @@ Allow: /
 Disallow: /dashboard
 Disallow: /profile
 Disallow: /payment
+Disallow: /admin

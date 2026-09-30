@@ -27,6 +27,8 @@ interface Db {
   addresses: (Address & { userId: string })[];
   orders: Record<string, string>;
   seq: number;
+  contact?: { id: string; name: string; email: string; phone: string; subject: string; message: string; created_at: string }[];
+  payments?: { order_id: string; amount: number; method: string; status: string; provider: string; created_at: string; paid_at: string; shipment_id: string }[];
 }
 
 const KEY = 'ya2-preview-db';
@@ -83,6 +85,33 @@ function party(raw: Record<string, string> | undefined, prefix: string, fields: 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Body = any;
+
+let adminSignedIn = false;
+
+function adminTables(d: Db) {
+  const t = (label: string, columns: string[], rows: Record<string, unknown>[]) => ({ label, columns, rows });
+  return {
+    contact_messages: t('Enquiries', ['created_at', 'name', 'email', 'phone', 'subject', 'message'], [...(d.contact ?? [])].reverse()),
+    users: t('Users', ['created_at', 'name', 'email', 'phone', 'id'], d.users.map((u) => ({ created_at: u.createdAt, name: u.name, email: u.email, phone: u.phone, id: u.id })).reverse()),
+    shipments: t(
+      'Shipments',
+      ['created_at', 'booking_id', 'tracking_id', 'status', 'mode', 'weight_kg', 'price', 'sender_name', 'sender_city', 'receiver_name', 'receiver_city'],
+      d.shipments
+        .map((s) => ({
+          created_at: s.createdAt, booking_id: s.bookingId, tracking_id: s.trackingId, status: s.status, mode: s.mode, weight_kg: s.weightKg, price: s.price,
+          sender_name: s.sender.name, sender_city: s.sender.city, receiver_name: s.receiver.name, receiver_city: s.receiver.city,
+        }))
+        .reverse(),
+    ),
+    payments: t('Payments', ['created_at', 'order_id', 'amount', 'method', 'status', 'provider'], [...(d.payments ?? [])].reverse()),
+    quotes: t(
+      'Saved quotes',
+      ['created_at', 'mode', 'pickup_state', 'destination_state', 'weight_kg', 'total', 'transit_label'],
+      d.quotes.map((q) => ({ created_at: q.createdAt, mode: q.mode, pickup_state: q.pickupState, destination_state: q.destinationState, weight_kg: q.weightKg, total: q.total, transit_label: q.transitLabel })).reverse(),
+    ),
+    addresses: t('Addresses', ['created_at', 'label', 'name', 'phone', 'line1', 'city', 'state', 'pincode'], d.addresses.map((a) => ({ ...a, created_at: a.createdAt })).reverse()),
+  } as Record<string, { label: string; columns: string[]; rows: Record<string, unknown>[] }>;
+}
 
 async function handle(method: string, url: string, b: Body): Promise<unknown> {
   const d = db();
@@ -267,6 +296,7 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
         { stage: 'PICKUP_SCHEDULED', at: new Date(now.getTime() + 60_000).toISOString(), location: from, note: 'Pickup planned for the next business day, 10 AM – 6 PM' },
       ],
     });
+    (d.payments ??= []).push({ order_id: b.orderId, amount: s.price, method: b.method, status: 'PAID', provider: 'demo', created_at: now.toISOString(), paid_at: now.toISOString(), shipment_id: s.id });
     return {
       receipt: { paymentId: `demo_pay_${id().slice(0, 12)}`, provider: 'demo', method: b.method, amount: s.price, paidAt: now.toISOString(), isDemo: true, shipment: strip(s) },
     };
@@ -293,7 +323,44 @@ async function handle(method: string, url: string, b: Body): Promise<unknown> {
     };
     return { tracking };
   }
-  if (path === '/contact') return { ok: true, reference: `MSG-${id().slice(0, 8).toUpperCase()}` };
+  if (path === '/contact') {
+    const m = { id: id(), name: String(b.name ?? ''), email: String(b.email ?? ''), phone: String(b.phone ?? ''), subject: String(b.subject ?? ''), message: String(b.message ?? ''), created_at: now.toISOString() };
+    (d.contact ??= []).push(m);
+    return { ok: true, reference: `MSG-${m.id.slice(0, 8).toUpperCase()}` };
+  }
+
+  // Admin console (preview: data from this browser, password shown on the login screen)
+  if (path === '/admin/status') return { enabled: true, signedIn: adminSignedIn, database: 'browser (preview)' };
+  if (path === '/admin/login') {
+    if (b.password !== 'ya2-demo') throw new PreviewError(401, 'Incorrect admin password.');
+    adminSignedIn = true;
+    return { ok: true };
+  }
+  if (path === '/admin/logout') {
+    adminSignedIn = false;
+    return { ok: true };
+  }
+  if (path.startsWith('/admin/')) {
+    if (!adminSignedIn) throw new PreviewError(401, 'Admin login required.');
+    const tables = adminTables(d);
+    if (path === '/admin/overview') {
+      const byStatus = Object.entries(
+        d.shipments.reduce<Record<string, number>>((acc, s) => ((acc[s.status] = (acc[s.status] ?? 0) + 1), acc), {}),
+      ).map(([status, n]) => ({ status, n }));
+      return {
+        counts: Object.fromEntries(Object.entries(tables).map(([k, t]) => [k, t.rows.length])),
+        revenue: (d.payments ?? []).reduce((sum, p) => sum + p.amount, 0),
+        byStatus,
+        tables: Object.fromEntries(Object.entries(tables).map(([k, t]) => [k, t.label])),
+      };
+    }
+    if (path.startsWith('/admin/table/')) {
+      const t = tables[path.split('/')[3]];
+      if (!t) throw new PreviewError(404, 'Unknown table.');
+      return t;
+    }
+    if (path === '/admin/sql') throw new PreviewError(400, 'The SQL console runs against the SQLite database on the live server. The preview keeps data in your browser instead.');
+  }
   throw new PreviewError(404, 'Not found.');
 }
 

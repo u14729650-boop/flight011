@@ -20,6 +20,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage'));
 const BookPage = lazy(() => import('./pages/BookPage'));
 const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 const PageFallback = () => (
   <div className="container section">
@@ -63,6 +64,7 @@ export function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/admin" element={<S><AdminPage /></S>} />
             </Routes>
           </Router>
         </AuthProvider>

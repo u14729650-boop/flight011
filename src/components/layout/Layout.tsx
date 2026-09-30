@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { WhatsAppFloat } from '../ui/Social';
 import { IS_PREVIEW } from '../../lib/api';
 import { Footer } from './Footer';
@@ -7,6 +7,19 @@ import { Header } from './Header';
 
 export function Layout() {
   const { pathname, hash } = useLocation();
+  const navigate = useNavigate();
+
+  // Hidden shortcut to the staff console: Ctrl + Shift + A (not linked anywhere on the site).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        navigate('/admin');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navigate]);
 
   useEffect(() => {
     if (hash) {

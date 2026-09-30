@@ -1,0 +1,27 @@
+# Render Blueprint — deploys the full YA² site (web + API + SQLite database).
+# Render dashboard → New → Blueprint → pick this repository/branch → Apply.
+services:
+  - type: web
+    name: ya2-transport
+    runtime: node
+    plan: starter            # a persistent disk needs a paid instance; see README
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DB_CLIENT
+        value: sqlite
+      - key: SQLITE_FILE
+        value: /var/data/ya2.db
+      - key: ADMIN_PASSWORD
+        generateValue: true   # read it under Environment in the Render dashboard
+      - key: PAYMENT_PROVIDER
+        value: demo
+      - key: APP_URL
+        sync: false           # set to the public URL Render gives you, e.g. https://ya2-transport.onrender.com
+    disk:
+      name: ya2-data
+      mountPath: /var/data
+      sizeGB: 1

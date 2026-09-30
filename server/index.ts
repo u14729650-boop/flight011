@@ -8,6 +8,7 @@ import { HttpError } from './lib/http';
 import { authRouter } from './routes/auth';
 import { accountRouter } from './routes/account';
 import { shipmentsRouter } from './routes/shipments';
+import { adminRouter } from './routes/admin';
 
 const app = express();
 app.disable('x-powered-by');
@@ -34,6 +35,7 @@ api.get('/health', (_req, res) => res.json({ ok: true, db: ENV.dbClient }));
 api.use('/auth', authRouter);
 api.use(accountRouter);
 api.use(shipmentsRouter);
+api.use(adminRouter);
 api.use((_req, _res, next) => next(new HttpError(404, 'Not found.')));
 app.use('/api', api);
 

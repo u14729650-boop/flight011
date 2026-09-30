@@ -63,6 +63,28 @@ SQLite extension). Password hashes and session tokens are one-way hashes and are
 
 Back up the database by copying the `.db` file while the API is stopped.
 
+## Admin console (hidden)
+
+`/admin` is not linked anywhere and is excluded from search engines. Open it directly or press
+**Ctrl + Shift + A** on any page. It shows every enquiry (contact form), user, shipment, payment, saved quote,
+address and tracking event, with search and CSV download, plus a **read-only SQL console** (SELECT only, on a
+read-only database connection; password hashes and tokens are always masked).
+
+Sign-in uses `ADMIN_PASSWORD`, separate from customer accounts. In development, if it is not set, a temporary
+password is printed in the API log. In production the console stays disabled until it is set.
+
+## Deploying (Render)
+
+`render.yaml` deploys the whole site with its SQLite database on a persistent disk:
+
+1. Push this branch to GitHub (done).
+2. On https://render.com: **New → Blueprint**, choose this repository and branch, then **Apply**.
+3. When it is live, set `APP_URL` to the URL Render gives you and redeploy.
+4. Read the generated `ADMIN_PASSWORD` under the service's **Environment** tab.
+
+A persistent disk needs a paid instance (Render *Starter*). On a free instance remove the `disk` block: the site
+works, but the database is wiped on every redeploy or restart, which is fine for a one-day demo.
+
 ## Connecting Oracle Database
 
 1. Run `server/db/schema.oracle.sql` in your schema.
