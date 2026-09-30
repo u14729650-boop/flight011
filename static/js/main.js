@@ -42,7 +42,7 @@
         const d = pos - i, op = scenes.length > 1 ? Math.max(0, 1 - Math.abs(d)) : 1;
         el.style.opacity = op.toFixed(3);
         if (!reduceMotion && op > 0) {
-          const ty = -prog * 14, tx = -prog * 8 + Math.sin(prog * Math.PI * 2) * 2, sc = 1.02 + prog * 0.22;
+          const ty = -prog * 5, tx = -prog * 3 + Math.sin(prog * Math.PI * 2) * 1, sc = 1 + prog * 0.08;
           el.style.transform = `translate3d(${tx.toFixed(2)}%, ${ty.toFixed(2)}%, 0) scale(${sc.toFixed(3)})`;
         }
       });
@@ -69,7 +69,7 @@
       const host = el.parentElement.getBoundingClientRect();
       if (host.bottom < 0 || host.top > vh) continue;
       const k = parseFloat(el.dataset.parallax);
-      el.style.transform = `translate3d(0, ${(-host.top * k).toFixed(1)}px, 0) scale(${(1.06 + Math.max(0, -host.top) / vh * 0.18).toFixed(3)})`;
+      el.style.transform = `translate3d(0, ${(-host.top * k).toFixed(1)}px, 0) scale(${(1.02 + Math.max(0, -host.top) / vh * 0.06).toFixed(3)})`;
     }
 
     // gentle 3-D reveal: panels settle flat as they reach the middle of the screen

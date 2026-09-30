@@ -93,14 +93,14 @@ img { max-width: 100%; display: block; }
 /* ---------------------------------------------------- background photo (whole site) */
 .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .bg-photo {
-  position: absolute; inset: -18%;
+  position: absolute; inset: -7%;
   background-size: cover; background-position: center;
   opacity: 0; will-change: opacity, transform;
   /* gentle drift of its own; scrolling adds a much bigger move (see main.js) */
   animation: cruise 26s ease-in-out infinite alternate;
 }
-@keyframes cruise { from { translate: 0 0; scale: 1; } to { translate: -2.5% -1.5%; scale: 1.05; } }
-.bg-veil { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
+@keyframes cruise { from { translate: 0 0; scale: 1; } to { translate: -1.5% -1%; scale: 1.02; } }
+.bg-veil { position: absolute; inset: 0; background: var(--veil); }
 
 /* ---------------------------------------------------- glass panel */
 .panel {
@@ -209,13 +209,16 @@ main { min-height: 60vh; }
 
 /* ---------------------------------------------------- hero */
 .hero { position: relative; min-height: clamp(640px, 92vh, 860px); color: #fff; overflow: hidden; display: flex; align-items: flex-end; }
-.hero-media { position: absolute; inset: -14% 0 -14% 0; animation: cruise 22s ease-in-out infinite alternate; background-size: cover; background-position: center 40%; will-change: transform; }
+.hero-media { position: absolute; inset: -7% 0 -7% 0; animation: cruise 22s ease-in-out infinite alternate; background-size: cover; background-position: center 40%; will-change: transform; }
 /* dusk grade over the hero photo: deep navy sky with a warm glow low on the horizon */
 .hero-veil { position: absolute; inset: 0;
   background: radial-gradient(ellipse 70% 45% at 78% 88%, rgba(255, 138, 64, .38), transparent 70%),
               radial-gradient(ellipse 60% 40% at 15% 100%, rgba(255, 110, 70, .18), transparent 70%),
               linear-gradient(180deg, rgba(5, 13, 32, .78) 0%, rgba(8, 18, 42, .45) 35%, rgba(26, 22, 44, .40) 65%, rgba(5, 13, 32, .86) 100%); }
 .hero-inner { position: relative; width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding-block: 120px 56px; }
+.hero::after, .bg::after, .page-head::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity: .22; mix-blend-mode: overlay; }
+.hero-inner { z-index: 2; }
 .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2rem; align-items: center; margin-bottom: 2.4rem; }
 .hero-card { padding: clamp(1.6rem, 3vw, 2.6rem); border-radius: 24px; background: rgba(8, 18, 40, .42);
   border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
