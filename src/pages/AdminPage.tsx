@@ -121,8 +121,21 @@ const PRESETS = [
   { label: 'New users per day', sql: 'SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS new_users FROM users GROUP BY day ORDER BY day DESC' },
 ];
 
-function SqlConsole() {
-  const [sql, setSql] = useState(PRESETS[1].sql);
+/** The same questions in Oracle SQL (tables carry a ya2_ prefix; sender/receiver are JSON). */
+const ORACLE_PRESETS = [
+  { label: 'Latest enquiries', sql: 'SELECT created_at, name, email, subject, message FROM ya2_contact_messages ORDER BY created_at DESC FETCH FIRST 20 ROWS ONLY' },
+  {
+    label: 'Shipments with customer',
+    sql: "SELECT s.tracking_id, u.name AS customer,\n       JSON_VALUE(s.sender_json, '$.city') || ' → ' || JSON_VALUE(s.receiver_json, '$.city') AS route,\n       s.mode_code AS \"MODE\", s.weight_kg, s.price, s.status\nFROM ya2_shipments s JOIN ya2_users u ON u.id = s.user_id\nORDER BY s.created_at DESC",
+  },
+  { label: 'Revenue by mode', sql: "SELECT s.mode_code AS \"MODE\", COUNT(*) AS bookings, SUM(p.amount) AS revenue\nFROM ya2_payments p JOIN ya2_shipments s ON s.id = p.shipment_id\nWHERE p.status = 'PAID'\nGROUP BY s.mode_code" },
+  { label: 'Top routes', sql: "SELECT pickup_state || ' → ' || destination_state AS route, COUNT(*) AS shipments, ROUND(AVG(price)) AS avg_price\nFROM ya2_shipments GROUP BY pickup_state, destination_state ORDER BY shipments DESC FETCH FIRST 10 ROWS ONLY" },
+  { label: 'New users per day', sql: "SELECT TO_CHAR(created_at, 'YYYY-MM-DD') AS day, COUNT(*) AS new_users FROM ya2_users GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD') ORDER BY day DESC" },
+];
+
+function SqlConsole({ database }: { database: string }) {
+  const presets = database === 'oracle' ? ORACLE_PRESETS : PRESETS;
+  const [sql, setSql] = useState(presets[1].sql);
   const [result, setResult] = useState<(Grid & { ms: number; truncated: boolean }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -143,7 +156,7 @@ function SqlConsole() {
   return (
     <div className="adm-sql">
       <div className="adm-sql__presets">
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <button key={p.label} type="button" className="badge" onClick={() => setSql(p.sql)}>
             {p.label}
           </button>
@@ -278,7 +291,7 @@ export default function AdminPage() {
       <header className="adm__top">
         <Logo size={34} />
         <span className="adm__title">Admin console</span>
-        <span className="badge badge--emerald badge--dot">{status.database === 'sqlite' ? 'SQLite database' : status.database}</span>
+        <span className="badge badge--emerald badge--dot">{status.database === 'oracle' ? 'Oracle Database' : status.database === 'sqlite' ? 'SQLite database' : status.database}</span>
         <div className="adm__actions">
           <ThemeToggle />
           <Link to="/" className="btn btn--ghost btn--sm">
@@ -341,7 +354,7 @@ export default function AdminPage() {
             <p className="xs muted">Tip: press Ctrl + Shift + A anywhere on the site to open this console.</p>
           </div>
         )}
-        {tab === 'sql' && <SqlConsole />}
+        {tab === 'sql' && <SqlConsole database={status.database} />}
         {tab !== 'overview' && tab !== 'sql' && (grid ? <DataTable grid={grid} name={tab} /> : <div className="skeleton" style={{ height: 320 }} />)}
       </main>
     </div>

@@ -1,6 +1,7 @@
 -- ============================================================================
 -- YA² Transport — Oracle Database schema (19c+ / Autonomous Database)
--- Run once as the application schema owner, then start the API with
+-- The API runs this automatically on first start if the tables are missing
+-- (server/db/oracleStore.ts). To run it by hand instead, run it as the schema owner. Start the API with
 --   DB_CLIENT=oracle ORACLE_USER=… ORACLE_PASSWORD=… ORACLE_CONNECT_STRING=…
 -- ============================================================================
 

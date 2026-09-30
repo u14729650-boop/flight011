@@ -73,26 +73,52 @@ read-only database connection; password hashes and tokens are always masked).
 Sign-in uses `ADMIN_PASSWORD`, separate from customer accounts. In development, if it is not set, a temporary
 password is printed in the API log. In production the console stays disabled until it is set.
 
-## Deploying (Render)
+## Oracle Database
 
-`render.yaml` deploys the whole site with its SQLite database on a persistent disk:
+Set `DB_CLIENT=oracle` and the `ORACLE_*` variables, then start the API. On first start it creates all tables from
+`server/db/schema.oracle.sql` by itself (tables are prefixed `ya2_`), so an empty Oracle schema is all you need.
+Tested end to end against Oracle Database 23ai Free: register, login, addresses, saved quotes, booking, payment,
+tracking, password change/reset, contact form and the admin console.
 
-1. Push this branch to GitHub (done).
-2. On https://render.com: **New → Blueprint**, choose this repository and branch, then **Apply**.
-3. When it is live, set `APP_URL` to the URL Render gives you and redeploy.
-4. Read the generated `ADMIN_PASSWORD` under the service's **Environment** tab.
+```bash
+# .env
+DB_CLIENT=oracle
+ORACLE_USER=ya2
+ORACLE_PASSWORD=your-password
+ORACLE_CONNECT_STRING=localhost:1521/FREEPDB1
+```
 
-A persistent disk needs a paid instance (Render *Starter*). On a free instance remove the `disk` block: the site
-works, but the database is wiped on every redeploy or restart, which is fine for a one-day demo.
+Try it locally with Docker:
 
-## Connecting Oracle Database
+```bash
+docker run -d --name ya2-oracle -p 1521:1521 -e ORACLE_PASSWORD=SysPass123 \
+  -e APP_USER=ya2 -e APP_USER_PASSWORD=your-password gvenzl/oracle-free:23-slim-faststart
+npm run dev          # wait for "DATABASE IS READY TO USE!" in `docker logs ya2-oracle` first
+npm run db           # tables and row counts in Oracle
+npm run db -- "SELECT name, email, created_at FROM ya2_users"
+```
 
-1. Run `server/db/schema.oracle.sql` in your schema.
-2. Set `DB_CLIENT=oracle` and the `ORACLE_*` variables in `.env`.
-3. Restart the API. `server/db/oracleStore.ts` implements the full `Store` interface using `node-oracledb` (thin mode).
+The hidden admin console (`/admin`) reads Oracle too, inside a READ ONLY transaction, and its example queries switch
+to Oracle SQL.
 
-The Oracle adapter was written against the schema but hasn't been run against a live database yet. Smoke-test
-register → book → pay → track before going live.
+## Deploying with Oracle (Render + Oracle Cloud Free Tier)
+
+1. **Create the database.** On https://cloud.oracle.com (Always Free): **Autonomous Database → Create** (Transaction
+   Processing). Set an ADMIN password.
+2. **Allow TLS without a wallet.** On the database page, **Network → Access control list → Edit**: allow
+   `0.0.0.0/0` (or Render's outbound IPs), then set **Mutual TLS (mTLS) authentication** to *Not required*.
+3. **Copy the connection string.** **Database connection → Connection strings**, TLS authentication: *TLS*, and copy
+   the `…_low` value (it starts with `(description=`).
+4. **Deploy.** On https://render.com: **New → Blueprint**, choose this repository and branch, then fill in the
+   values it asks for: `ORACLE_USER` = `ADMIN` (or a user you created), `ORACLE_PASSWORD`, `ORACLE_CONNECT_STRING`
+   = the string from step 3, and `APP_URL`. Click **Apply**.
+5. Open the site and register an account. The rows appear in Oracle (**Database Actions → SQL**:
+   `SELECT * FROM ya2_users;`). The generated `ADMIN_PASSWORD` for `/admin` is under the service's **Environment** tab.
+
+Using a wallet instead: unzip it on the server and set `ORACLE_WALLET_DIR` and `ORACLE_WALLET_PASSWORD`.
+
+To deploy with SQLite instead, set `DB_CLIENT=sqlite` and `SQLITE_FILE=/var/data/ya2.db` and add a persistent disk
+mounted at `/var/data` (needs a paid Render instance).
 
 ## Payments
 

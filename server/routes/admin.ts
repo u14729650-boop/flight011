@@ -4,8 +4,8 @@
  * - Protected by ADMIN_PASSWORD (separate from customer accounts). If it is
  *   not set outside production, a random one is generated and printed in the
  *   server log at startup; in production the console is disabled until set.
- * - Browsing and the SQL console read the SQLite database through a separate
- *   READ-ONLY connection, so nothing here can change data.
+ * - Browsing and the SQL console only read: SQLite through a separate
+ *   READ-ONLY connection, Oracle inside a READ ONLY transaction.
  * - Password hashes and session/reset tokens are never returned.
  */
 import crypto from 'node:crypto';
@@ -61,10 +61,35 @@ const TABLES: Record<string, { label: string; columns: string[]; order: string }
   shipment_events: { label: 'Tracking events', columns: ['event_at', 'shipment_id', 'stage', 'location', 'note'], order: 'event_at DESC' },
 };
 
-function readonlyDb(): DatabaseSync {
-  if (ENV.dbClient !== 'sqlite') throw new HttpError(501, 'The admin console reads the SQLite database. Set DB_CLIENT=sqlite.');
+type Result = { columns: string[]; rows: Record<string, unknown>[] };
+
+/** Runs one read-only query against whichever SQL database the site uses. */
+async function read(sql: string, maxRows = 1000): Promise<Result> {
+  if (ENV.dbClient === 'oracle') {
+    const { oracleReadOnly } = await import('../db/oracleStore');
+    return oracleReadOnly(sql, maxRows);
+  }
+  if (ENV.dbClient !== 'sqlite') throw new HttpError(501, 'The admin console needs DB_CLIENT=sqlite or DB_CLIENT=oracle.');
   if (!fs.existsSync(ENV.sqliteFile)) throw new HttpError(404, 'The database has not been created yet.');
-  return new DatabaseSync(ENV.sqliteFile, { readOnly: true });
+  const db = new DatabaseSync(ENV.sqliteFile, { readOnly: true });
+  try {
+    const stmt = db.prepare(sql);
+    const rows = (stmt.all() as Record<string, SQLInputValue>[]).slice(0, maxRows);
+    return { columns: rows[0] ? Object.keys(rows[0]) : stmt.columns().map((c) => c.name), rows };
+  } finally {
+    db.close();
+  }
+}
+
+/** Table name as stored: Oracle tables carry a ya2_ prefix. */
+const tableName = (t: string) => (ENV.dbClient === 'oracle' ? `ya2_${t}` : t);
+
+/** Column as selected: Oracle stores mode as mode_code and the sender/receiver as JSON. */
+function column(table: string, col: string): string {
+  if (ENV.dbClient !== 'oracle') return col;
+  if (col === 'mode') return 'mode_code AS "MODE"';
+  const party = table === 'shipments' && /^(sender|receiver)_(.+)$/.exec(col);
+  return party ? `JSON_VALUE(${party[1]}_json, '$.${party[2]}') AS ${col}` : col;
 }
 
 /** Secret values are masked by column name and by shape, so an alias (`SELECT password_hash AS x`) can't reveal them. */
@@ -106,17 +131,11 @@ adminRouter.get(
   '/admin/overview',
   requireAdmin,
   route(async (_req, res) => {
-    const db = readonlyDb();
-    try {
-      const counts = Object.fromEntries(
-        Object.keys(TABLES).map((t) => [t, Number((db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n)]),
-      );
-      const revenue = Number((db.prepare("SELECT COALESCE(SUM(amount), 0) AS s FROM payments WHERE status = 'PAID'").get() as { s: number }).s);
-      const byStatus = db.prepare('SELECT status, COUNT(*) AS n FROM shipments GROUP BY status ORDER BY n DESC').all();
-      res.json({ counts, revenue, byStatus, tables: Object.fromEntries(Object.entries(TABLES).map(([k, v]) => [k, v.label])) });
-    } finally {
-      db.close();
-    }
+    const counts: Record<string, number> = {};
+    for (const t of Object.keys(TABLES)) counts[t] = Number((await read(`SELECT COUNT(*) AS n FROM ${tableName(t)}`)).rows[0]?.n ?? 0);
+    const revenue = Number((await read(`SELECT COALESCE(SUM(amount), 0) AS s FROM ${tableName('payments')} WHERE status = 'PAID'`)).rows[0]?.s ?? 0);
+    const byStatus = (await read(`SELECT status, COUNT(*) AS n FROM ${tableName('shipments')} GROUP BY status ORDER BY n DESC`)).rows;
+    res.json({ counts, revenue, byStatus, database: ENV.dbClient, tables: Object.fromEntries(Object.entries(TABLES).map(([k, v]) => [k, v.label])) });
   }),
 );
 
@@ -127,13 +146,10 @@ adminRouter.get(
     const name = String(req.params.name);
     const def = TABLES[name];
     if (!def) throw new HttpError(404, 'Unknown table.');
-    const db = readonlyDb();
-    try {
-      const rows = db.prepare(`SELECT ${def.columns.join(', ')} FROM ${name} ORDER BY ${def.order} LIMIT 1000`).all() as Record<string, unknown>[];
-      res.json({ table: name, label: def.label, columns: def.columns, rows: clean(rows) });
-    } finally {
-      db.close();
-    }
+    const cols = def.columns.map((c) => column(name, c)).join(', ');
+    const limit = ENV.dbClient === 'oracle' ? 'FETCH FIRST 1000 ROWS ONLY' : 'LIMIT 1000';
+    const { rows } = await read(`SELECT ${cols} FROM ${tableName(name)} ORDER BY ${def.order} ${limit}`);
+    res.json({ table: name, label: def.label, columns: def.columns, rows: clean(rows) });
   }),
 );
 
@@ -144,18 +160,13 @@ adminRouter.post(
     const sql = str(req.body.sql, 5000).replace(/;\s*$/, '');
     if (!/^\s*(select|with)\b/i.test(sql)) throw new HttpError(400, 'Only SELECT queries are allowed in the console.');
     if (sql.includes(';')) throw new HttpError(400, 'Run one query at a time.');
-    const db = readonlyDb();
     try {
       const started = performance.now();
-      const stmt = db.prepare(sql);
-      const rows = (stmt.all() as Record<string, SQLInputValue>[]).slice(0, 500);
-      const columns = rows[0] ? Object.keys(rows[0]) : stmt.columns().map((c) => c.name);
+      const { columns, rows } = await read(sql, 500);
       res.json({ columns, rows: clean(rows), ms: Math.round(performance.now() - started), truncated: rows.length === 500 });
     } catch (e) {
       if (e instanceof HttpError) throw e;
       throw new HttpError(400, e instanceof Error ? `SQL error: ${e.message}` : 'SQL error.');
-    } finally {
-      db.close();
     }
   }),
 );

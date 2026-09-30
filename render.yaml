@@ -1,10 +1,12 @@
-# Render Blueprint — deploys the full YA² site (web + API + SQLite database).
+# Render Blueprint — deploys the full YA² site (web + API) with Oracle Database.
 # Render dashboard → New → Blueprint → pick this repository/branch → Apply.
+# Render asks for the ORACLE_* values and APP_URL while applying (see README → Deploying with Oracle).
+# The data lives in Oracle, so no disk is needed and the free instance type works.
 services:
   - type: web
     name: ya2-transport
     runtime: node
-    plan: starter            # a persistent disk needs a paid instance; see README
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -12,16 +14,16 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: DB_CLIENT
-        value: sqlite
-      - key: SQLITE_FILE
-        value: /var/data/ya2.db
+        value: oracle
+      - key: ORACLE_USER
+        sync: false           # e.g. ADMIN, or the schema user you created
+      - key: ORACLE_PASSWORD
+        sync: false
+      - key: ORACLE_CONNECT_STRING
+        sync: false           # TLS connection string from the Oracle console, or host:1521/service_name
       - key: ADMIN_PASSWORD
         generateValue: true   # read it under Environment in the Render dashboard
       - key: PAYMENT_PROVIDER
         value: demo
       - key: APP_URL
-        sync: false           # set to the public URL Render gives you, e.g. https://ya2-transport.onrender.com
-    disk:
-      name: ya2-data
-      mountPath: /var/data
-      sizeGB: 1
+        sync: false           # the public URL Render gives you, e.g. https://ya2-transport.onrender.com

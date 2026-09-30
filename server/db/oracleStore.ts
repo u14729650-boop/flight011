@@ -1,16 +1,53 @@
 /**
  * Oracle Database implementation of the Store contract (node-oracledb, thin mode).
  *
- * Status: written against schema.oracle.sql but NOT yet exercised against a
- * live database — run the schema, set DB_CLIENT=oracle plus the ORACLE_*
- * variables, and smoke-test register → book → pay → track before going live.
+ * On first start it creates the tables from schema.oracle.sql if they are not
+ * there yet, so an empty Oracle schema is all you need.
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ContactRecord, PaymentRecord, ResetRecord, SessionRecord, ShipmentRecord, Store, UserRecord } from './types';
 import type { Address, SavedQuote, ShipmentEvent } from '../../src/lib/apiTypes';
 import { ENV } from '../env';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Row = Record<string, any>;
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+
+/** schema.oracle.sql split into single statements (Oracle runs one per execute, without the trailing semicolon). */
+function schemaStatements(): string[] {
+  return fs
+    .readFileSync(path.join(here, 'schema.oracle.sql'), 'utf8')
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n')
+    .split(/;\s*$/m)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let sharedPool: any = null;
+
+/** Runs one SELECT inside a READ ONLY transaction (used by the hidden admin console). Keys come back lower-case. */
+export async function oracleReadOnly(sql: string, maxRows = 500): Promise<{ columns: string[]; rows: Record<string, unknown>[] }> {
+  if (!sharedPool) throw new Error('Oracle is not connected.');
+  const conn = await sharedPool.getConnection();
+  try {
+    await conn.execute('SET TRANSACTION READ ONLY');
+    const r = await conn.execute(sql, {}, { maxRows, autoCommit: false });
+    const columns: string[] = (r.metaData ?? []).map((m: { name: string }) => m.name.toLowerCase());
+    const rows = ((r.rows ?? []) as Record<string, unknown>[]).map((row) =>
+      Object.fromEntries(Object.entries(row).map(([k, v]) => [k.toLowerCase(), v instanceof Date ? v.toISOString() : v])),
+    );
+    return { columns, rows };
+  } finally {
+    await conn.rollback().catch(() => {});
+    await conn.close();
+  }
+}
 
 const iso = (d: Date | null | undefined) => (d ? new Date(d).toISOString() : null);
 const ts = (s: string | null | undefined) => (s ? new Date(s) : null);
@@ -33,6 +70,7 @@ export async function createOracleStore(): Promise<Store> {
     poolMin: 1,
     poolMax: 8,
   });
+  sharedPool = pool;
 
   async function q<T = Row>(sql: string, binds: Row = {}): Promise<T[]> {
     const conn = await pool.getConnection();
@@ -142,9 +180,14 @@ export async function createOracleStore(): Promise<Store> {
 
   return {
     async init() {
-      await one(`SELECT 1 AS ok FROM dual`);
+      const found = await one(`SELECT COUNT(*) AS n FROM user_tables WHERE table_name = 'YA2_USERS'`);
+      if (Number(found?.N ?? 0) > 0) return;
+      console.info('[oracle] Creating YA² tables (first start)…');
+      for (const stmt of schemaStatements()) await q(stmt);
+      console.info('[oracle] Tables created.');
     },
     async close() {
+      sharedPool = null;
       await pool.close(5);
     },
 
