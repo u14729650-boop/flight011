@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-media">
+    <div class="band-media" data-parallax="0.2" style="background-image: {{ photo('SIN', 1600) }}"></div>
+    <div class="auth-copy">
+      <span class="eyebrow" style="color:#9cc2ff">Welcome back</span>
+      <h2>Pick up where you left off.</h2>
+      <p>Log in to book faster and keep every trip in one place.</p>
+      <ul>
+        <li>{{ icon('check', size=18) }} Your e-tickets and booking history</li>
+        <li>{{ icon('check', size=18) }} Saved traveller and contact details</li>
+        <li>{{ icon('check', size=18) }} Cancel or rebook in a few clicks</li>
+      </ul>
+    </div>
+  </div>
+  <div class="auth-form-wrap">
+    <form method="post" class="auth-card panel panel-solid">
+      <h1>Log in</h1>
+      <p class="muted" style="margin:0">Use the email address you registered with.</p>
+      <input type="hidden" name="next" value="{{ next }}">
+      <label>Email address<input type="email" name="email" required autofocus autocomplete="email"></label>
+      <label>Password
+        <span class="pw"><input type="password" name="password" required autocomplete="current-password">
+        <button type="button" class="pw-toggle" aria-label="Show password">{{ icon('eye', size=18) }}</button></span>
+      </label>
+      <button class="btn btn-lg btn-block" type="submit">Log in</button>
+      <div class="divider">New to SkyVoyage?</div>
+      <a class="btn btn-ghost btn-block" href="{{ url_for('register', next=next) }}">Create an account</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

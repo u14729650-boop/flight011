@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Privacy policy' if page == 'privacy' else 'Terms of use' }}{% endblock %}
+{% block body_class %}has-hero{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ photo('hero', 2000) }}"></div>
+  <div class="page-head-inner">
+    <span class="eyebrow">Legal</span>
+    <h1>{{ 'Privacy policy' if page == 'privacy' else 'Terms of use' }}</h1>
+    <p>Last updated {{ today.strftime('%d %B %Y') }}</p>
+  </div>
+</section>
+<section class="container section-tight">
+  <article class="panel prose">
+  {% if page == 'privacy' %}
+    <p>This policy explains what information SkyVoyage collects when you use our website and how we use it.</p>
+    <h2>Information we collect</h2>
+    <p>When you create an account we store your name, email address, mobile number and a salted hash of your password. When you book, we store passenger names, contact details and the flights you selected.</p>
+    <h2>How we use it</h2>
+    <ul><li>To issue e-tickets and show your booking history.</li><li>To contact you about changes to your trip.</li><li>To answer support requests.</li></ul>
+    <h2>Payment information</h2>
+    <p>Card details entered at checkout are not stored by SkyVoyage.</p>
+    <h2>Your choices</h2>
+    <p>You can ask us to update or delete your account at any time by writing to {{ help.email }}.</p>
+  {% else %}
+    <p>By using SkyVoyage you agree to these terms. Please read them before booking.</p>
+    <h2>Bookings</h2>
+    <p>A booking is confirmed when you receive a booking reference (PNR) and e-ticket. Please check that passenger names match travel documents.</p>
+    <h2>Fares and payment</h2>
+    <p>Fares shown include base fare, taxes and a convenience fee. Prices can change until a booking is confirmed.</p>
+    <h2>Cancellations and refunds</h2>
+    <p>Upcoming bookings can be cancelled from My trips. Refundable fares are refunded in full; for non-refundable fares, taxes are refunded. Refunds take 5 to 7 working days.</p>
+    <h2>Travel documents</h2>
+    <p>Travellers are responsible for holding valid passports, visas and health documents for their journey.</p>
+    <h2>Contact</h2>
+    <p>Questions about these terms can be sent to {{ help.email }} or {{ help.phone }}.</p>
+  {% endif %}
+  </article>
+</section>
+{% endblock %}

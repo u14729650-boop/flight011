@@ -1,0 +1,50 @@
+<title>SkyVoyage Flights</title>
+<script>
+  // Keep a theme the viewer already chose; otherwise use the saved choice or the system setting.
+  (function () {
+    var root = document.documentElement;
+    if (root.dataset.theme) return;
+    var saved = null;
+    try { saved = localStorage.getItem("sv-theme"); } catch (e) {}
+    root.dataset.theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>/*LEAFLET_CSS*/</style>
+<style>/*SITE_CSS*/</style>
+<style>/*PREVIEW_CSS*/</style>
+
+<div class="bg" aria-hidden="true">/*BG_SCENES*/<div class="bg-veil"></div></div>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" data-go="home" href="#home"><span class="brand-mark">/*ICON_PLANE*/</span><span>Sky<b>Voyage</b></span></a>
+    <button class="icon-btn nav-burger" type="button" aria-label="Menu" onclick="document.body.classList.toggle('menu-open')">/*ICON_MENU*/</button>
+    <nav class="nav-links" id="navLinks"></nav>
+    <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Switch between dark and light mode" title="Dark / light mode">
+      <span class="sun">/*ICON_SUN*/</span><span class="moon">/*ICON_MOON*/</span></button>
+  </div>
+</header>
+<div class="flashes" id="flashes" role="status"></div>
+<main id="app"></main>
+<footer class="footer">
+  <div class="footer-grid">
+    <div><a class="brand" data-go="home" href="#home"><span class="brand-mark">/*ICON_PLANE*/</span><span>Sky<b>Voyage</b></span></a>
+      <p>Search, compare and book flights to /*N_AIRPORTS*/ cities with 20 partner airlines. Clear fares, instant e-tickets and round-the-clock support.</p>
+      <p class="small">Preview version: accounts and bookings are saved in this browser only.</p></div>
+    <div><h4>Company</h4><a data-go="about" href="#about">About us</a><a data-go="map" href="#map">Route map</a><a data-go="help" href="#help">Help centre</a></div>
+    <div><h4>Your trips</h4><a data-go="home" href="#home">Search flights</a><a data-go="history" href="#history">Manage bookings</a><a data-go="login" href="#login">Log in</a></div>
+    <div><h4>Customer support</h4><span class="contact-line">/*ICON_MAIL*/ /*EMAIL*/</span><span class="contact-line">/*ICON_PHONE*/ /*PHONE*/</span>
+      <span class="contact-line">/*ICON_CLOCK*/ /*HOURS*/</span></div>
+  </div>
+  <div class="footer-bottom"><div class="footer-bottom-inner">
+    <span>© /*YEAR*/ SkyVoyage. All rights reserved.</span>
+    <div class="pay-methods" aria-label="Accepted payment methods"><span>VISA</span><span>Mastercard</span><span>RuPay</span><span>UPI</span><span>AMEX</span></div>
+    <nav><a data-go="privacy" href="#privacy">Privacy policy</a><a data-go="terms" href="#terms">Terms of use</a></nav>
+  </div></div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>window.SV_DATA = /*DATA*/; window.SV_WORLD = /*WORLD*/;</script>
+<script>/*APP_JS*/</script>

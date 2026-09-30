@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Create an account{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-media">
+    <div class="band-media" data-parallax="0.2" style="background-image: {{ photo('MLE', 1600) }}"></div>
+    <div class="auth-copy">
+      <span class="eyebrow" style="color:#9cc2ff">Join SkyVoyage</span>
+      <h2>Travel more, spend less time booking.</h2>
+      <p>Creating an account takes less than a minute.</p>
+      <ul>
+        <li>{{ icon('check', size=18) }} Faster checkout with saved details</li>
+        <li>{{ icon('check', size=18) }} All your e-tickets in My trips</li>
+        <li>{{ icon('check', size=18) }} Fare alerts for routes you follow</li>
+      </ul>
+    </div>
+  </div>
+  <div class="auth-form-wrap">
+    <form method="post" class="auth-card panel panel-solid">
+      <h1>Create your account</h1>
+      <input type="hidden" name="next" value="{{ next }}">
+      <label>Full name<input name="name" required autocomplete="name"></label>
+      <label>Email address<input type="email" name="email" required autocomplete="email"></label>
+      <label>Mobile number<input name="phone" autocomplete="tel" placeholder="+91 90000 00000"></label>
+      <div class="two">
+        <label>Password<input type="password" name="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></label>
+        <label>Confirm password<input type="password" name="confirm" required minlength="6" autocomplete="new-password"></label>
+      </div>
+      <button class="btn btn-lg btn-block" type="submit">Create account</button>
+      <p class="muted small center" style="margin:0">By continuing you agree to our <a href="{{ url_for('terms') }}">Terms of use</a> and <a href="{{ url_for('privacy') }}">Privacy policy</a>.</p>
+      <div class="divider">Already registered?</div>
+      <a class="btn btn-ghost btn-block" href="{{ url_for('login', next=next) }}">Log in</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}E-ticket {{ b.pnr }}{% endblock %}
+{% block content %}
+<section class="container section-tight">
+  <div class="ticket-banner">
+    <div class="band-media" data-parallax="0.15" style="background-image: {{ dest_photo(b.dest, 1800) }}"></div>
+    <div class="ticket-banner-text"><span class="eyebrow">Your trip to</span><h1>{{ airports[b.dest][0] }}, {{ airports[b.dest][2] }}</h1>
+      <p>{{ b.departure|dt('%A, %d %B %Y') }} · {{ b.airline }} {{ b.flight_no }}</p></div>
+  </div>
+  <div class="ticket panel panel-solid">
+    <div class="ticket-main">
+      <div class="ticket-head">
+        <span class="brand"><span class="brand-mark">{{ icon('plane', size=20) }}</span><span>Sky<b>Voyage</b></span></span>
+        <span class="badge badge-{{ b.state|lower }}">{{ b.state }}</span>
+      </div>
+      <p class="muted small" style="margin-top:1rem">ELECTRONIC TICKET · {{ b.trip_leg|upper }} FLIGHT</p>
+      <div class="ticket-route">
+        <div><span class="code-big">{{ b.origin }}</span><span>{{ airports[b.origin][0] }}</span><small class="muted">{{ b.departure|dt }}</small></div>
+        <div class="ticket-plane">{{ icon('plane', size=34) }}<small class="muted">{{ fmt_duration(b.duration_min) }}{{ ' · via ' ~ b.via if b.via }}</small></div>
+        <div><span class="code-big">{{ b.dest }}</span><span>{{ airports[b.dest][0] }}</span><small class="muted">{{ b.arrival|dt }}</small></div>
+      </div>
+      <div class="ticket-grid">
+        <div><small>Flight</small><b>{{ b.flight_no }}</b></div>
+        <div><small>Airline</small><b>{{ b.airline }}</b></div>
+        <div><small>Class</small><b>{{ cabins[b.cabin][0] }}</b></div>
+        <div><small>Seats</small><b>{{ b.seats }}</b></div>
+        {% if flight %}
+        <div><small>Terminal</small><b>{{ flight.terminal }}</b></div>
+        <div><small>Gate</small><b>{{ flight.gate }}</b></div>
+        <div><small>Boarding</small><b>{{ boarding.strftime('%H:%M') }}</b></div>
+        <div><small>Aircraft</small><b>{{ flight.aircraft }}</b></div>
+        {% endif %}
+      </div>
+      <h4>Passengers</h4>
+      <ul class="pax-list">{% for p in b.passengers.split('\n') %}<li>{{ p }}</li>{% endfor %}</ul>
+      <p class="muted small">Contact: {{ b.contact_email }} · {{ b.contact_phone }} · Boarding closes 45 minutes before departure.</p>
+    </div>
+    <div class="ticket-stub">
+      <small>Booking reference</small>
+      <b class="pnr">{{ b.pnr }}</b>
+      <div class="barcode" aria-hidden="true">{% for w in barcode %}<i style="width: {{ w }}px"></i>{% endfor %}</div>
+      <small>Total paid</small>
+      <b class="num">{{ b.total|money(b.symbol) }}</b>
+    </div>
+  </div>
+  <div class="ticket-actions">
+    <button class="btn" onclick="window.print()">{{ icon('print', size=16) }} Print or save as PDF</button>
+    <a class="btn btn-ghost" href="{{ url_for('history') }}">{{ icon('history', size=16) }} All my trips</a>
+    {% for o in others %}<a class="btn btn-ghost" href="{{ url_for('ticket', pnr=o.pnr) }}">{{ o.trip_leg }} ticket ({{ o.pnr }})</a>{% endfor %}
+  </div>
+</section>
+{% endblock %}

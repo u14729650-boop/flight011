@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}My trips{% endblock %}
+{% block body_class %}has-hero{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ dest_photo(header, 2000) if header else photo('hero', 2000) }}"></div>
+  <div class="page-head-inner">
+    <span class="eyebrow">My trips</span>
+    <h1>{% if header %}Next stop: {{ airports[header][0] }}{% else %}Booking history{% endif %}</h1>
+    <p>Every flight you have booked with SkyVoyage: upcoming trips, completed journeys and cancellations.</p>
+  </div>
+</section>
+<section class="container section-tight">
+  <div class="stats">
+    {% for label, value, ic in [('Total bookings', stats.total, 'ticket'), ('Upcoming', stats.upcoming, 'takeoff'),
+                                 ('Completed', stats.completed, 'landing'), ('Cancelled', stats.cancelled, 'x'),
+                                 ('Kilometres booked', '{:,}'.format(stats.km), 'globe')] %}
+      <div class="stat panel reveal" data-depth="0.1">{{ icon(ic, size=22) }}<b class="num">{{ value }}</b><small>{{ label }}</small></div>
+    {% endfor %}
+  </div>
+
+  {% if places %}
+  <div class="section-head" style="margin:2.5rem 0 1rem"><div><span class="eyebrow">Your destinations</span><h2 style="font-size:1.4rem">Places you're flying to</h2></div></div>
+  <div class="place-strip">
+    {% for p in places %}
+    <a class="place-card reveal" data-depth="0.1" href="#trip-{{ p.code }}">
+      <div class="place-photo" style="background-image: {{ dest_photo(p.code, 700) }}"></div>
+      <div class="place-body">
+        <span class="badge badge-{{ p.state|lower }}">{{ p.state }}</span>
+        <h3>{{ airports[p.code][0] }}</h3>
+        <span>{{ airports[p.code][2] }} · {{ p.trips }} trip{{ 's' if p.trips > 1 }}{% if p.next %} · {{ p.next|dt('%d %b') }}{% endif %}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="history-tabs">
+    {% for t in ['All', 'Upcoming', 'Completed', 'Cancelled'] %}
+      <button type="button" class="chip {{ 'active' if loop.first }}" data-filter="{{ t }}">{{ t }}</button>
+    {% endfor %}
+  </div>
+
+  {% if not bookings %}
+    <div class="panel empty">
+      <h3>No trips yet</h3>
+      <p class="muted">When you book a flight it will appear here with its e-ticket.</p>
+      <a class="btn" href="{{ url_for('home') }}">{{ icon('search', size=16) }} Search flights</a>
+    </div>
+  {% endif %}
+
+  {% for b in bookings %}
+  <article class="booking panel" data-state="{{ b.state }}" id="trip-{{ b.dest }}">
+    <div class="booking-photo" style="background-image: {{ dest_photo(b.dest, 700) }}">
+      <span>{{ airports[b.dest][0] }}</span>
+    </div>
+    <div class="booking-content">
+    <div class="booking-top">
+      <div>
+        <span class="badge badge-{{ b.state|lower }}">{{ b.state }}</span>
+        <span class="badge">{{ b.trip_leg }}</span>
+        <span class="muted small">Booking reference <b>{{ b.pnr }}</b> · booked {{ b.booked_at|dt }}</span>
+      </div>
+      <span class="price num">{{ b.total|money(b.symbol) }}</span>
+    </div>
+    <div class="booking-route">
+      <div><b class="num">{{ b.departure|dt('%H:%M') }}</b><span>{{ b.origin }}</span><small class="muted">{{ airports[b.origin][0] }}</small></div>
+      <div class="path"><span class="muted small">{{ fmt_duration(b.duration_min) }}</span>
+        <span class="path-line {{ 'has-stop' if b.via }}"><i></i></span>
+        <span class="small muted">{{ '1 stop · ' ~ b.via if b.via else 'Non-stop' }}</span></div>
+      <div><b class="num">{{ b.arrival|dt('%H:%M') }}</b><span>{{ b.dest }}</span><small class="muted">{{ airports[b.dest][0] }}</small></div>
+    </div>
+    <p class="muted small">{{ b.airline }} {{ b.flight_no }} · {{ b.departure|dt('%a, %d %b %Y') }} · {{ cabins[b.cabin][0] }} · Seats {{ b.seats }}</p>
+    <p class="small">{{ b.passengers|replace('\n', ' · ') }}</p>
+    <div class="booking-actions">
+      <a class="btn btn-sm" href="{{ url_for('ticket', pnr=b.pnr) }}">{{ icon('ticket', size=16) }} View e-ticket</a>
+      {% if b.state == 'Upcoming' %}
+      <form method="post" action="{{ url_for('cancel', pnr=b.pnr) }}" onsubmit="return confirm('Cancel booking {{ b.pnr }}?')">
+        <button class="btn btn-sm btn-ghost">Cancel booking</button>
+      </form>
+      {% endif %}
+      <a class="btn btn-sm btn-ghost" href="{{ url_for('search', origin=b.origin, dest=b.dest, depart=(today if b.state != 'Upcoming' else b.departure[:10])) }}">Book again</a>
+    </div>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

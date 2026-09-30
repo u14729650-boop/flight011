@@ -1,0 +1,3 @@
+/* Extra rules for the browser-only preview build */
+.nav-links a, .footer a { cursor: pointer; }
+.contact .value { overflow-wrap: anywhere; }

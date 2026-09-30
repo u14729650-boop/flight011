@@ -1,0 +1,48 @@
+{# Flight search panel. Pass `s` (dict of current values) to pre-fill it. #}
+{% set s = s or {} %}
+<form class="search" action="{{ url_for('search') }}" method="get" id="searchForm">
+  <div class="search-top">
+    <div class="segmented" role="radiogroup" aria-label="Trip type">
+      <label><input type="radio" name="trip" value="oneway" {{ 'checked' if s.get('trip', 'oneway') == 'oneway' }}> One way</label>
+      <label><input type="radio" name="trip" value="round" {{ 'checked' if s.get('trip') == 'round' }}> Round trip</label>
+    </div>
+    <div class="search-extras">
+      <span class="extras-label">{{ icon('users', size=16) }}</span>
+      <select name="adults" aria-label="Adults (12+)">{% for n in range(1, 10) %}<option value="{{ n }}" {{ 'selected' if s.get('adults', 1) == n }}>{{ n }} Adult{{ 's' if n > 1 }}</option>{% endfor %}</select>
+      <select name="children" aria-label="Children (2–11)">{% for n in range(0, 9) %}<option value="{{ n }}" {{ 'selected' if s.get('children', 0) == n }}>{{ n }} Child{{ 'ren' if n != 1 }}</option>{% endfor %}</select>
+      <select name="infants" aria-label="Infants (under 2)">{% for n in range(0, 5) %}<option value="{{ n }}" {{ 'selected' if s.get('infants', 0) == n }}>{{ n }} Infant{{ 's' if n != 1 }}</option>{% endfor %}</select>
+      <select name="cabin" aria-label="Cabin class">
+        {% for code, c in cabins.items() %}<option value="{{ code }}" {{ 'selected' if s.get('cabin') == code }}>{{ c[0] }}</option>{% endfor %}
+      </select>
+      <select name="currency" aria-label="Currency">
+        {% for code in currencies %}<option value="{{ code }}" {{ 'selected' if s.get('currency', 'USD') == code }}>{{ code }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="search-grid">
+    <div class="field">
+      <label for="origin">{{ icon('takeoff', size=14) }} From</label>
+      <input list="airportList" name="origin" id="origin" placeholder="City or airport" required autocomplete="off"
+             value="{{ (airports[s.origin][0] ~ ' (' ~ s.origin ~ ')') if s.get('origin') in airports else '' }}">
+    </div>
+    <button type="button" class="swap" id="swapBtn" title="Swap origin and destination" aria-label="Swap origin and destination">{{ icon('swap', size=18) }}</button>
+    <div class="field">
+      <label for="dest">{{ icon('landing', size=14) }} To</label>
+      <input list="airportList" name="dest" id="dest" placeholder="City or airport" required autocomplete="off"
+             value="{{ (airports[s.dest][0] ~ ' (' ~ s.dest ~ ')') if s.get('dest') in airports else '' }}">
+    </div>
+    <div class="field">
+      <label for="depart">{{ icon('calendar', size=14) }} Depart</label>
+      <input type="date" name="depart" id="depart" required min="{{ today.isoformat() }}" value="{{ s.depart.isoformat() if s.get('depart') else '' }}">
+    </div>
+    <div class="field field-return">
+      <label for="returnDate">{{ icon('calendar', size=14) }} Return</label>
+      <input type="date" name="return" id="returnDate" min="{{ today.isoformat() }}" value="{{ s.ret.isoformat() if s.get('ret') else '' }}">
+    </div>
+    <button class="btn btn-search" type="submit">{{ icon('search', size=18) }} Search</button>
+  </div>
+  <p class="live-quote" id="liveQuote"></p>
+  <datalist id="airportList">
+    {% for code, a in airports.items() %}<option value="{{ a[0] }} ({{ code }})">{{ a[1] }}, {{ a[2] }}</option>{% endfor %}
+  </datalist>
+</form>

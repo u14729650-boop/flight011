@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Help centre{% endblock %}
+{% block body_class %}has-hero{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ photo('DXB', 2000) }}"></div>
+  <div class="page-head-inner">
+    <span class="eyebrow">Help centre</span>
+    <h1>How can we help?</h1>
+    <p>Our travel desk is available {{ help.hours|lower }}. Contact us or find a quick answer below.</p>
+  </div>
+</section>
+<section class="container section-tight">
+  <div class="contact-grid">
+    <div class="contact panel reveal" data-depth="0.1"><div class="feature-icon">{{ icon('mail', size=24) }}</div><h3>Email</h3>
+      <a class="value" href="mailto:{{ help.email }}">{{ help.email }}</a><span class="muted small">Bookings: {{ help.support_email }}</span></div>
+    <div class="contact panel reveal" data-depth="0.14"><div class="feature-icon">{{ icon('phone', size=24) }}</div><h3>Phone</h3>
+      <a class="value" href="tel:{{ help.phone|replace(' ', '') }}">{{ help.phone }}</a><span class="muted small">International: {{ help.phone_intl }}</span></div>
+    <div class="contact panel reveal" data-depth="0.18"><div class="feature-icon">{{ icon('chat', size=24) }}</div><h3>WhatsApp</h3>
+      <span class="value">{{ help.whatsapp }}</span><span class="muted small">Replies within 15 minutes</span></div>
+  </div>
+
+  <div class="help-layout">
+    <div class="faq panel">
+      <h2 style="font-size:1.4rem">Frequently asked questions</h2>
+      {% for q, a in [
+        ('How are ticket prices calculated?', 'Prices depend on distance, how many days before departure you book, the day of the week (Fridays and Sundays cost more), time of day, airline, number of stops, cabin class and seats remaining. Booking three to six weeks ahead usually gives the best fares.'),
+        ('Where can I find my booking?', 'Log in and open My trips. You will see upcoming, completed and cancelled trips, each with its e-ticket.'),
+        ('Can I cancel a booking?', 'Yes. Any upcoming booking can be cancelled from My trips. Refunds reach your original payment method in 5 to 7 working days.'),
+        ('What baggage is included?', 'Short-haul flights include 15 kg checked baggage and a 7 kg cabin bag. Long-haul flights include 30 kg checked and 7 kg cabin.'),
+        ('How much do children and infants pay?', 'Children aged 2 to 11 pay 75% of the adult fare. Infants under 2 travelling on an adult\'s lap pay 10%.'),
+        ('When should I arrive at the airport?', 'Two hours before domestic flights and three hours before international flights. Boarding closes 45 minutes before departure.'),
+      ] %}
+      <details><summary>{{ q }}</summary><p>{{ a }}</p></details>
+      {% endfor %}
+    </div>
+    <form class="panel contact-form" method="post">
+      <h2 style="font-size:1.4rem">Send us a message</h2>
+      <label>Your name<input name="name" required value="{{ user['name'] if user else '' }}"></label>
+      <label>Email address<input type="email" name="email" required value="{{ user['email'] if user else '' }}"></label>
+      <label>Booking reference (optional)<input name="pnr" placeholder="e.g. 9A1DO8"></label>
+      <label>Topic<select name="topic"><option>Booking issue</option><option>Refund or cancellation</option><option>Baggage</option><option>Payment</option><option>Other</option></select></label>
+      <label>Message<textarea name="message" rows="4" required></textarea></label>
+      <button class="btn btn-block">{{ icon('send', size=16) }} Send message</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
