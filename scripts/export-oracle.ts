@@ -30,6 +30,7 @@ const TABLES: [string, string][] = [
   ['ya2_shipment_events', 'shipment_id, stage, event_at, location, note'],
   ['ya2_payments', 'id, shipment_id, user_id, provider, order_id, amount, status, method, provider_payment_id, created_at, paid_at'],
   ['ya2_contact_messages', 'id, name, email, phone, subject, message, created_at'],
+  ['ya2_activity', 'id, user_id, type, title, detail, ref, created_at'],
 ];
 const ORDER: Record<string, string> = { ya2_shipment_events: 'shipment_id, event_at' };
 
@@ -102,6 +103,18 @@ ORDER BY e.event_at;
 
 -- Bookings waiting for payment
 SELECT booking_id, price, created_at FROM ya2_shipments WHERE status = 'PENDING_PAYMENT';
+
+-- One account's history (dashboard → History): each user only ever sees their own rows
+SELECT a.created_at, a.type, a.title, a.detail
+FROM ya2_activity a JOIN ya2_users u ON u.id = a.user_id
+WHERE u.email = 'aarav.mehta@example.com'
+ORDER BY a.created_at DESC;
+
+-- How many history entries each account has
+SELECT u.name, u.email, COUNT(a.id) AS history_entries, MAX(a.created_at) AS last_activity
+FROM ya2_users u LEFT JOIN ya2_activity a ON a.user_id = u.id
+GROUP BY u.name, u.email
+ORDER BY last_activity DESC;
 
 -- Enquiries from the contact form
 SELECT created_at, name, email, subject FROM ya2_contact_messages ORDER BY created_at DESC;
