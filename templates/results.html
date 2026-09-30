@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ o }} → {{ d }}{% endblock %}
+{% block title %}Flights {{ airports[o][0] }} to {{ airports[d][0] }}{% endblock %}
 {% macro qs(extra) -%}
   {%- set args = {'origin': o, 'dest': d, 'depart': extra.get('depart', dep).isoformat(), 'trip': trip, 'cabin': cabin,
                  'currency': currency, 'sort': extra.get('sort', sort), 'stops': extra.get('stops', stops),
@@ -9,66 +9,62 @@
 {%- endmacro %}
 
 {% macro flight_card(f, leg) %}
-<article class="flight glass scroll-3d" data-depth="0.25">
+{% set n_pax = pax.adults + pax.children + pax.infants %}
+<article class="flight panel reveal" data-depth="0.08">
   <div class="flight-main">
     <div class="airline">
       <span class="airline-logo" style="background: {{ f.colour }}">{{ f.airline_code }}</span>
-      <div>
-        <strong>{{ f.airline }}</strong>
-        <span class="muted small">{{ f.flight_no }} · {{ f.aircraft }}</span>
-      </div>
+      <div><strong>{{ f.airline }}</strong><span class="muted small">{{ f.flight_no }} · {{ f.aircraft }}</span></div>
     </div>
     <div class="times">
-      <div class="t">
-        <b>{{ f.departure.strftime('%H:%M') }}</b>
-        <span>{{ f.origin }}</span>
-        <small class="muted">{{ airports[f.origin][0] }} · {{ f.terminal }}</small>
-      </div>
+      <div class="t"><b class="num">{{ f.departure.strftime('%H:%M') }}</b><span>{{ f.origin }}</span><small class="muted">{{ f.terminal }}</small></div>
       <div class="path">
         <span class="muted small">{{ fmt_duration(f.duration_min) }}</span>
-        <span class="path-line {{ 'has-stop' if f.stops }}"><i></i><svg viewBox="0 0 64 64"><use href="#plane-icon"/></svg></span>
-        <span class="small {{ 'ok' if not f.stops else 'warn' }}">{{ 'Non-stop' if not f.stops else '1 stop via ' ~ f.via }}</span>
+        <span class="path-line {{ 'has-stop' if f.stops }}"><i></i></span>
+        <span class="small {{ 'ok' if not f.stops else 'warn' }}">{{ 'Non-stop' if not f.stops else '1 stop · ' ~ f.via }}</span>
       </div>
-      <div class="t">
-        <b>{{ f.arrival.strftime('%H:%M') }}{% if f.day_diff %}<sup class="warn">+{{ f.day_diff }}</sup>{% endif %}</b>
-        <span>{{ f.dest }}</span>
-        <small class="muted">{{ airports[f.dest][0] }}</small>
-      </div>
+      <div class="t"><b class="num">{{ f.arrival.strftime('%H:%M') }}{% if f.day_diff %}<sup class="warn small">+{{ f.day_diff }}</sup>{% endif %}</b><span>{{ f.dest }}</span><small class="muted">{{ airports[f.dest][0] }}</small></div>
     </div>
     <div class="price-box">
-      <span class="price">{{ f.price.total|money(symbol) }}</span>
-      <span class="muted small">total for {{ pax.adults + pax.children + pax.infants }} traveller{{ 's' if pax.adults + pax.children + pax.infants > 1 }}</span>
-      {% if f.seats_left <= 9 %}<span class="badge badge-hot">Only {{ f.seats_left }} seats left!</span>{% endif %}
+      <span class="price num">{{ f.price.total|money(symbol) }}</span>
+      <span class="muted small">total, {{ n_pax }} traveller{{ 's' if n_pax > 1 }}</span>
       {% if trip == 'round' %}
         <label class="btn btn-sm select-btn"><input type="radio" name="{{ leg }}" value="{{ f.id }}" form="roundForm" required> Select</label>
       {% else %}
-        <a class="btn btn-sm" href="{{ url_for('book', out=f.id, cabin=cabin, currency=currency, adults=pax.adults, children=pax.children, infants=pax.infants) }}">Book now</a>
+        <a class="btn btn-sm" href="{{ url_for('book', out=f.id, cabin=cabin, currency=currency, adults=pax.adults, children=pax.children, infants=pax.infants) }}">Select {{ icon('arrow', size=16) }}</a>
       {% endif %}
     </div>
   </div>
+  <div class="flight-tags">
+    <span>{{ icon('luggage', size=16) }} {{ f.baggage }}</span>
+    <span>{{ icon('meal', size=16) }} {{ 'Meal included' if f.meal else 'Meals for purchase' }}</span>
+    {% if f.wifi %}<span>{{ icon('wifi', size=16) }} Wi-Fi</span>{% endif %}
+    <span>{{ icon('refund', size=16) }} {{ 'Refundable' if f.refundable else 'Non-refundable' }}</span>
+    {% if f.seats_left <= 9 %}<span class="badge badge-hot">{{ f.seats_left }} seats left at this price</span>{% endif %}
+  </div>
   <details class="flight-details">
-    <summary>Flight details &amp; fare breakdown</summary>
+    <summary>Flight details and fare breakdown</summary>
     <div class="details-grid">
       <div>
-        <h4>Schedule</h4>
-        <p><b>Departure:</b> {{ f.departure.strftime('%a %d %b %Y, %H:%M') }} — {{ airports[f.origin][1] }} ({{ f.origin }}), {{ f.terminal }}, Gate {{ f.gate }}</p>
-        {% if f.via %}<p><b>Layover:</b> {{ fmt_duration(f.layover_min) }} at {{ airports[f.via][0] }} ({{ f.via }})</p>{% endif %}
-        <p><b>Arrival:</b> {{ f.arrival.strftime('%a %d %b %Y, %H:%M') }} (local time) — {{ airports[f.dest][1] }} ({{ f.dest }})</p>
-        <p><b>Distance:</b> {{ '{:,}'.format(f.distance_km) }} km · <b>Aircraft:</b> {{ f.aircraft }}</p>
+        <h4>Itinerary</h4>
+        <p><b>Departs</b> {{ f.departure.strftime('%a %d %b %Y, %H:%M') }} · {{ airports[f.origin][1] }} ({{ f.origin }}), {{ f.terminal }}, gate {{ f.gate }}</p>
+        {% if f.via %}<p><b>Connection</b> {{ fmt_duration(f.layover_min) }} in {{ airports[f.via][0] }} ({{ f.via }})</p>{% endif %}
+        <p><b>Arrives</b> {{ f.arrival.strftime('%a %d %b %Y, %H:%M') }} local time · {{ airports[f.dest][1] }} ({{ f.dest }})</p>
+        <p><b>Distance</b> {{ '{:,}'.format(f.distance_km) }} km · <b>Aircraft</b> {{ f.aircraft }}</p>
       </div>
       <div>
-        <h4>Included</h4>
-        <p>🧳 {{ f.baggage }}</p>
-        <p>{{ '🍱 Complimentary meal' if f.meal else '🥤 Snacks for purchase' }}</p>
-        <p>{{ '📶 Wi-Fi available' if f.wifi else '📵 No Wi-Fi' }}</p>
-        <p>{{ '✅ Refundable fare' if f.refundable else '⚠️ Non-refundable (cancellation fee applies)' }}</p>
+        <h4>Fare conditions</h4>
+        <p>{{ f.baggage }}</p>
+        <p>{{ 'Complimentary meal on board' if f.meal else 'Food and drinks for purchase' }}</p>
+        <p>{{ 'Wi-Fi available on board' if f.wifi else 'No Wi-Fi on this aircraft' }}</p>
+        <p>{{ 'Free cancellation up to 24 hours before departure' if f.refundable else 'Non-refundable; taxes are refunded on cancellation' }}</p>
       </div>
       <div>
-        <h4>Fare ({{ cabins[cabin][0] }})</h4>
-        <p class="row"><span>Base fare</span><span>{{ f.price.base|money(symbol) }}</span></p>
-        <p class="row"><span>Taxes &amp; surcharges</span><span>{{ f.price.taxes|money(symbol) }}</span></p>
-        <p class="row"><span>Convenience fee</span><span>{{ f.price.fees|money(symbol) }}</span></p>
-        <p class="row total"><span>Total</span><span>{{ f.price.total|money(symbol) }}</span></p>
+        <h4>Price · {{ cabins[cabin][0] }}</h4>
+        <p class="row"><span>Base fare</span><span class="num">{{ f.price.base|money(symbol) }}</span></p>
+        <p class="row"><span>Taxes and surcharges</span><span class="num">{{ f.price.taxes|money(symbol) }}</span></p>
+        <p class="row"><span>Convenience fee</span><span class="num">{{ f.price.fees|money(symbol) }}</span></p>
+        <p class="row total"><span>Total</span><span class="num">{{ f.price.total|money(symbol) }}</span></p>
       </div>
     </div>
   </details>
@@ -79,26 +75,23 @@
 <div class="fare-cal">
   {% set lowest = days|map(attribute=1)|min if days else 0 %}
   {% for day, price in days %}
-    <a class="fare-day glass {{ 'active' if day == current }} {{ 'lowest' if price == lowest }}"
-       href="{{ qs({key: day}) }}">
-      <span>{{ day.strftime('%a') }}</span>
-      <b>{{ day.strftime('%d %b') }}</b>
-      <span class="small">{{ symbol }}{{ '{:,}'.format(price) }}</span>
+    <a class="fare-day panel {{ 'active' if day == current }} {{ 'lowest' if price == lowest }}" href="{{ qs({key: day}) }}">
+      <span>{{ day.strftime('%a') }}</span><b>{{ day.strftime('%d %b') }}</b><em class="num">{{ symbol }}{{ '{:,}'.format(price) }}</em>
     </a>
   {% endfor %}
 </div>
 {% endmacro %}
 
 {% block content %}
-<section class="container">
+<section class="container section-tight">
   <details class="modify">
-    <summary class="btn btn-ghost">✏️ Modify search</summary>
+    <summary class="btn btn-ghost">{{ icon('search', size=16) }} Change search</summary>
     {% include "_search_form.html" %}
   </details>
 
-  <div class="route-head glass scroll-3d" data-depth="0.3">
+  <div class="route-head panel">
     <div>
-      <h1>{{ airports[o][0] }} <span class="grad-text">→</span> {{ airports[d][0] }}{% if trip == 'round' %} <span class="grad-text">→</span> {{ airports[o][0] }}{% endif %}</h1>
+      <h1>{{ airports[o][0] }} {{ icon('arrow', size=22) }} {{ airports[d][0] }}{% if trip == 'round' %} {{ icon('arrow', size=22) }} {{ airports[o][0] }}{% endif %}</h1>
       <p class="muted">{{ dep.strftime('%a, %d %b %Y') }}{% if trip == 'round' %} – {{ ret.strftime('%a, %d %b %Y') }}{% endif %}
         · {{ pax.adults }} adult{{ 's' if pax.adults > 1 }}{% if pax.children %}, {{ pax.children }} child{% endif %}{% if pax.infants %}, {{ pax.infants }} infant{% endif %}
         · {{ cabins[cabin][0] }} · {{ '{:,}'.format(distance) }} km</p>
@@ -107,7 +100,7 @@
   </div>
 
   <div class="results-layout">
-    <aside class="filters glass">
+    <aside class="filters panel">
       <form method="get" action="{{ url_for('search') }}">
         {% for k, v in {'origin': o, 'dest': d, 'depart': dep.isoformat(), 'trip': trip, 'cabin': cabin, 'currency': currency,
                         'adults': pax.adults, 'children': pax.children, 'infants': pax.infants}.items() %}
@@ -115,36 +108,36 @@
         {% endfor %}
         {% if ret %}<input type="hidden" name="return" value="{{ ret.isoformat() }}">{% endif %}
         <h4>Sort by</h4>
-        {% for val, label in [('price', 'Cheapest'), ('duration', 'Fastest'), ('departure', 'Earliest departure'), ('arrival', 'Earliest arrival')] %}
+        {% for val, label in [('price', 'Lowest price'), ('duration', 'Shortest duration'), ('departure', 'Earliest departure'), ('arrival', 'Earliest arrival')] %}
           <label class="opt"><input type="radio" name="sort" value="{{ val }}" {{ 'checked' if sort == val }} onchange="this.form.submit()"> {{ label }}</label>
         {% endfor %}
         <h4>Stops</h4>
-        {% for val, label in [('any', 'Any'), ('0', 'Non-stop only'), ('1', '1 stop')] %}
+        {% for val, label in [('any', 'Any number of stops'), ('0', 'Non-stop only'), ('1', '1 stop')] %}
           <label class="opt"><input type="radio" name="stops" value="{{ val }}" {{ 'checked' if stops == val }} onchange="this.form.submit()"> {{ label }}</label>
         {% endfor %}
         <h4>Airlines</h4>
         {% for a in all_airlines %}
           <label class="opt"><input type="checkbox" name="airline" value="{{ a }}" {{ 'checked' if a in airline_filter }} onchange="this.form.submit()"> {{ a }}</label>
         {% endfor %}
-        {% if airline_filter or stops != 'any' %}<a class="small" href="{{ qs({'stops': 'any'}) }}">Clear filters</a>{% endif %}
+        {% if airline_filter or stops != 'any' %}<a class="small" href="{{ qs({'stops': 'any'}) }}">Clear all filters</a>{% endif %}
       </form>
     </aside>
 
     <div class="results">
-      <h2 class="section-title">✈ Departing flights · {{ outbound|length }} found</h2>
+      <h2 class="results-title">{{ icon('takeoff') }} Departing flights <span class="muted small">{{ outbound|length }} results</span></h2>
       {{ calendar(cal_out, dep, 'depart') }}
-      {% for f in outbound %}{{ flight_card(f, 'out') }}{% else %}<p class="glass empty">No flights match these filters.</p>{% endfor %}
+      {% for f in outbound %}{{ flight_card(f, 'out') }}{% else %}<p class="panel empty">No flights match these filters. Try clearing a filter.</p>{% endfor %}
 
       {% if trip == 'round' %}
-        <h2 class="section-title">🔁 Return flights · {{ inbound|length }} found</h2>
+        <h2 class="results-title" style="margin-top:2rem">{{ icon('landing') }} Return flights <span class="muted small">{{ inbound|length }} results</span></h2>
         {{ calendar(cal_in, ret, 'ret') }}
-        {% for f in inbound %}{{ flight_card(f, 'ret') }}{% else %}<p class="glass empty">No return flights match these filters.</p>{% endfor %}
-        <form id="roundForm" class="round-bar glass" action="{{ url_for('book') }}" method="get">
+        {% for f in inbound %}{{ flight_card(f, 'ret') }}{% else %}<p class="panel empty">No return flights match these filters.</p>{% endfor %}
+        <form id="roundForm" class="round-bar panel panel-solid" action="{{ url_for('book') }}" method="get">
           {% for k, v in {'cabin': cabin, 'currency': currency, 'adults': pax.adults, 'children': pax.children, 'infants': pax.infants}.items() %}
             <input type="hidden" name="{{ k }}" value="{{ v }}">
           {% endfor %}
           <span id="roundSummary">Select a departing and a return flight</span>
-          <button class="btn" type="submit">Continue to book →</button>
+          <button class="btn" type="submit">Continue {{ icon('arrow', size=16) }}</button>
         </form>
       {% endif %}
     </div>

@@ -1,37 +1,56 @@
 {% extends "base.html" %}
 {% block title %}About us{% endblock %}
+{% block body_class %}has-hero{% endblock %}
 {% block content %}
-<section class="container">
-  <div class="about-hero glass scroll-3d" data-depth="0.5">
-    <h1>Hello! We are <span class="grad-text">SkyVoyage</span> 👋</h1>
-    <p class="lead">We help travellers find the right flight at the right price — with honest fares, clear flight details and a booking flow that takes under a minute.</p>
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ photo('india', 2000) }}"></div>
+  <div class="page-head-inner">
+    <span class="eyebrow">About SkyVoyage</span>
+    <h1>Hello! We make flying simpler.</h1>
+    <p>SkyVoyage helps travellers find the right flight at a fair price, with every time, flight number and fee shown clearly before they pay.</p>
   </div>
+</section>
 
-  <div class="about-grid">
-    {% for icon, title, text in [
-      ('🎯', 'Our mission', 'Make flying simple and transparent: every time, arrival, departure, flight number and fee shown upfront.'),
-      ('📈', 'How our prices work', 'Fares are calculated from route distance, how early you book, day of the week, time of day, airline, number of stops, cabin class and seats remaining.'),
-      ('🌐', 'Worldwide network', airports|length ~ ' airports across 6 continents and 20 partner airlines, from IndiGo to Emirates.'),
-      ('🔒', 'Your data is safe', 'Passwords are stored as salted hashes. Bookings are private to your account.'),
-    ] %}
-    <div class="feature glass tilt scroll-3d" data-depth="{{ 0.2 + loop.index0 * 0.15 }}">
-      <span class="feature-icon">{{ icon }}</span><h3>{{ title }}</h3><p class="muted">{{ text }}</p>
+<section class="container section">
+  <div class="split">
+    <div class="reveal" data-depth="0.12">
+      <span class="eyebrow">Our mission</span>
+      <h2>Transparent fares and a booking flow that respects your time</h2>
+      <p class="muted">We believe booking a flight should be as easy as choosing where to go. That means honest prices, complete flight information and support that answers when you call.</p>
+      <p class="muted">Our fares follow the same factors airlines use: distance, how early you book, the day and time you fly, the cabin you choose and how many seats remain.</p>
     </div>
+    <div class="split-media reveal" data-depth="0.18" style="background-image: {{ photo('LHR', 1200) }}"></div>
+  </div>
+</section>
+
+<section class="container section-tight">
+  <div class="counters panel reveal" data-depth="0.1">
+    {% for n, label in [(airports|length, 'destinations'), (20, 'partner airlines'), (4, 'cabin classes'), (24, 'hour support, every day')] %}
+      <div><b class="counter num" data-to="{{ n }}">{{ n }}</b><span>{{ label }}</span></div>
     {% endfor %}
   </div>
+</section>
 
-  <div class="counters glass scroll-3d" data-depth="0.3">
-    {% for n, label in [(2400000, 'happy travellers'), (airports|length, 'airports'), (20, 'airlines'), (24, 'hour support')] %}
-      <div><b class="counter" data-to="{{ n }}">0</b><span class="muted">{{ label }}</span></div>
+<section class="container section">
+  <div class="section-head"><div><span class="eyebrow">What we stand for</span><h2>Our commitments to every traveller</h2></div></div>
+  <div class="feature-grid">
+    {% for ic, title, text in [
+      ('tag', 'Clear pricing', 'Base fare, taxes and fees are always itemised. No surprises at checkout.'),
+      ('shield', 'Secure accounts', 'Passwords are stored as salted hashes and bookings are private to your account.'),
+      ('globe', 'Global network', airports|length ~ ' airports on six continents with 20 partner airlines.'),
+      ('headset', 'Real support', 'A travel desk that is reachable by phone, email and WhatsApp around the clock.'),
+    ] %}
+    <div class="feature panel reveal tilt" data-depth="{{ 0.12 + loop.index0 * 0.05 }}"><div class="feature-icon">{{ icon(ic, size=24) }}</div><h3>{{ title }}</h3><p>{{ text }}</p></div>
     {% endfor %}
   </div>
+</section>
 
-  <h2 class="section-title">Meet the team</h2>
+<section class="container section-tight">
+  <div class="section-head"><div><span class="eyebrow">Leadership</span><h2>The team behind SkyVoyage</h2></div></div>
   <div class="team">
-    {% for name, role, emoji in [('Riya Kapoor', 'Founder & CEO', '👩‍✈️'), ('Arjun Mehta', 'Head of Engineering', '👨‍💻'),
-                                 ('Sara Khan', 'Customer Happiness', '🎧'), ('Leo Fernandes', 'Design Lead', '🎨')] %}
-      <div class="member glass tilt scroll-3d" data-depth="{{ 0.25 + loop.index0 * 0.1 }}">
-        <span class="avatar">{{ emoji }}</span><b>{{ name }}</b><small class="muted">{{ role }}</small>
+    {% for name, role in [('Riya Kapoor', 'Founder and CEO'), ('Arjun Mehta', 'Head of Engineering'), ('Sara Khan', 'Head of Customer Care'), ('Leo Fernandes', 'Design Lead')] %}
+      <div class="member panel reveal" data-depth="0.12">
+        <span class="avatar">{{ name.split()[0][0] }}{{ name.split()[1][0] }}</span><b>{{ name }}</b><small class="muted">{{ role }}</small>
       </div>
     {% endfor %}
   </div>

@@ -14,10 +14,10 @@ A flight booking website written in **Python** with **Flask** and **SQLite**. It
 | 🎫 **Booking** | Passenger names, contact details, window/aisle seat preference, PNR, printable e-ticket / boarding pass |
 | 🕑 **Booking history** | Upcoming, completed and cancelled trips, stats, cancel booking, book again |
 | 🌍 **World map** | Click two airports to see the route drawn as a great-circle arc with a moving plane, plus the live cheapest fare |
-| 👤 **Pages** | Home, Login, Sign up, About, Help Centre, World Map, My Bookings, E-ticket |
+| 👤 **Pages** | Home, Log in, Sign up, About, Help centre, Route map, My trips, E-ticket, Privacy policy, Terms of use |
 | 🌗 **Dark / light mode** | Toggle in the navbar; your choice is remembered |
-| 🪟 **Glass effect & moving background** | Frosted-glass cards over an animated sky with drifting clouds, flying planes, stars at night and a slow-zooming background image. No black areas |
-| 🧊 **3-D effects** | Cards tilt and move in 3-D as you scroll, a ring of destination cards spins as you scroll, a spinning 3-D globe, and cards tilt under the mouse |
+| 🪟 **Glass effect & moving background** | Frosted-glass panels over a slowly drifting, tinted background photo |
+| 🧊 **3-D and motion** | Photo parallax on every header, a destination gallery that turns in 3-D as you scroll, panels that settle as they scroll into view, and cards that tilt under the mouse |
 | 🎧 **Help centre** | Email `skyvoyage.helpdesk@gmail.com` · Phone `+91 98765 43210` · WhatsApp `+91 91234 56780` (sample contact details) |
 
 ## Run it on a Mac (easiest)
@@ -43,9 +43,11 @@ Run the tests with:
 python -m unittest discover tests
 ```
 
-## Use your own background image
+## Photos
 
-Put your photo at `static/img/background.jpg` (`.png` and `.webp` also work). The site uses it automatically on every page, with a slow moving zoom, and dims it in dark mode. Without a photo, the built-in sky scene `static/img/background.svg` is used.
+The site uses real photographs from [Unsplash](https://unsplash.com) (free for commercial use under the Unsplash License), loaded when the site runs with an internet connection. Each photo sits on a colour wash, so the layout still looks finished if a photo cannot load.
+
+To use your own photos, put them in `static/img/photos/` (see the README there for the file names). For a background across the whole site, save a photo as `static/img/background.jpg`.
 
 ## Project structure
 
@@ -53,8 +55,10 @@ Put your photo at `static/img/background.jpg` (`.png` and `.webp` also work). Th
 app.py              Flask routes: search, booking, history, login/register, API
 flight_data.py      Airports, airlines, flight schedule generator and fare engine
 templates/          Jinja2 HTML pages
-static/css/style.css  Glass theme, dark/light mode, animated background, 3-D styles
-static/js/main.js     Theme toggle, 3-D scroll effects, live fare hints, world map
+ui_assets.py        Line icons and the photo list
+static/css/style.css  Design system: glass panels, dark/light mode, layout
+static/js/main.js     Theme toggle, parallax and 3-D gallery, live fare hints, route map
+preview/            Browser-only preview build (python preview/build.py)
 static/vendor/leaflet Leaflet map library (bundled, works offline)
 tests/              Unit tests
 ```

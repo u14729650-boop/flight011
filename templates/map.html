@@ -1,19 +1,26 @@
 {% extends "base.html" %}
-{% block title %}World map{% endblock %}
+{% block title %}Route map{% endblock %}
+{% block body_class %}has-hero{% endblock %}
 {% block content %}
-<section class="container">
-  <h1 class="page-title">🌍 Flight world map</h1>
-  <p class="muted">Click an airport to set <b>From</b>, then another to set <b>To</b>. Pick a date to see the live cheapest fare, then search.</p>
-  <div class="map-card glass">
+<section class="page-head">
+  <div class="band-media" data-parallax="0.3" style="background-image: {{ photo('hero', 2000) }}"></div>
+  <div class="page-head-inner">
+    <span class="eyebrow">Route map</span>
+    <h1>Explore our network</h1>
+    <p>Select a departure and an arrival airport to see the route, flight time and the lowest available fare.</p>
+  </div>
+</section>
+<section class="container section-tight">
+  <div class="map-card panel">
     <div class="map-controls">
-      <select id="mapFrom"><option value="">From…</option>{% for c, a in airports.items() %}<option value="{{ c }}">{{ a[0] }} ({{ c }})</option>{% endfor %}</select>
-      <button type="button" class="swap" id="mapSwap">⇄</button>
-      <select id="mapTo"><option value="">To…</option>{% for c, a in airports.items() %}<option value="{{ c }}">{{ a[0] }} ({{ c }})</option>{% endfor %}</select>
-      <input type="date" id="mapDate" min="{{ today.isoformat() }}">
-      <select id="mapCurrency">{% for c in currencies %}<option>{{ c }}</option>{% endfor %}</select>
+      <select id="mapFrom" aria-label="From"><option value="">From…</option>{% for c, a in airports.items() %}<option value="{{ c }}">{{ a[0] }} ({{ c }})</option>{% endfor %}</select>
+      <button type="button" class="swap" id="mapSwap" aria-label="Swap">{{ icon('swap', size=18) }}</button>
+      <select id="mapTo" aria-label="To"><option value="">To…</option>{% for c, a in airports.items() %}<option value="{{ c }}">{{ a[0] }} ({{ c }})</option>{% endfor %}</select>
+      <input type="date" id="mapDate" min="{{ today.isoformat() }}" aria-label="Travel date">
+      <select id="mapCurrency" aria-label="Currency">{% for c in currencies %}<option>{{ c }}</option>{% endfor %}</select>
     </div>
-    <div id="bigMap" class="map map-lg" data-map></div>
-    <div class="map-info" id="mapInfo"></div>
+    <div id="bigMap" class="map map-lg" data-map data-default="BOM,NRT"></div>
+    <div class="map-info"></div>
   </div>
 </section>
 {% endblock %}

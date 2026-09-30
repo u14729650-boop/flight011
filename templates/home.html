@@ -1,105 +1,141 @@
 {% extends "base.html" %}
-{% block title %}Book cheap flights{% endblock %}
+{% block title %}Cheap flights & airline tickets{% endblock %}
+{% block body_class %}has-hero{% endblock %}
 {% block content %}
 <section class="hero">
-  <div class="hero-text scroll-3d" data-depth="0.6">
-    <span class="pill glass">✨ Live fares · {{ airports|length }} cities · 20 airlines</span>
-    <h1>Fly anywhere.<br><span class="grad-text">Pay the perfect price.</span></h1>
-    <p class="lead">Compare flight times, arrivals, departures, flight numbers and real-time prices, then book in under a minute.</p>
-  </div>
-  <div class="hero-3d scene" aria-hidden="true">
-    <div class="globe">
-      <div class="globe-ring r1"></div><div class="globe-ring r2"></div><div class="globe-ring r3"></div>
-      <div class="globe-core"></div>
-      <div class="orbit"><svg class="orbit-plane" viewBox="0 0 64 64"><use href="#plane-icon"/></svg></div>
-      <div class="orbit orbit-2"><svg class="orbit-plane" viewBox="0 0 64 64"><use href="#plane-icon"/></svg></div>
+  <div class="hero-media" data-parallax="0.35" style="background-image: {{ photo('hero', 2400) }}"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <span class="eyebrow">Flights to {{ airports|length }} cities worldwide</span>
+    <h1>Your next journey starts at the right fare.</h1>
+    <p class="lead">Compare schedules, flight numbers and live prices across 20 airlines, then book in under a minute with an instant e-ticket.</p>
+    {% include "_search_form.html" %}
+    <div class="hero-points">
+      <span>{{ icon('shield', size=18) }} Secure checkout</span>
+      <span>{{ icon('tag', size=18) }} No hidden fees</span>
+      <span>{{ icon('refund', size=18) }} Easy cancellations</span>
+      <span>{{ icon('headset', size=18) }} 24/7 support</span>
     </div>
   </div>
 </section>
 
-<section class="container">
-  {% include "_search_form.html" %}
+<section class="container section-tight">
+  <div class="trust">
+    {% for ic, big, small in [('globe', airports|length|string, 'destinations worldwide'), ('plane', '20', 'partner airlines'),
+                              ('seat', '4', 'cabin classes'), ('headset', '24/7', 'customer support')] %}
+    <div class="trust-item panel reveal" data-depth="0.15">{{ icon(ic, size=28) }}<div><b>{{ big }}</b><span>{{ small }}</span></div></div>
+    {% endfor %}
+  </div>
 </section>
 
-<!-- 3D ring of destinations that rotates as you scroll -->
-<section class="ring-section" id="ringSection">
-  <div class="ring-sticky">
-    <h2 class="section-title center">Trending destinations <span class="muted small">— scroll to spin ✈</span></h2>
-    <div class="ring-stage">
-      <div class="ring" id="ring">
-        {% set spots = [
-          ('DXB', '🏙️', 'Burj Khalifa & desert safaris', 'linear-gradient(135deg,#f6d365,#fda085)'),
-          ('CDG', '🗼', 'Eiffel Tower & cafés', 'linear-gradient(135deg,#a1c4fd,#c2e9fb)'),
-          ('JFK', '🗽', 'The city that never sleeps', 'linear-gradient(135deg,#84fab0,#8fd3f4)'),
-          ('NRT', '🏯', 'Temples & cherry blossoms', 'linear-gradient(135deg,#fbc2eb,#a6c1ee)'),
-          ('MLE', '🏝️', 'Overwater villas', 'linear-gradient(135deg,#43e97b,#38f9d7)'),
-          ('LHR', '🎡', 'Big Ben & the Thames', 'linear-gradient(135deg,#667eea,#b794f4)'),
-          ('SYD', '🦘', 'Opera House & beaches', 'linear-gradient(135deg,#ff9a9e,#fecfef)'),
-          ('SIN', '🌆', 'Gardens by the Bay', 'linear-gradient(135deg,#30cfd0,#6a82fb)'),
-          ('IST', '🕌', 'Where East meets West', 'linear-gradient(135deg,#f093fb,#f5576c)'),
-          ('CAI', '🐪', 'Pyramids of Giza', 'linear-gradient(135deg,#fad0c4,#ffd1ff)'),
-        ] %}
-        {% for code, icon, tag, grad in spots %}
-        <a class="ring-card" style="--i: {{ loop.index0 }}; --n: {{ spots|length }}; --g: {{ grad }}"
-           href="{{ url_for('search', origin='DEL', dest=code, depart=when.isoformat()) }}"
-           data-dest="{{ code }}">
-          <span class="ring-icon">{{ icon }}</span>
-          <strong>{{ airports[code][0] }}</strong>
-          <span>{{ airports[code][2] }}</span>
-          <em>{{ tag }}</em>
+<!-- Destination gallery: cards turn in 3-D as the page scrolls -->
+<section class="gallery-pin" id="gallery">
+  <div class="gallery-sticky">
+    <div class="container section-head">
+      <div>
+        <span class="eyebrow">Popular destinations</span>
+        <h2>Where travellers are flying this season</h2>
+      </div>
+      <p class="muted">Lowest return-ready fares from New Delhi, departing {{ when.strftime('%d %b') }}. Prices update with demand.</p>
+    </div>
+    <div class="gallery-stage">
+      <div class="gallery-track" id="galleryTrack">
+        {% for d in destinations %}
+        <a class="dest-card" href="{{ url_for('search', origin='DEL', dest=d.d, depart=when.isoformat()) }}">
+          <div class="dest-photo" style="background-image: {{ photo(d.d, 900) }}"></div>
+          <div class="dest-body">
+            <span class="country">{{ airports[d.d][2] }}</span>
+            <h3>{{ airports[d.d][0] }}</h3>
+            <p>{{ d.tagline }}</p>
+            <div class="dest-price"><span>{{ fmt_duration(d.flight.duration_min) }} · {{ 'Non-stop' if d.flight.stops == 0 else '1 stop' }}</span><span>from <b>{{ d.price|money }}</b></span></div>
+          </div>
         </a>
         {% endfor %}
       </div>
     </div>
+    <div class="gallery-hint">Scroll to explore <span class="gallery-progress"><i id="galleryProgress"></i></span></div>
   </div>
 </section>
 
-<section class="container">
-  <h2 class="section-title">🔥 Cheapest fares this month</h2>
+<section class="container section">
+  <div class="section-head">
+    <div><span class="eyebrow">Fare deals</span><h2>Lowest fares on popular routes</h2></div>
+    <p class="muted">Economy, one way, per adult including taxes. Travel on {{ when.strftime('%A, %d %B') }}.</p>
+  </div>
   <div class="deal-grid">
     {% for deal in deals %}
-    <a class="deal glass tilt scroll-3d" data-depth="{{ 0.3 + (loop.index0 % 4) * 0.12 }}"
-       href="{{ url_for('search', origin=deal.o, dest=deal.d, depart=deal.date.isoformat()) }}">
-      <div class="deal-route">
-        <span class="code">{{ deal.o }}</span>
-        <span class="deal-line"><svg viewBox="0 0 64 64"><use href="#plane-icon"/></svg></span>
-        <span class="code">{{ deal.d }}</span>
+    <a class="deal panel reveal tilt" data-depth="{{ 0.12 + (loop.index0 % 4) * 0.05 }}" href="{{ url_for('search', origin=deal.o, dest=deal.d, depart=deal.date.isoformat()) }}">
+      <div class="deal-photo" style="background-image: {{ photo(deal.d, 700) }}"></div>
+      <div class="deal-body">
+        <div class="deal-route"><span>{{ deal.o }}</span><span class="line">{{ icon('plane', size=16) }}</span><span>{{ deal.d }}</span></div>
+        <span class="deal-meta">{{ airports[deal.o][0] }} to {{ airports[deal.d][0] }}</span>
+        <span class="deal-meta">{{ deal.flight.airline }} · {{ fmt_duration(deal.flight.duration_min) }} · {{ 'Non-stop' if deal.flight.stops == 0 else '1 stop' }}</span>
+        <div class="deal-foot"><span class="muted small">from</span><b class="num">{{ deal.price|money }}</b></div>
       </div>
-      <p class="deal-cities">{{ airports[deal.o][0] }} → {{ airports[deal.d][0] }}</p>
-      <p class="muted small">{{ deal.flight.airline }} · {{ fmt_duration(deal.flight.duration_min) }} · {{ 'Non-stop' if deal.flight.stops == 0 else '1 stop' }}</p>
-      <p class="muted small">{{ deal.date.strftime('%a, %d %b') }}</p>
-      <p class="deal-price">from <b>{{ deal.price|money }}</b></p>
     </a>
     {% endfor %}
   </div>
 </section>
 
-<section class="container">
-  <div class="map-card glass scroll-3d" data-depth="0.4">
-    <div class="map-head">
-      <div>
-        <h2 class="section-title">🌍 Explore the world map</h2>
-        <p class="muted">Click one airport for <b>From</b>, another for <b>To</b> — we'll show the route and today's best fare.</p>
-      </div>
-      <a class="btn btn-ghost" href="{{ url_for('world_map') }}">Open full map →</a>
+<section class="container section">
+  <div class="section-head">
+    <div><span class="eyebrow">Why SkyVoyage</span><h2>Booking made clear and dependable</h2></div>
+  </div>
+  <div class="feature-grid">
+    {% for ic, title, text in [
+      ('trend', 'Fares that follow the market', 'Prices reflect route distance, booking window, day of week, time of day, cabin and seats left, the same factors airlines use.'),
+      ('tag', 'Every fee shown upfront', 'Base fare, taxes and convenience fee are itemised before you pay. What you see is what you pay.'),
+      ('ticket', 'Instant e-tickets', 'Your PNR, seats, terminal, gate and boarding time arrive the moment your booking is confirmed.'),
+      ('headset', 'Support around the clock', 'Our travel desk is available 24 hours a day on phone, email and WhatsApp.'),
+    ] %}
+    <div class="feature panel reveal tilt" data-depth="{{ 0.12 + loop.index0 * 0.05 }}">
+      <div class="feature-icon">{{ icon(ic, size=24) }}</div>
+      <h3>{{ title }}</h3>
+      <p>{{ text }}</p>
     </div>
-    <div id="homeMap" class="map" data-map></div>
-    <div class="map-info" id="mapInfo"></div>
+    {% endfor %}
   </div>
 </section>
 
-<section class="container features">
-  {% for icon, title, text in [
-    ('💸', 'Real-time pricing', 'Fares move with demand, booking window, weekday, time of day and seats left — just like real airlines.'),
-    ('🛡️', 'Secure booking', 'Passwords are hashed and every booking gets a unique PNR & e-ticket.'),
-    ('🕑', 'Booking history', 'All your trips in one place: upcoming, completed and cancelled.'),
-    ('🎧', '24×7 help centre', 'Reach us any time on ' ~ help.phone ~ ' or ' ~ help.email ~ '.'),
-  ] %}
-  <div class="feature glass tilt scroll-3d" data-depth="{{ 0.25 + loop.index0 * 0.15 }}">
-    <span class="feature-icon">{{ icon }}</span>
-    <h3>{{ title }}</h3>
-    <p class="muted">{{ text }}</p>
+<section class="container section-tight">
+  <div class="section-head"><div><span class="eyebrow">How it works</span><h2>From search to boarding pass in three steps</h2></div></div>
+  <div class="steps">
+    {% for title, text in [
+      ('Search and compare', 'Enter your route and dates. We show every flight with times, stops, duration and the full price.'),
+      ('Choose and book', 'Pick your flight, add passenger details and a seat preference, then confirm securely.'),
+      ('Fly with your e-ticket', 'Your e-ticket is saved to My trips, where you can view, print or cancel it any time.'),
+    ] %}
+    <div class="step panel reveal" data-depth="0.15"><span class="step-no">Step {{ loop.index }}</span><h3>{{ title }}</h3><p>{{ text }}</p></div>
+    {% endfor %}
   </div>
-  {% endfor %}
+</section>
+
+<section class="container section">
+  <div class="map-card panel reveal" data-depth="0.1">
+    <div class="section-head">
+      <div><span class="eyebrow">Route map</span><h2>Explore our network</h2>
+        <p class="muted">Select one airport for departure and another for arrival to see the route and the lowest fare.</p></div>
+      <a class="btn btn-ghost" href="{{ url_for('world_map') }}">Open full map {{ icon('arrow', size=16) }}</a>
+    </div>
+    <div id="homeMap" class="map" data-map></div>
+    <div class="map-info"></div>
+  </div>
+</section>
+
+<section class="container section-tight" id="alerts">
+  <div class="band">
+    <div class="band-media" data-parallax="0.2" style="background-image: {{ photo('beach', 1800) }}"></div>
+    <div class="band-inner">
+      <div>
+        <span class="eyebrow" style="color:#9cc2ff">Fare alerts</span>
+        <h2>Get notified when prices drop</h2>
+        <p>Tell us where you're going and we'll email you the best time to book. No spam, unsubscribe any time.</p>
+      </div>
+      <form method="post" action="{{ url_for('subscribe') }}">
+        <input type="email" name="email" placeholder="Your email address" required aria-label="Email address">
+        <button class="btn btn-lg" type="submit">{{ icon('send', size=18) }} Subscribe</button>
+      </form>
+    </div>
+  </div>
 </section>
 {% endblock %}

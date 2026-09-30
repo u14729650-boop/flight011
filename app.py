@@ -10,9 +10,11 @@ from functools import wraps
 
 from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
                    request, session, url_for)
+from markupsafe import Markup
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import flight_data as fd
+import ui_assets as ui
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.environ.get("SKYVOYAGE_DB", os.path.join(BASE_DIR, "skyvoyage.db"))
@@ -25,6 +27,21 @@ HELP_CENTRE = {
     "whatsapp": "+91 91234 56780",
     "hours": "24 × 7, all days",
 }
+
+POPULAR_ROUTES = [("DEL", "DXB"), ("BOM", "LHR"), ("DEL", "SIN"), ("BLR", "JFK"),
+                  ("DEL", "BOM"), ("MAA", "CMB"), ("BOM", "MLE"), ("DEL", "CDG")]
+DESTINATIONS = [
+    ("DXB", "Skyline dining, desert safaris and world-class shopping"),
+    ("CDG", "Boulevards, museums and cafés along the Seine"),
+    ("LHR", "Royal landmarks, theatre and riverside walks"),
+    ("NRT", "Neon nights, temples and unforgettable food"),
+    ("MLE", "Private water villas over turquoise lagoons"),
+    ("SIN", "Garden city with a spectacular waterfront"),
+    ("JFK", "Broadway, museums and the famous skyline"),
+    ("SYD", "Harbour views, beaches and the Opera House"),
+    ("FCO", "Ancient history on every street corner"),
+    ("IST", "Where Europe meets Asia across the Bosphorus"),
+]
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SKYVOYAGE_SECRET", "dev-" + secrets.token_hex(16))
@@ -143,17 +160,19 @@ def assign_seats(flight, cabin, count, preference):
 
 
 def background_image():
-    """Use the user's own photo (static/img/background.jpg/.png/.webp) if present, else the built-in scene."""
+    """Site-wide background: the owner's own static/img/background.* if present, else the hero photo."""
     for name in ("background.jpg", "background.jpeg", "background.png", "background.webp"):
         if os.path.exists(os.path.join(app.static_folder, "img", name)):
-            return url_for("static", filename="img/" + name)
-    return url_for("static", filename="img/background.svg")
+            return Markup(f"url('{url_for('static', filename='img/' + name)}'), {ui.FALLBACK['hero']}")
+    return ui.photo("hero", 2000)
 
 
 @app.context_processor
 def inject_globals():
     return {
-        "background_url": background_image(),
+        "background": background_image(),
+        "icon": ui.icon,
+        "photo": ui.photo,
         "user": current_user(),
         "help": HELP_CENTRE,
         "airports": fd.AIRPORTS,
@@ -182,16 +201,36 @@ def dt_filter(value, fmt="%d %b %Y, %H:%M"):
 
 @app.route("/")
 def home():
-    popular = [("DEL", "DXB"), ("BOM", "LHR"), ("DEL", "SIN"), ("BLR", "JFK"),
-               ("DEL", "BOM"), ("MAA", "CMB"), ("BOM", "MLE"), ("DEL", "CDG")]
     when = date.today() + timedelta(days=21)
-    deals = []
-    for o, d in popular:
+
+    def cheapest(o, d):
         flights = fd.generate_flights(o, d, when)
-        cheapest = min(flights, key=lambda f: f["fares_usd"]["economy"])
-        deals.append({"o": o, "d": d, "date": when, "flight": cheapest,
-                      "price": fd.price_breakdown(cheapest)["total"]})
-    return render_template("home.html", deals=deals, when=when)
+        best = min(flights, key=lambda f: f["fares_usd"]["economy"])
+        return {"o": o, "d": d, "date": when, "flight": best, "price": fd.price_breakdown(best)["total"]}
+
+    deals = [cheapest(o, d) for o, d in POPULAR_ROUTES]
+    destinations = [dict(cheapest("DEL", code), tagline=tagline) for code, tagline in DESTINATIONS]
+    return render_template("home.html", deals=deals, destinations=destinations, when=when)
+
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    email = request.form.get("email", "").strip()
+    if "@" in email:
+        flash(f"Fare alerts are on for {email}. We'll email you when prices drop.", "success")
+    else:
+        flash("Please enter a valid email address.", "error")
+    return redirect(url_for("home") + "#alerts")
+
+
+@app.route("/privacy")
+def privacy():
+    return render_template("legal.html", page="privacy")
+
+
+@app.route("/terms")
+def terms():
+    return render_template("legal.html", page="terms")
 
 
 @app.route("/about")
@@ -369,7 +408,7 @@ def book():
                  datetime.now().isoformat(timespec="seconds")))
             pnrs.append(pnr)
         db.commit()
-        flash("Booking confirmed! Have a wonderful trip ✈", "success")
+        flash("Booking confirmed. Your e-ticket is ready below.", "success")
         return redirect(url_for("ticket", pnr=pnrs[0]))
 
     kinds = ["Adult"] * adults + ["Child"] * children + ["Infant"] * infants
