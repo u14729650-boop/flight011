@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { cityByName } from '../../data/cities';
 import { formatINR } from '../../lib/format';
 import { AIR_REFERENCE_PRICES } from '../../config/pricing';
+import { HeroBackdrop } from '../media/HeroBackdrop';
 import { IndiaMap, type MapMarker, type MapRoute } from '../map/IndiaMap';
-import { Cargo3D, Pin3D, Plane3D, Truck3D } from '../three-d/Objects3D';
 import { ButtonLink } from '../ui/Button';
 import { CheckCircleIcon, PlaneIcon, RouteIcon, ShieldIcon, TruckIcon } from '../ui/Icons';
 
@@ -56,8 +56,8 @@ export function Hero() {
   const air100 = AIR_REFERENCE_PRICES.find((p) => p.kg === 100)!;
 
   return (
-    <section className="hero">
-      <div className="hero__bg grid-bg" aria-hidden />
+    <section className="hero hero--cinematic">
+      <HeroBackdrop />
       <div className="container hero__inner">
         <div className="hero__copy">
           <span className="eyebrow hero__eyebrow">Transport · Logistics · Air Cargo · Movers &amp; Packers</span>
@@ -74,7 +74,7 @@ export function Hero() {
             <ButtonLink to="/calculator" size="lg" arrow="right">
               Get a Quote
             </ButtonLink>
-            <ButtonLink to="/track" size="lg" variant="secondary" arrow="up-right">
+            <ButtonLink to="/track" size="lg" variant="outline-light" arrow="up-right">
               Track Shipment
             </ButtonLink>
           </div>
@@ -96,14 +96,9 @@ export function Hero() {
 
         <div className="hero__stage" ref={stage}>
           <div className="hero__map-wrap">
-            <IndiaMap className="hero__map" routes={routes} markers={markers} extrude showLabels />
+            <IndiaMap className="hero__map" title="Map of India with YA² routes" routes={routes} markers={markers} extrude showLabels />
           </div>
 
-          <Plane3D className="hero__plane" width="46%" />
-          <Truck3D className="hero__truck" width="44%" />
-          <Cargo3D className="hero__box hero__box--1" width="12%" tone="kraft" />
-          <Cargo3D className="hero__box hero__box--2" width="9%" tone="blue" />
-          <Pin3D className="hero__pin" width="7%" tone="emerald" />
 
           <div className="hero__card hero__card--track card--glass">
             <span className="badge badge--emerald badge--dot badge--live">In transit</span>

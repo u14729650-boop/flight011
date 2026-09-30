@@ -68,3 +68,16 @@ export const MEDIA: Record<MediaSlot, MediaItem> = {
     scene: 'ops',
   },
 };
+
+/**
+ * Hero background footage. Put a licensed, muted, looping clip in
+ * /public/videos (H.264 MP4, 1920×1080, 10–20 s, under ~6 MB, plus a WebM if
+ * you like) and set `src`. Until then the hero shows a rendered night-highway
+ * scene. Brief: Indian national highway at dusk, trucks with light trails,
+ * steady/slow camera, cool blue grade.
+ */
+export const HERO_VIDEO = {
+  src: '', // e.g. '/videos/hero-highway.mp4'
+  webm: '', // optional, e.g. '/videos/hero-highway.webm'
+  poster: '', // optional still frame, e.g. '/videos/hero-highway.jpg'
+};
