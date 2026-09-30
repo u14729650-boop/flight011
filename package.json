@@ -12,6 +12,7 @@
     "build:preview": "VITE_PREVIEW=1 vite build --outDir dist-preview",
     "typecheck": "tsc -p tsconfig.json",
     "db": "tsx scripts/db.ts",
+    "db:export": "tsx scripts/export-oracle.ts",
     "map:build": "node scripts/build-india-map.mjs",
     "jury:page": "tsx scripts/jury/build-database-page.ts"
   },
