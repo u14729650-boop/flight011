@@ -7,12 +7,14 @@ services:
     name: ya2-transport
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: NODE_ENV
+        value: production
       - key: DB_CLIENT
         value: oracle
       - key: ORACLE_USER

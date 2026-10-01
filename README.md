@@ -12,7 +12,7 @@ cp .env.example .env        # optional; defaults work for local dev
 npm run dev                 # web on http://localhost:5173, API on :8787
 ```
 
-Production: `npm run build && npm start` (Express serves `dist/` and the API on `PORT`).
+Production: `npm run build && npm start` (Express serves `dist/` and the API on `PORT`). On a live server set `NODE_ENV=production` (in `.env` or the host's settings) for secure cookies and a required admin password.
 
 Demo tracking IDs: `YA2-2026-001284`, `YA2-2026-001285`, `YA2-2026-001290`, `YA2-2026-001301`.
 
