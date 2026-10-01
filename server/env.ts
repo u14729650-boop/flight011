@@ -5,8 +5,12 @@ import path from 'node:path';
 const envFile = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envFile)) {
   for (const line of fs.readFileSync(envFile, 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (!m || process.env[m[1]] !== undefined) continue;
+    const raw = m[2];
+    // "quoted value" keeps everything inside the quotes; otherwise a " # comment" at the end is dropped.
+    const quoted = /^(["'])(.*)\1$/.exec(raw);
+    process.env[m[1]] = quoted ? quoted[2] : raw.replace(/\s+#.*$/, '');
   }
 }
 
