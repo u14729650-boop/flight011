@@ -20,12 +20,13 @@ export const ENV = {
   isProd: e.NODE_ENV === 'production',
   port: Number(e.PORT ?? 8787),
   /** Public URL of the site (used in emails and OAuth redirects). */
-  appUrl: (e.APP_URL ?? 'http://localhost:5173').replace(/\/$/, ''),
+  appUrl: (e.APP_URL ?? (e.VERCEL_PROJECT_PRODUCTION_URL ? `https://${e.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:5173')).replace(/\/$/, ''),
 
   /** 'sqlite' (default, SQL database file), 'oracle', or 'file' (plain JSON, prototype only). */
   dbClient: (e.DB_CLIENT ?? 'sqlite') as 'sqlite' | 'oracle' | 'file',
-  dataDir: e.DATA_DIR ?? path.resolve(process.cwd(), 'server/.data'),
-  sqliteFile: e.SQLITE_FILE ?? path.resolve(process.cwd(), 'server/.data/ya2.db'),
+  dataDir: e.DATA_DIR ?? (e.VERCEL ? '/tmp/ya2-data' : path.resolve(process.cwd(), 'server/.data')),
+  // On Vercel the project folder is read-only: without Oracle, SQLite lives in /tmp (temporary — use Oracle there).
+  sqliteFile: e.SQLITE_FILE ?? (e.VERCEL ? '/tmp/ya2.db' : path.resolve(process.cwd(), 'server/.data/ya2.db')),
   oracle: {
     user: e.ORACLE_USER ?? '',
     password: e.ORACLE_PASSWORD ?? '',

@@ -14,7 +14,8 @@
     "db": "tsx scripts/db.ts",
     "db:export": "tsx scripts/export-oracle.ts",
     "map:build": "node scripts/build-india-map.mjs",
-    "jury:page": "tsx scripts/jury/build-database-page.ts"
+    "jury:page": "tsx scripts/jury/build-database-page.ts",
+    "build:vercel": "node scripts/build-vercel.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",
@@ -35,6 +36,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "concurrently": "^10.0.5",
     "d3-geo": "^3.1.1",
+    "esbuild": "^0.28.2",
     "shapefile": "^0.6.6",
     "sql.js": "^1.13.0",
     "topojson-client": "^3.1.0",

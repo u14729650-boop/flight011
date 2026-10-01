@@ -9,3 +9,4 @@ dist-preview
 
 # test screenshots
 /*.png
+.vercel

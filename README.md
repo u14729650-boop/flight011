@@ -102,6 +102,21 @@ npm run db -- "SELECT name, email, created_at FROM ya2_users"
 The hidden admin console (`/admin`) reads Oracle too, inside a READ ONLY transaction, and its example queries switch
 to Oracle SQL.
 
+## Deploying on Vercel
+
+`vercel.json` + `scripts/build-vercel.mjs` build the site with Vercel's Build Output API: the website as static files and
+the whole Express API as one Node.js function (`server/vercel.ts`).
+
+1. On https://vercel.com: **Add New → Project**, import this repository, pick this branch, keep the settings, **Deploy**.
+2. **Settings → Environment Variables**, then **Redeploy**:
+   - `DB_CLIENT=oracle`, `ORACLE_USER`, `ORACLE_PASSWORD`, `ORACLE_CONNECT_STRING` (Oracle Cloud Autonomous Database,
+     see the next section for steps 1–3) — Vercel can't reach an Oracle installed on your own computer
+   - `ADMIN_PASSWORD` (for `/admin`), `NODE_ENV=production`
+   - optional: `GOOGLE_CLIENT_ID` (add the Vercel URL to its Authorized JavaScript origins)
+
+Without the Oracle settings the site still runs, but on a temporary database in `/tmp` that Vercel can wipe at any time.
+`APP_URL` defaults to the project's Vercel URL. Test the Vercel build locally with `npm run build:vercel`.
+
 ## Deploying with Oracle (Render + Oracle Cloud Free Tier)
 
 1. **Create the database.** On https://cloud.oracle.com (Always Free): **Autonomous Database → Create** (Transaction
