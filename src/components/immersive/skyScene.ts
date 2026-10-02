@@ -10,6 +10,7 @@
  *   and the aircraft forward through the clouds. Scrolling back reverses it.
  */
 import * as THREE from 'three';
+import { CLOUD_BOTTOM, createCloudLayer } from './cloudLayer';
 import { Sky } from 'three/examples/jsm/objects/Sky.js';
 
 type V3 = [number, number, number];
@@ -113,40 +114,6 @@ function liveryTexture(): THREE.CanvasTexture {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
-  return t;
-}
-
-function cloudTexture(seed: number): THREE.CanvasTexture {
-  const S = 256;
-  const c = document.createElement('canvas');
-  c.width = c.height = S;
-  const g = c.getContext('2d')!;
-  let s = seed;
-  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 46; i++) {
-    const a = r() * Math.PI * 2;
-    const d = Math.pow(r(), 0.7) * S * 0.28;
-    const x = S / 2 + Math.cos(a) * d * 1.25;
-    const y = S * 0.55 + Math.sin(a) * d * 0.55;
-    const rad = S * (0.08 + r() * 0.14);
-    const grad = g.createRadialGradient(x, y - rad * 0.3, rad * 0.1, x, y, rad);
-    // lit tops, cooler shaded undersides
-    grad.addColorStop(0, 'rgba(255,255,255,0.9)');
-    grad.addColorStop(0.55, 'rgba(246,238,236,0.55)');
-    grad.addColorStop(1, 'rgba(190,196,214,0)');
-    g.fillStyle = grad;
-    g.beginPath();
-    g.arc(x, y, rad, 0, Math.PI * 2);
-    g.fill();
-  }
-  const shade = g.createLinearGradient(0, S * 0.35, 0, S * 0.85);
-  shade.addColorStop(0, 'rgba(0,0,0,0)');
-  shade.addColorStop(1, 'rgba(110,105,130,0.28)');
-  g.globalCompositeOperation = 'source-atop';
-  g.fillStyle = shade;
-  g.fillRect(0, 0, S, S);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
@@ -338,6 +305,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
 
   const sky = new Sky();
   sky.scale.setScalar(20000);
+  sky.renderOrder = -3; // drawn first: the haze layer under the clouds must cover its dark lower half
   const su = sky.material.uniforms;
   su.turbidity.value = 7;
   su.rayleigh.value = 2.2;
@@ -373,8 +341,11 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     sunLight.color.setRGB(1, 0.86 - warm * 0.2, 0.72 - warm * 0.3);
     sunLight.intensity = 1.6 + elevation * 0.25;
     (scene.fog as THREE.FogExp2).color.setRGB(0.62 + warm * 0.25, 0.52 + warm * 0.08, 0.5 - warm * 0.06);
-    seaMatRef?.color.setRGB(0.55 + warm * 0.2, 0.48 + warm * 0.08, 0.5 - warm * 0.08);
-    hazeRef?.uniforms.uColor.value.setRGB(0.6 + warm * 0.22, 0.5 + warm * 0.1, 0.5 - warm * 0.05);
+    // what shows through gaps in the clouds: the evening haze, a little darker
+    if (seaMatRef) seaMatRef.color.copy((scene.fog as THREE.FogExp2).color).multiplyScalar(0.72);
+    ambTop.setRGB(0.5 + warm * 0.22, 0.52 + warm * 0.07, 0.68 - warm * 0.12);
+    ambBottom.setRGB(0.24 + warm * 0.08, 0.22 + warm * 0.04, 0.3);
+    hazeRef?.uniforms.uColor.value.copy((scene.fog as THREE.FogExp2).color); // seamless with the fogged haze under the clouds
     if (Math.abs(elevation - lastElevation) > 0.6) {
       lastElevation = elevation;
       const eu = envSky.material.uniforms;
@@ -390,34 +361,20 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
   const { plane, blink, beacons } = buildAircraft();
   scene.add(plane);
 
-  // clouds
+  // volumetric cloud deck below the aircraft (ray-marched, see cloudLayer.ts)
   const small = window.matchMedia('(max-width: 760px)').matches;
-  const texes = [cloudTexture(7), cloudTexture(99), cloudTexture(4242)];
-  const clouds: THREE.Sprite[] = [];
-  const addCloud = (x: number, y: number, z: number, s: number) => {
-    const m = new THREE.SpriteMaterial({ map: texes[clouds.length % 3], color: 0xfff1e4, transparent: true, depthWrite: false, fog: true, opacity: 0.92 });
-    const sp = new THREE.Sprite(m);
-    sp.position.set(x, y, z);
-    sp.scale.set(s, s * 0.55, 1);
-    scene.add(sp);
-    clouds.push(sp);
-  };
-  let seed = 11;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const deckCount = small ? 150 : 260;
-  for (let i = 0; i < deckCount; i++) addCloud((rnd() - 0.5) * 1500, -42 - rnd() * 22, -1000 + rnd() * 1250, 90 + rnd() * 150);
-  for (let i = 0; i < (small ? 14 : 26); i++) {
-    const side = rnd() < 0.5 ? -1 : 1;
-    addCloud(side * (45 + rnd() * 140), -14 + rnd() * 26, -900 + rnd() * 1150, 40 + rnd() * 60);
-  }
-  const baseZ = clouds.map((c) => c.position.z);
+  const cloudLayer = createCloudLayer({ small });
+  scene.add(cloudLayer.composite);
+  const ambTop = new THREE.Color();
+  const ambBottom = new THREE.Color();
 
   // distant cloud sea / haze so the view below the horizon is never empty
-  const seaMat = new THREE.MeshBasicMaterial({ color: 0xcfb7ac, fog: true, depthWrite: false });
+  // seen through gaps in the clouds: a darker, hazier layer far below
+  const seaMat = new THREE.MeshBasicMaterial({ color: 0x8f8590, fog: true, depthWrite: false });
   seaMatRef = seaMat;
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), seaMat);
   sea.rotation.x = -Math.PI / 2;
-  sea.position.y = -58;
+  sea.position.y = CLOUD_BOTTOM - 40;
   sea.renderOrder = -2;
   scene.add(sea);
 
@@ -430,7 +387,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     uniforms: { uColor: { value: new THREE.Color(0xd9b4a0) } },
     vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
     fragmentShader: `uniform vec3 uColor; varying vec3 vDir;
-      void main(){ float a = smoothstep(0.16, -0.01, vDir.y); gl_FragColor = vec4(uColor, a * 0.92); }`,
+      void main(){ float a = smoothstep(0.17, 0.0, vDir.y) * smoothstep(-0.5, -0.04, vDir.y); gl_FragColor = vec4(uColor, a); }`,
   });
   hazeRef = hazeMat;
   const haze = new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 24), hazeMat);
@@ -458,6 +415,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     h = Math.max(1, r.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.6));
     renderer.setSize(w, h, false);
+    cloudLayer.setSize(w, h, renderer.getPixelRatio());
     camera.aspect = w / h;
     camera.fov = w / h < 1 ? 52 : 38;
     camera.updateProjectionMatrix();
@@ -486,10 +444,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
 
     // clouds stream past: time + scroll both move us forward
     const travel = clock * 18 + p * 900;
-    for (let i = 0; i < clouds.length; i++) {
-      const z = baseZ[i] + travel;
-      clouds[i].position.z = ((((z + 1000) % 1250) + 1250) % 1250) - 1000;
-    }
+    cloudLayer.update({ sunDir: sun, sunColor: sunLight.color.clone().multiplyScalar(sunLight.intensity * 1.35), ambTop, ambBottom, fog: (scene.fog as THREE.FogExp2).color, travel });
 
     // camera on its path, framing the aircraft to the right on wide screens
     camCurve.getPoint(Math.min(0.9999, p), tmp);
@@ -505,6 +460,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     camera.lookAt(target);
     hazeMesh.position.copy(camera.position);
 
+    cloudLayer.render(renderer, camera, dt);
     renderer.render(scene, camera);
   };
 
@@ -541,6 +497,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     ro.disconnect();
     document.removeEventListener('visibilitychange', onVis);
     envRT?.dispose();
+    cloudLayer.dispose();
     pmrem.dispose();
     renderer.dispose();
   };
