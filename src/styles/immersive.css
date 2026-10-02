@@ -22,7 +22,7 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, #1b2c4d 0%, #5d5470 45%, #d98c5f 70%, #2a2f45 100%);
+  background: linear-gradient(180deg, #3d6fb8 0%, #9db7dd 42%, #e9e6d8 50%, #3a4a6e 56%, #1c2742 100%);
 }
 [data-theme='dark'] .sky-bg {
   --scrim-color: 4, 10, 20;

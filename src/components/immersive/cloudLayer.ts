@@ -12,7 +12,10 @@ import * as THREE from 'three';
 import { buildCloudNoise } from './cloudNoise';
 
 export const CLOUD_BOTTOM = -92;
-export const CLOUD_TOP = -14;
+export const CLOUD_TOP = -12;
+/** Thin layer of scattered high clouds far above the aircraft. */
+export const HIGH_BOTTOM = 520;
+export const HIGH_TOP = 580;
 
 const vert = /* glsl */ `
   varying vec2 vUv;
@@ -31,104 +34,134 @@ const frag = /* glsl */ `
   uniform vec3 uAmbTop;
   uniform vec3 uAmbBottom;
   uniform vec3 uFogCol;
+  uniform vec3 uHighLit;
+  uniform vec3 uHighShade;
   uniform vec3 uWind;
   uniform float uFade;
   varying vec2 vUv;
 
   const float BOT = ${CLOUD_BOTTOM.toFixed(1)};
   const float TOP = ${CLOUD_TOP.toFixed(1)};
-  const float MAX_DIST = 3000.0;
+  const float HBOT = ${HIGH_BOTTOM.toFixed(1)};
+  const float HTOP = ${HIGH_TOP.toFixed(1)};
+  const float MAX_DIST = 6500.0;
+  const float HMAX_DIST = 9000.0;
 
   // fixed per-pixel jitter: hides step banding without frame-to-frame shimmer
   float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
   float remap(float v, float a, float b, float c, float d) { return c + (v - a) / (b - a) * (d - c); }
   float hg(float c, float g) { float g2 = g * g; return (1.0 - g2) / (4.0 * 3.14159 * pow(1.0 + g2 - 2.0 * g * c, 1.5)); }
 
-  // density 0..1 at a world position
+  // main deck: a dense bank with billowy tops and soft, thin bases
   float density(vec3 p, bool cheap) {
     float h = clamp((p.y - BOT) / (TOP - BOT), 0.0, 1.0);
-    // flat-ish bases, rounded rising tops (cumulus profile)
     float profile = smoothstep(0.0, 0.22, h) * smoothstep(1.0, 0.3, h);
     vec3 q = (p + uWind) * 0.0034;
     vec4 n = texture(uNoise, q);
-    // large-scale coverage so the deck breaks into separate cloud banks
     float cover = texture(uNoise, q * 0.17 + vec3(0.37, 0.11, 0.53)).b;
-    float coverage = smoothstep(0.3, 0.72, cover) * 0.42 + 0.24;
+    float coverage = smoothstep(0.25, 0.7, cover) * 0.3 + COVERAGE;
     float base = remap(n.r * profile, 1.0 - coverage, 1.0, 0.0, 1.0);
     if (base <= 0.0 || cheap) return clamp(base, 0.0, 1.0);
-    // erode the edges with high-frequency detail: wispy at the bottom, billowy on top
     float detail = texture(uNoise, q * 4.7).g * 0.7 + texture(uNoise, q * 11.0).g * 0.3;
     float erosion = mix(1.0 - detail, detail, clamp(h * 3.0, 0.0, 1.0));
-    // denser cores higher up: dark, heavy bases and bright, firm tops
     return clamp(remap(base, erosion * 0.45, 1.0, 0.0, 1.0), 0.0, 1.0) * mix(0.35, 1.0, h);
+  }
+
+  // high layer: small, flat, scattered cloudlets (altocumulus)
+  float densityHigh(vec3 p) {
+    float h = clamp((p.y - HBOT) / (HTOP - HBOT), 0.0, 1.0);
+    float profile = smoothstep(0.0, 0.35, h) * smoothstep(1.0, 0.5, h);
+    vec3 q = (p + uWind * 0.35) * vec3(0.0011, 0.003, 0.0019);
+    float cover = texture(uNoise, q * 0.21 + vec3(0.71, 0.29, 0.13)).b;
+    float n = texture(uNoise, q).r;
+    float base = remap(n * profile, 1.0 - smoothstep(0.5, 0.8, cover) * 0.62, 1.0, 0.0, 1.0);
+    if (base <= 0.0) return 0.0;
+    float detail = texture(uNoise, q * 5.0).g;
+    return clamp(remap(base, detail * 0.55, 1.0, 0.0, 1.0), 0.0, 1.0);
   }
 
   void main() {
     vec4 vp = uInvProj * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
     vec3 dir = normalize(mat3(uCamWorld) * normalize(vp.xyz / vp.w));
     vec3 ro = uCamPos;
-
-    // intersect the cloud slab
-    float tA, tB;
     if (abs(dir.y) < 1e-4) { gl_FragColor = vec4(0.0); return; }
-    float t0 = (TOP - ro.y) / dir.y;
-    float t1 = (BOT - ro.y) / dir.y;
-    tA = max(0.0, min(t0, t1));
-    tB = min(MAX_DIST, max(t0, t1));
-    if (tB <= tA) { gl_FragColor = vec4(0.0); return; }
-
-    float steps = float(STEPS);
-    float len = tB - tA;
-    float dt = len / steps;
-    float t = tA + dt * hash(gl_FragCoord.xy);
-
+    float jitter = hash(gl_FragCoord.xy);
     float cosT = dot(dir, uSunDir);
-    // forward scattering (silver lining) + back scattering, never fully dark
-    float phase = max(0.75, mix(hg(cosT, 0.6), hg(cosT, -0.2), 0.35) * 3.14159 * 4.0);
-
     vec3 col = vec3(0.0);
     float T = 1.0;
     float firstHit = -1.0;
-    for (int i = 0; i < STEPS; i++) {
-      if (T < 0.02) break;
+
+    if (dir.y < 0.0) {
+      // ---------- main deck below ----------
+      float t0 = (TOP - ro.y) / dir.y, t1 = (BOT - ro.y) / dir.y;
+      float tA = max(0.0, min(t0, t1)), tB = min(MAX_DIST, max(t0, t1));
+      if (tB <= tA) { gl_FragColor = vec4(0.0); return; }
+      float dt = (tB - tA) / float(STEPS);
+      float t = tA + dt * jitter;
+      // strong forward scattering: the cloud rim glows towards the light, the body stays in shadow
+      float phase = max(0.6, mix(hg(cosT, 0.7), hg(cosT, -0.2), 0.3) * 3.14159 * 4.0);
+      for (int i = 0; i < STEPS; i++) {
+        if (T < 0.02) break;
+        vec3 p = ro + dir * t;
+        float d = density(p, false);
+        if (d > 0.002) {
+          if (firstHit < 0.0) firstHit = t;
+          float od = 0.0;
+          vec3 lp = p;
+          float ls = 5.0;
+          for (int j = 0; j < LIGHT_STEPS; j++) {
+            lp += uSunDir * ls;
+            od += density(lp, true) * ls;
+            ls *= 1.7;
+          }
+          float h = clamp((p.y - BOT) / (TOP - BOT), 0.0, 1.0);
+          float beer = max(max(exp(-od * 0.11), exp(-od * 0.026) * 0.32), 0.06);
+          float powder = 1.0 - exp(-d * 8.0);
+          vec3 sunL = uSunCol * beer * mix(1.0, powder * 2.0, 0.5) * phase;
+          vec3 amb = mix(uAmbBottom, uAmbTop, smoothstep(0.0, 1.0, h));
+          float a = 1.0 - exp(-d * 0.13 * dt);
+          col += T * a * (sunL + amb);
+          T *= 1.0 - a;
+        }
+        t += dt;
+      }
+      float alpha = 1.0 - T;
+      if (alpha < 0.002) { gl_FragColor = vec4(0.0); return; }
+      float dist = firstHit < 0.0 ? tA : firstHit;
+      float fogK = 1.0 - exp(-dist * 0.00052);
+      vec3 c = mix(col / alpha, uFogCol, fogK * 0.8);
+      alpha *= (1.0 - smoothstep(MAX_DIST * 0.45, MAX_DIST, dist)) * uFade;
+      gl_FragColor = vec4(c * alpha, alpha);
+      return;
+    }
+
+    // ---------- scattered high clouds above ----------
+    float t0 = (HBOT - ro.y) / dir.y, t1 = (HTOP - ro.y) / dir.y;
+    float tA = max(0.0, min(t0, t1)), tB = min(HMAX_DIST, max(t0, t1));
+    if (tB <= tA) { gl_FragColor = vec4(0.0); return; }
+    float dt = (tB - tA) / float(HIGH_STEPS);
+    float t = tA + dt * jitter;
+    for (int i = 0; i < HIGH_STEPS; i++) {
+      if (T < 0.03) break;
       vec3 p = ro + dir * t;
-      float d = density(p, false);
+      float d = densityHigh(p);
       if (d > 0.002) {
         if (firstHit < 0.0) firstHit = t;
-        // light march towards the sun
-        float od = 0.0;
-        vec3 lp = p;
-        float ls = 5.0;
-        for (int j = 0; j < LIGHT_STEPS; j++) {
-          lp += uSunDir * ls;
-          od += density(lp, true) * ls;
-          ls *= 1.7;
-        }
-        float h = clamp((p.y - BOT) / (TOP - BOT), 0.0, 1.0);
-        // multiple-scattering approximation: a bright first octave plus a softer, deeper one
-        float beer = max(max(exp(-od * 0.11), exp(-od * 0.026) * 0.32), 0.1);
-        float powder = 1.0 - exp(-d * 8.0);
-        vec3 sunL = uSunCol * beer * mix(1.0, powder * 2.0, 0.5) * phase;
-        vec3 amb = mix(uAmbBottom, uAmbTop, smoothstep(0.0, 1.0, h));
-        vec3 lit = sunL + amb;
-        float sigma = d * 0.13;
-        float a = 1.0 - exp(-sigma * dt);
-        col += T * a * lit;
+        float h = clamp((p.y - HBOT) / (HTOP - HBOT), 0.0, 1.0);
+        // lit from below by the afterglow, darker grey on top
+        vec3 c = mix(uHighLit, uHighShade, smoothstep(0.0, 0.35, h + d * 0.9));
+        c += uHighLit * pow(max(cosT, 0.0), 6.0) * 0.6;
+        float a = 1.0 - exp(-d * 0.09 * dt);
+        col += T * a * c;
         T *= 1.0 - a;
       }
       t += dt;
     }
-
     float alpha = 1.0 - T;
     if (alpha < 0.002) { gl_FragColor = vec4(0.0); return; }
-    // aerial perspective: distant clouds melt into the haze
     float dist = firstHit < 0.0 ? tA : firstHit;
-    float fogK = 1.0 - exp(-dist * 0.00052);
-    vec3 c = col / alpha;
-    c = mix(c, uFogCol, fogK * 0.8);
-    // far clouds dissolve into the horizon haze instead of ending at a hard line
-    alpha *= (1.0 - smoothstep(MAX_DIST * 0.45, MAX_DIST, dist)) * uFade;
-    gl_FragColor = vec4(c * alpha, alpha); // premultiplied
+    alpha *= (1.0 - smoothstep(HMAX_DIST * 0.35, HMAX_DIST, dist)) * uFade;
+    gl_FragColor = vec4(col / (1.0 - T) * alpha, alpha);
   }
 `;
 
@@ -138,7 +171,7 @@ export interface CloudLayer {
   setSize(width: number, height: number, pixelRatio: number): void;
   /** Renders the clouds for this frame into their own target. */
   render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, dt: number): void;
-  update(o: { sunDir: THREE.Vector3; sunColor: THREE.Color; ambTop: THREE.Color; ambBottom: THREE.Color; fog: THREE.Color; travel: number }): void;
+  update(o: { sunDir: THREE.Vector3; sunColor: THREE.Color; ambTop: THREE.Color; ambBottom: THREE.Color; fog: THREE.Color; highLit: THREE.Color; highShade: THREE.Color; travel: number }): void;
   dispose(): void;
 }
 
@@ -157,7 +190,7 @@ export function createCloudLayer(opts: { small: boolean }): CloudLayer {
   const material = new THREE.ShaderMaterial({
     vertexShader: vert,
     fragmentShader: frag,
-    defines: { STEPS: opts.small ? 32 : 46, LIGHT_STEPS: opts.small ? 3 : 4 },
+    defines: { STEPS: opts.small ? 32 : 46, LIGHT_STEPS: opts.small ? 3 : 4, HIGH_STEPS: opts.small ? 10 : 14, COVERAGE: '0.44' },
     uniforms: {
       uNoise: { value: noise },
       uInvProj: { value: new THREE.Matrix4() },
@@ -168,6 +201,8 @@ export function createCloudLayer(opts: { small: boolean }): CloudLayer {
       uAmbTop: { value: new THREE.Color() },
       uAmbBottom: { value: new THREE.Color() },
       uFogCol: { value: new THREE.Color() },
+      uHighLit: { value: new THREE.Color() },
+      uHighShade: { value: new THREE.Color() },
       uWind: { value: new THREE.Vector3() },
       uFade: { value: 0 },
     },
@@ -235,6 +270,8 @@ export function createCloudLayer(opts: { small: boolean }): CloudLayer {
       u.uAmbTop.value.copy(o.ambTop);
       u.uAmbBottom.value.copy(o.ambBottom);
       u.uFogCol.value.copy(o.fog);
+      u.uHighLit.value.copy(o.highLit);
+      u.uHighShade.value.copy(o.highShade);
       // the deck streams towards the camera as we fly forward
       u.uWind.value.set(o.travel * 0.06, 0, -o.travel);
     },

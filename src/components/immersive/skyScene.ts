@@ -1,5 +1,5 @@
 /**
- * Real-time 3D background: a YA² airliner above a sea of clouds at sunset.
+ * Real-time 3D background: a YA² airliner above a sea of clouds at blue hour.
  *
  * - Physically based sky (Preetham model) that also lights the aircraft
  *   through an environment map, so the paint and metal pick up the sunset.
@@ -11,7 +11,6 @@
  */
 import * as THREE from 'three';
 import { CLOUD_BOTTOM, createCloudLayer } from './cloudLayer';
-import { Sky } from 'three/examples/jsm/objects/Sky.js';
 
 type V3 = [number, number, number];
 
@@ -294,6 +293,48 @@ const PATH: { p: number; cam: V3; roll: number }[] = [
   { p: 1.0, cam: [-10, 9, 90], roll: -0.08 },
 ];
 
+/**
+ * Blue-hour sky dome: deep blue overhead, paler towards the horizon, and a
+ * warm afterglow where the sun has just set. Hand-tuned rather than the
+ * physical Sky model, which turns olive and brown with the sun on the horizon.
+ */
+function blueHourSky() {
+  return new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    depthWrite: false,
+    fog: false,
+    uniforms: {
+      uSunDir: { value: new THREE.Vector3(0, 0, -1) },
+      uZenith: { value: new THREE.Color() },
+      uMid: { value: new THREE.Color() },
+      uHorizon: { value: new THREE.Color() },
+      uGlow: { value: new THREE.Color() },
+      uBelow: { value: new THREE.Color() },
+    },
+    vertexShader: /* glsl */ `
+      varying vec3 vDir;
+      void main() { vDir = normalize((modelMatrix * vec4(position, 1.0)).xyz - cameraPosition); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position.z = gl_Position.w; }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uSunDir, uZenith, uMid, uHorizon, uGlow, uBelow;
+      varying vec3 vDir;
+      void main() {
+        vec3 d = normalize(vDir);
+        float y = d.y;
+        vec3 c = mix(uHorizon, uMid, smoothstep(0.0, 0.22, y));
+        c = mix(c, uZenith, smoothstep(0.18, 0.85, y));
+        // afterglow: a tight bright band at the sun's bearing and a broad warm wash
+        vec2 h = normalize(d.xz + 1e-5), s = normalize(uSunDir.xz + 1e-5);
+        float az = max(dot(h, s), 0.0);
+        float hy = max(y, 0.0);
+        c += uGlow * (pow(az, 14.0) * exp(-hy * 22.0) * 1.2 + pow(az, 3.0) * exp(-hy * 9.0) * 0.25);
+        c = mix(c, uBelow, smoothstep(0.0, -0.2, y));
+        gl_FragColor = vec4(c, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  });
+}
+
 export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => number) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -303,28 +344,24 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 30000);
 
-  const sky = new Sky();
-  sky.scale.setScalar(20000);
-  sky.renderOrder = -3; // drawn first: the haze layer under the clouds must cover its dark lower half
-  const su = sky.material.uniforms;
-  su.turbidity.value = 7;
-  su.rayleigh.value = 2.2;
-  su.mieCoefficient.value = 0.006;
-  su.mieDirectionalG.value = 0.86;
+  const skyMat = blueHourSky();
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(20000, 48, 24), skyMat);
+  sky.renderOrder = -3; // drawn first: the haze layer under the clouds must cover its lower half
+  sky.frustumCulled = false;
+  const su = skyMat.uniforms;
   scene.add(sky);
 
   const sun = new THREE.Vector3();
   const sunLight = new THREE.DirectionalLight(0xffd2a1, 3.2);
   scene.add(sunLight);
-  scene.add(new THREE.HemisphereLight(0x9fb8ff, 0x3a2a3a, 0.55));
-  scene.fog = new THREE.FogExp2(0xe6b594, 0.0009);
+  scene.add(new THREE.HemisphereLight(0x86a2e0, 0x141c30, 0.85));
+  scene.fog = new THREE.FogExp2(0x22314f, 0.0009);
 
   // environment map from the sky, refreshed as the sun sets
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  const envSky = new Sky();
-  envSky.scale.setScalar(20000);
-  envScene.add(envSky);
+  const envSkyMat = blueHourSky();
+  envScene.add(new THREE.Mesh(new THREE.SphereGeometry(20000, 32, 16), envSkyMat));
   let envRT: THREE.WebGLRenderTarget | null = null;
   let seaMatRef: THREE.MeshBasicMaterial | null = null;
   let hazeRef: THREE.ShaderMaterial | null = null;
@@ -335,22 +372,35 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     const phi = THREE.MathUtils.degToRad(90 - elevation);
     const theta = THREE.MathUtils.degToRad(188);
     sun.setFromSphericalCoords(1, phi, theta);
-    su.sunPosition.value.copy(sun);
     sunLight.position.copy(sun).multiplyScalar(100);
-    const warm = THREE.MathUtils.clamp(1 - elevation / 12, 0, 1);
-    sunLight.color.setRGB(1, 0.86 - warm * 0.2, 0.72 - warm * 0.3);
-    sunLight.intensity = 1.6 + elevation * 0.25;
-    (scene.fog as THREE.FogExp2).color.setRGB(0.62 + warm * 0.25, 0.52 + warm * 0.08, 0.5 - warm * 0.06);
+    // 0 = sun just on the horizon, 1 = just below it (deepening blue hour)
+    const dusk = THREE.MathUtils.clamp((1.5 - elevation) / 2.5, 0, 1);
+    sunLight.color.setRGB(1, 0.8, 0.62);
+    sunLight.intensity = 0.95 - dusk * 0.5;
+    const fog = (scene.fog as THREE.FogExp2).color;
+    fog.setRGB(0.1 - dusk * 0.03, 0.15 - dusk * 0.04, 0.28 - dusk * 0.07);
     // what shows through gaps in the clouds: the evening haze, a little darker
-    if (seaMatRef) seaMatRef.color.copy((scene.fog as THREE.FogExp2).color).multiplyScalar(0.72);
-    ambTop.setRGB(0.5 + warm * 0.22, 0.52 + warm * 0.07, 0.68 - warm * 0.12);
-    ambBottom.setRGB(0.24 + warm * 0.08, 0.22 + warm * 0.04, 0.3);
-    hazeRef?.uniforms.uColor.value.copy((scene.fog as THREE.FogExp2).color); // seamless with the fogged haze under the clouds
+    if (seaMatRef) seaMatRef.color.copy(fog).multiplyScalar(0.72);
+    hazeRef?.uniforms.uColor.value.copy(fog); // seamless with the fogged haze under the clouds
+    hazeRef?.uniforms.uLight.value.setRGB(0.36 - dusk * 0.1, 0.43 - dusk * 0.12, 0.62 - dusk * 0.16);
+    // cloud bank: a dark navy body, lit mostly by the blue sky above it
+    ambTop.setRGB(0.09 - dusk * 0.02, 0.14 - dusk * 0.03, 0.3 - dusk * 0.07);
+    ambBottom.setRGB(0.02, 0.035, 0.08);
+    // high cloudlets: slate grey, with pink-white undersides from the afterglow
+    highLit.setRGB(1.25 - dusk * 0.3, 0.95 - dusk * 0.25, 0.85 - dusk * 0.2);
+    highShade.setRGB(0.17, 0.2, 0.3);
+    // distant cloud tops fade towards the bright horizon glow, not into darkness
+    cloudFog.setRGB(0.36 - dusk * 0.1, 0.43 - dusk * 0.12, 0.62 - dusk * 0.16);
+    // sky dome (linear colours, tone-mapped like the rest of the scene)
+    su.uSunDir.value.copy(sun);
+    su.uZenith.value.setRGB(0.05 - dusk * 0.025, 0.2 - dusk * 0.08, 0.85 - dusk * 0.3);
+    su.uMid.value.setRGB(0.3 - dusk * 0.12, 0.55 - dusk * 0.18, 1.25 - dusk * 0.35);
+    su.uHorizon.value.setRGB(0.62 - dusk * 0.2, 0.8 - dusk * 0.25, 1.15 - dusk * 0.3);
+    su.uGlow.value.setRGB(1.9 - dusk * 0.5, 1.45 - dusk * 0.45, 0.55 - dusk * 0.2);
+    su.uBelow.value.copy(fog);
     if (Math.abs(elevation - lastElevation) > 0.6) {
       lastElevation = elevation;
-      const eu = envSky.material.uniforms;
-      for (const k of ['turbidity', 'rayleigh', 'mieCoefficient', 'mieDirectionalG'] as const) eu[k].value = su[k].value;
-      eu.sunPosition.value.copy(sun);
+      for (const k of Object.keys(su)) (envSkyMat.uniforms[k].value as THREE.Color | THREE.Vector3).copy(su[k].value);
       envRT?.dispose();
       envRT = pmrem.fromScene(envScene as unknown as THREE.Scene);
       scene.environment = envRT.texture;
@@ -367,6 +417,9 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
   scene.add(cloudLayer.composite);
   const ambTop = new THREE.Color();
   const ambBottom = new THREE.Color();
+  const highLit = new THREE.Color();
+  const highShade = new THREE.Color();
+  const cloudFog = new THREE.Color();
 
   // distant cloud sea / haze so the view below the horizon is never empty
   // seen through gaps in the clouds: a darker, hazier layer far below
@@ -384,10 +437,14 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     transparent: true,
     depthWrite: false,
     fog: false,
-    uniforms: { uColor: { value: new THREE.Color(0xd9b4a0) } },
+    uniforms: { uColor: { value: new THREE.Color(0xd9b4a0) }, uLight: { value: new THREE.Color() } },
     vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-    fragmentShader: `uniform vec3 uColor; varying vec3 vDir;
-      void main(){ float a = smoothstep(0.17, 0.0, vDir.y) * smoothstep(-0.5, -0.04, vDir.y); gl_FragColor = vec4(uColor, a); }`,
+    fragmentShader: `uniform vec3 uColor; uniform vec3 uLight; varying vec3 vDir;
+      void main(){
+        float a = smoothstep(0.012, -0.02, vDir.y) * smoothstep(-0.5, -0.06, vDir.y);
+        // light at the horizon line, deepening to the dark haze further down
+        gl_FragColor = vec4(mix(uLight, uColor, smoothstep(-0.005, -0.12, vDir.y)), a);
+      }`,
   });
   hazeRef = hazeMat;
   const haze = new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 24), hazeMat);
@@ -425,7 +482,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
     clock += dt;
     p += (getProgress() - p) * Math.min(1, dt * 3.5);
 
-    setSun(5.5 - p * 5); // golden hour → sunset
+    setSun(1.5 - p * 2.5); // sun on the horizon → just below it: blue hour deepens as you scroll
 
     // aircraft: gentle bob and bank; flies ahead into the sunset at the end
     const flyAway = THREE.MathUtils.smoothstep(p, 0.82, 1);
@@ -444,7 +501,7 @@ export function createSkyScene(canvas: HTMLCanvasElement, getProgress: () => num
 
     // clouds stream past: time + scroll both move us forward
     const travel = clock * 18 + p * 900;
-    cloudLayer.update({ sunDir: sun, sunColor: sunLight.color.clone().multiplyScalar(sunLight.intensity * 1.35), ambTop, ambBottom, fog: (scene.fog as THREE.FogExp2).color, travel });
+    cloudLayer.update({ sunDir: sun, sunColor: sunLight.color.clone().multiplyScalar(sunLight.intensity * 0.5), ambTop, ambBottom, fog: cloudFog, highLit, highShade, travel });
 
     // camera on its path, framing the aircraft to the right on wide screens
     camCurve.getPoint(Math.min(0.9999, p), tmp);
