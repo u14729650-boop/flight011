@@ -73,3 +73,7 @@ src/lib/                  cart maths, filters, WhatsApp messages, SEO, validatio
 src/components/           UI (header, cart, product, catalogue, home sections)
 src/app/                  routes, sitemap, robots, OG image, /api/enquiry
 ```
+
+## Browser-only preview
+
+`npm run preview:build` bundles the same components into `preview/dist/`. That is a single page with an in-memory router and no server, used to share a clickable preview as a Claude artifact. The real site is the Next.js build above.
