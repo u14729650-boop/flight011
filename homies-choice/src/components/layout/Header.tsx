@@ -92,10 +92,10 @@ export function Header() {
 
             <Link href="/" aria-label={`${siteConfig.name} — home`} className="justify-self-center">
               <span className="lg:hidden">
-                <Logo compact />
+                <Logo compact priority />
               </span>
               <span className="hidden lg:inline">
-                <Logo />
+                <Logo priority />
               </span>
             </Link>
 

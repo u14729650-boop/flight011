@@ -2,7 +2,7 @@
 // Usage: node preview/build.mjs
 import { build } from "esbuild";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -32,6 +32,7 @@ await build({
 });
 
 execFileSync("npx", ["@tailwindcss/cli", "-i", "src/app/globals.css", "-o", "preview/dist/app.css", "--minify"], { cwd: root, stdio: "inherit" });
+cpSync(path.join(root, "public/images"), path.join(dist, "images"), { recursive: true });
 const css = readFileSync(path.join(dist, "app.css"), "utf8");
 
 writeFileSync(

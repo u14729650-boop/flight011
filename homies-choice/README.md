@@ -32,7 +32,7 @@ npm run test:e2e     # browser tests, desktop and mobile (needs `npm run build` 
 
 The site is built not to invent anything. These are shown as placeholders until the shop confirms them:
 
-1. **Logo:** save the official HOMIES CHOICE logo to `public/images/brand/` and set `logo.src` in `src/config/site.ts`. Until then a temporary "HC" monogram is shown.
+1. **Logo:** done. The official HC monogram and wordmark are cut out of the brand board (`brand/homies-choice-brand-board.jpg`) as transparent PNGs in `public/images/brand/`, by `brand/extract-logo.py`. They are used in the header, footer, hero, favicon and share image. If you have the original vector (SVG/AI/PDF) or a high-resolution PNG, drop it into `public/images/brand/` with the same file names for even sharper edges.
 2. **Prices, stock and sizes:** edit `src/data/products.ts`. While `price` is `null` the site shows **"Price on request"** and the bag subtotal reads "To be confirmed". Each product has a `pendingVerification` note listing what is still unconfirmed.
    - **Rayhaan:** the exact fragrance within the Rayhaan range still needs confirming.
 3. **Product photographs:** put authentic photos in `public/images/products/<slug>/` and list them in the product's `images`. Until then each product shows a labelled "Photograph coming soon" card. It never shows a different bottle.

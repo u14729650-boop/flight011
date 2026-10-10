@@ -25,14 +25,13 @@ export const siteConfig = {
   },
 
   /**
-   * Logo. Leave `src` as null to use the built-in HC monogram, or drop the
-   * official artwork into /public/images/brand and point `src` at it,
-   * e.g. "/images/brand/homies-choice-logo.svg".
+   * Official logo, cut out of the brand board (brand/homies-choice-brand-board.jpg)
+   * as transparent PNGs. Intended for dark (emerald / forest) backgrounds.
    */
   logo: {
-    src: null as string | null,
-    width: 180,
-    height: 48,
+    monogram: { src: "/images/brand/hc-monogram.png", width: 307, height: 341 },
+    wordmark: { src: "/images/brand/hc-wordmark.png", width: 777, height: 63 },
+    stacked: { src: "/images/brand/hc-logo-stacked.png", width: 777, height: 444 },
   },
 
   owner: "Zakir Kazi",

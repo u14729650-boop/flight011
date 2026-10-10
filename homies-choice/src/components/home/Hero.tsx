@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { media } from "@/data/media";
 import { EditorialImage } from "@/components/ui/EditorialImage";
+import { Monogram } from "@/components/ui/Logo";
 
 export function Hero() {
   return (
@@ -27,6 +29,12 @@ export function Hero() {
           <div className="relative aspect-[3/4] overflow-hidden rounded-t-full border border-gold/25">
             <EditorialImage slot="hero" sizes="28rem" priority className="absolute inset-0" />
             <div className="absolute inset-3 rounded-t-full border border-gold/15" />
+            {/* Until the campaign photograph arrives, the arch holds the brand monogram. */}
+            {!media.hero.src && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Monogram className="h-[38%] opacity-95 drop-shadow-[0_18px_40px_rgba(0,0,0,0.45)]" />
+              </div>
+            )}
           </div>
           <p className="eyebrow mt-5 text-center text-[0.6rem] text-ivory/50">Homies Choice · Ahmedabad</p>
         </div>
