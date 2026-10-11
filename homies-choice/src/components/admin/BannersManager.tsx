@@ -84,10 +84,10 @@ export function BannersManager() {
         title="Banners"
         actions={
           <>
-            <Link href="/hc-admin/banners/new?placement=home" className={cx("btn btn-dark h-10 min-h-0 px-4", !canWrite && "pointer-events-none opacity-45")}>
+            <Link href="/hc-admin/banners/new?placement=home" className={cx("btn btn-dark min-h-10 py-2 px-4", !canWrite && "pointer-events-none opacity-45")}>
               <Plus className="h-4 w-4" /> Home banner
             </Link>
-            <Link href="/hc-admin/banners/new?placement=shop" className={cx("btn btn-outline-dark h-10 min-h-0 px-4", !canWrite && "pointer-events-none opacity-45")}>
+            <Link href="/hc-admin/banners/new?placement=shop" className={cx("btn btn-outline-dark min-h-10 py-2 px-4", !canWrite && "pointer-events-none opacity-45")}>
               <Plus className="h-4 w-4" /> Shop banner
             </Link>
           </>

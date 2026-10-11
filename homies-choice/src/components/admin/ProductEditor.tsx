@@ -309,9 +309,9 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
         actions={
           <>
             {slug && draft.published && (
-              <a href={`/products/${slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-dark h-10 min-h-0 px-4">View in shop</a>
+              <a href={`/products/${slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-dark min-h-10 py-2 px-4">View in shop</a>
             )}
-            <button type="submit" disabled={saving || !canWrite} className="btn btn-dark h-10 min-h-0 px-5">
+            <button type="submit" disabled={saving || !canWrite} className="btn btn-dark min-h-10 py-2 px-5">
               {saving ? "Saving…" : "Save"}
             </button>
           </>
@@ -485,7 +485,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
             )}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <input ref={fileRef} id="p-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="sr-only" onChange={(e) => upload(e.target.files)} disabled={!canWrite || uploading} />
-              <label htmlFor="p-upload" className={cx("btn btn-outline-dark h-10 min-h-0 cursor-pointer px-4", (!canWrite || uploading) && "pointer-events-none opacity-45")}>
+              <label htmlFor="p-upload" className={cx("btn btn-outline-dark min-h-10 py-2 cursor-pointer px-4", (!canWrite || uploading) && "pointer-events-none opacity-45")}>
                 <ImagePlus className="h-4 w-4" /> {uploading ? "Uploading…" : "Upload photos"}
               </label>
               <span className="text-xs text-stone">or add a link</span>
@@ -504,12 +504,12 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
               </datalist>
               <div className="space-y-2">
                 {draft.specs.map((s) => (
-                  <div key={s.key} className="grid grid-cols-[1fr_1.6fr_auto] gap-2">
+                  <div key={s.key} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-2xl border border-line bg-ivory/60 p-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_auto] sm:border-0 sm:bg-transparent sm:p-0">
                     <label className="sr-only" htmlFor={`spec-l-${s.key}`}>Specification name</label>
-                    <input id={`spec-l-${s.key}`} list="spec-labels" className="rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none" value={s.label} placeholder="e.g. Movement" onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, label: e.target.value } : x)) })} />
+                    <input id={`spec-l-${s.key}`} list="spec-labels" className="w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none" value={s.label} placeholder="e.g. Movement" onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, label: e.target.value } : x)) })} />
                     <label className="sr-only" htmlFor={`spec-v-${s.key}`}>Value</label>
-                    <input id={`spec-v-${s.key}`} className="rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none" value={s.value} placeholder={SPEC_EXAMPLES[s.label] ?? "Value"} onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, value: e.target.value } : x)) })} />
-                    <button type="button" onClick={() => setDraft({ ...draft, specs: draft.specs.filter((x) => x.key !== s.key) })} className="px-2 text-stone hover:text-[#9b2c2c]" aria-label="Remove specification"><Trash2 className="h-4 w-4" /></button>
+                    <input id={`spec-v-${s.key}`} className="order-3 col-span-2 w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none sm:order-none sm:col-span-1" value={s.value} placeholder={SPEC_EXAMPLES[s.label] ?? "Value"} onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, value: e.target.value } : x)) })} />
+                    <button type="button" onClick={() => setDraft({ ...draft, specs: draft.specs.filter((x) => x.key !== s.key) })} className="flex h-10 w-10 items-center justify-center rounded-full text-stone hover:bg-charcoal/5 hover:text-[#9b2c2c]" aria-label="Remove specification"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 ))}
               </div>
@@ -587,8 +587,8 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                 <div className="space-y-3">
                   <p className="text-sm">Delete this product permanently? It will disappear from the shop.</p>
                   <div className="flex gap-2">
-                    <button type="button" onClick={remove} disabled={saving} className="btn h-10 min-h-0 bg-[#9b2c2c] px-4 text-white hover:bg-[#7f1d1d]">Delete</button>
-                    <button type="button" onClick={() => setConfirmDelete(false)} className="btn btn-outline-dark h-10 min-h-0 px-4">Cancel</button>
+                    <button type="button" onClick={remove} disabled={saving} className="btn min-h-10 py-2 bg-[#9b2c2c] px-4 text-white hover:bg-[#7f1d1d]">Delete</button>
+                    <button type="button" onClick={() => setConfirmDelete(false)} className="btn btn-outline-dark min-h-10 py-2 px-4">Cancel</button>
                   </div>
                 </div>
               ) : (
@@ -599,9 +599,9 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
         </aside>
       </div>
 
-      <div className="glass-light sticky bottom-4 flex justify-end gap-2 rounded-full px-3 py-3">
-        <Link href="/hc-admin/products" className="btn btn-outline-dark h-11 min-h-0 px-5">Cancel</Link>
-        <button type="submit" disabled={saving || !canWrite} className="btn btn-dark h-11 min-h-0 px-6">{saving ? "Saving…" : "Save product"}</button>
+      <div className="glass-light sticky bottom-4 z-30 flex justify-end gap-2 rounded-full !border-line/70 !bg-ivory/80 p-2 shadow-[0_24px_50px_-24px_rgba(6,59,46,0.55)] *:flex-1 sm:px-3 sm:py-3 sm:*:flex-none">
+        <Link href="/hc-admin/products" className="btn btn-outline-dark min-h-11 py-2.5 px-5">Cancel</Link>
+        <button type="submit" disabled={saving || !canWrite} className="btn btn-dark min-h-11 py-2.5 px-6">{saving ? "Saving…" : "Save product"}</button>
       </div>
     </form>
   );

@@ -36,7 +36,10 @@ function Slide({ banner, active, index, total, variant }: { banner: Banner; acti
       aria-hidden={!active}
       inert={!active}
       className={cx(
-        "absolute inset-0 transition-[opacity,visibility] duration-1000 ease-luxe",
+        // Every slide shares one grid cell, so the frame is as tall as its tallest slide: the
+        // aspect ratio is a minimum and longer copy grows the banner instead of spilling out of it.
+        "relative col-start-1 row-start-1 flex flex-col justify-end p-3 pt-20 transition-[opacity,visibility] duration-1000 ease-luxe sm:p-5 sm:pt-20 md:justify-center md:p-8",
+        variant === "home" ? "aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/8]" : "aspect-[4/3] sm:aspect-[16/6] md:p-6 lg:aspect-[16/4.6]",
         active ? "visible z-10 opacity-100" : "invisible z-0 opacity-0",
       )}
     >
@@ -57,10 +60,10 @@ function Slide({ banner, active, index, total, variant }: { banner: Banner; acti
         )}
         aria-hidden="true"
       />
-      <div className={cx("absolute inset-x-3 bottom-3 md:inset-x-auto md:top-1/2 md:bottom-auto md:left-8 md:-translate-y-1/2", variant === "shop" && "md:left-6")}>
+      <div className="relative">
         <div
           className={cx(
-            "rounded-[1.5rem] p-6 md:max-w-lg md:p-8",
+            "rounded-[1.25rem] p-5 sm:max-w-lg sm:p-6 md:rounded-[1.5rem] md:p-8",
             dark ? "glass text-ivory" : "glass-light text-charcoal",
             active && "animate-fade-up",
           )}
@@ -118,10 +121,7 @@ export function BannerCarousel({ banners, variant = "home", label = "Featured" }
       data-reveal={variant === "home" ? "zoom" : undefined}
     >
       <div
-        className={cx(
-          "group relative isolate overflow-hidden rounded-[2rem] bg-forest shadow-[0_40px_80px_-50px_rgba(6,59,46,0.7)]",
-          variant === "home" ? "aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/8]" : "aspect-[4/3] sm:aspect-[16/6] lg:aspect-[16/4.6]",
-        )}
+        className="group relative isolate grid overflow-hidden rounded-[1.75rem] bg-forest shadow-[0_40px_80px_-50px_rgba(6,59,46,0.7)] md:rounded-[2rem]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}

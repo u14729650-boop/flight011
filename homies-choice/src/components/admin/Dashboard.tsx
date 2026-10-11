@@ -52,10 +52,10 @@ export function Dashboard() {
         title="Good to see you."
         actions={
           <>
-            <Link href="/hc-admin/products/new?category=fragrance" className="btn btn-dark min-h-0 h-10 px-4">
+            <Link href="/hc-admin/products/new?category=fragrance" className="btn btn-dark min-h-10 px-4 py-2">
               <Plus className="h-4 w-4" /> Add perfume
             </Link>
-            <Link href="/hc-admin/products/new?category=watch" className="btn btn-outline-dark min-h-0 h-10 px-4">
+            <Link href="/hc-admin/products/new?category=watch" className="btn btn-outline-dark min-h-10 px-4 py-2">
               <Watch className="h-4 w-4" /> Add watch
             </Link>
           </>

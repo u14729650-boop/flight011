@@ -52,7 +52,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
         </div>
         <div className="mt-auto flex gap-2 pt-4">
           {multiple ? (
-            <button type="button" onClick={() => setQuickOpen(true)} className="btn btn-outline-dark h-11 min-h-0 flex-1 px-2 text-[0.65rem] md:px-3 md:text-xs">
+            <button type="button" onClick={() => setQuickOpen(true)} className="btn btn-outline-dark min-h-11 py-2.5 flex-1 px-2 text-[0.65rem] md:px-3 md:text-xs">
               Choose size
             </button>
           ) : (
@@ -60,7 +60,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
               type="button"
               disabled={!purchasable}
               onClick={() => cart.add(product.slug, variant.id)}
-              className="btn btn-outline-dark h-11 min-h-0 flex-1 px-2 text-[0.65rem] md:px-3 md:text-xs"
+              className="btn btn-outline-dark min-h-11 py-2.5 flex-1 px-2 text-[0.65rem] md:px-3 md:text-xs"
             >
               {purchasable ? "Add to bag" : "Out of stock"}
               <span className="sr-only">: {title}</span>

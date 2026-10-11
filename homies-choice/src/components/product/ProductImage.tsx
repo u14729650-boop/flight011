@@ -47,28 +47,31 @@ export function ProductImage({
       role="img"
       aria-label={`${productTitle(product)} — product photograph coming soon`}
       data-placeholder="product"
-      className={cx("tone-ivory relative flex flex-col items-center justify-center overflow-hidden text-center", className)}
+      className={cx("tone-ivory @container relative flex flex-col items-center justify-center overflow-hidden text-center", className)}
     >
       <div className="absolute inset-[6%] rounded-[1.1rem] border border-gold/40" aria-hidden="true" />
-      <div className="relative flex flex-col items-center px-[12%]" aria-hidden="true">
+      {/* Sized by the card's own width (container query), so narrow phone grids never clip it. */}
+      <div className="relative flex max-h-[88%] flex-col items-center px-[13%]" aria-hidden="true">
         {variant !== "thumb" && (
           <>
-            <Monogram className={cx("mb-5 opacity-80", variant === "hero" ? "h-14" : "h-8 md:h-10")} />
-            <span className="eyebrow mb-3 text-[0.6rem] text-gold-deep">{product.brand}</span>
+            <Monogram className={cx("opacity-80", variant === "hero" ? "mb-5 h-14" : "mb-3 h-6 @[15rem]:mb-5 @[15rem]:h-10")} />
+            <span className="eyebrow mb-2 text-[0.5rem] tracking-[0.2em] text-gold-deep @[15rem]:mb-3 @[15rem]:text-[0.6rem]">{product.brand}</span>
           </>
         )}
-        <span
-          className={cx(
-            "font-serif italic leading-[1.05] text-emerald",
-            variant === "hero" ? "text-4xl md:text-5xl" : variant === "thumb" ? "text-sm" : "text-xl md:text-3xl",
-          )}
-        >
-          {product.name}
-        </span>
+        {variant === "thumb" ? (
+          <Monogram className="h-5 opacity-70" />
+        ) : (
+          <span className={cx("font-serif italic leading-[1.05] text-emerald", variant === "hero" ? "text-4xl md:text-5xl" : "line-clamp-3 text-lg @[15rem]:text-3xl")}>
+            {product.name}
+          </span>
+        )}
         {variant !== "thumb" && (
           <>
-            <span className="my-4 block h-px w-8 bg-gold" />
-            <span className="text-[0.5rem] font-medium tracking-[0.18em] text-stone uppercase md:text-[0.6rem]">Photograph coming soon</span>
+            <span className="my-2.5 block h-px w-6 bg-gold @[15rem]:my-4 @[15rem]:w-8" />
+            <span className="text-[0.48rem] font-medium tracking-[0.14em] text-stone uppercase @[15rem]:text-[0.6rem] @[15rem]:tracking-[0.18em]">
+              <span className="@[15rem]:hidden">Photo coming soon</span>
+              <span className="hidden @[15rem]:inline">Photograph coming soon</span>
+            </span>
           </>
         )}
       </div>

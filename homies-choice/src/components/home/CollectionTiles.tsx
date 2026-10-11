@@ -35,7 +35,7 @@ export function CollectionTiles() {
                 />
                 <span
                   className={cx(
-                    "absolute top-4 left-4 rounded-full px-3 py-1.5 text-[0.55rem] font-medium tracking-[0.18em] uppercase md:top-5 md:left-5",
+                    "absolute top-3 left-3 max-w-[calc(100%-1.5rem)] rounded-full px-3 py-1.5 text-[0.52rem] leading-snug font-medium tracking-[0.14em] uppercase md:top-5 md:left-5 md:max-w-[calc(100%-2.5rem)] md:text-[0.55rem] md:tracking-[0.18em]",
                     light ? "glass-light text-gold-deep" : "glass text-ivory",
                   )}
                 >

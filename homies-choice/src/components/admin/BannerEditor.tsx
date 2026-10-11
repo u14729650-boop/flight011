@@ -173,7 +173,7 @@ export function BannerEditor({ id, initialPlacement = "home" }: { id?: string; i
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <input ref={ref} id={`b-${which}`} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" onChange={(e) => upload(which, e.target.files)} disabled={!canWrite || !!uploading} />
-          <label htmlFor={`b-${which}`} className={cx("btn btn-outline-dark h-9 min-h-0 cursor-pointer px-4", (!canWrite || uploading) && "pointer-events-none opacity-45")}>
+          <label htmlFor={`b-${which}`} className={cx("btn btn-outline-dark min-h-9 py-2 cursor-pointer px-4", (!canWrite || uploading) && "pointer-events-none opacity-45")}>
             <ImagePlus className="h-4 w-4" /> {uploading === which ? "Uploading…" : img ? "Replace" : "Upload"}
           </label>
           {img && which === "mobileImage" && (
@@ -194,7 +194,7 @@ export function BannerEditor({ id, initialPlacement = "home" }: { id?: string; i
         eyebrow={id ? "Edit banner" : "New banner"}
         title={draft.title || "Untitled banner"}
         actions={
-          <button type="submit" disabled={saving || !canWrite} className="btn btn-dark h-10 min-h-0 px-5">
+          <button type="submit" disabled={saving || !canWrite} className="btn btn-dark min-h-10 py-2 px-5">
             {saving ? "Saving…" : "Save"}
           </button>
         }
@@ -298,8 +298,8 @@ export function BannerEditor({ id, initialPlacement = "home" }: { id?: string; i
                 <div className="space-y-3">
                   <p className="text-sm">Delete this banner permanently?</p>
                   <div className="flex gap-2">
-                    <button type="button" onClick={remove} disabled={saving} className="btn h-10 min-h-0 bg-[#9b2c2c] px-4 text-white hover:bg-[#7f1d1d]">Delete</button>
-                    <button type="button" onClick={() => setConfirmDelete(false)} className="btn btn-outline-dark h-10 min-h-0 px-4">Cancel</button>
+                    <button type="button" onClick={remove} disabled={saving} className="btn min-h-10 py-2 bg-[#9b2c2c] px-4 text-white hover:bg-[#7f1d1d]">Delete</button>
+                    <button type="button" onClick={() => setConfirmDelete(false)} className="btn btn-outline-dark min-h-10 py-2 px-4">Cancel</button>
                   </div>
                 </div>
               ) : (
@@ -312,9 +312,9 @@ export function BannerEditor({ id, initialPlacement = "home" }: { id?: string; i
         </aside>
       </div>
 
-      <div className="glass-light sticky bottom-4 flex justify-end gap-2 rounded-full px-3 py-3">
-        <Link href="/hc-admin/banners" className="btn btn-outline-dark h-11 min-h-0 px-5">Cancel</Link>
-        <button type="submit" disabled={saving || !canWrite} className="btn btn-dark h-11 min-h-0 px-6">{saving ? "Saving…" : "Save banner"}</button>
+      <div className="glass-light sticky bottom-4 z-30 flex justify-end gap-2 rounded-full !border-line/70 !bg-ivory/80 p-2 shadow-[0_24px_50px_-24px_rgba(6,59,46,0.55)] *:flex-1 sm:px-3 sm:py-3 sm:*:flex-none">
+        <Link href="/hc-admin/banners" className="btn btn-outline-dark min-h-11 py-2.5 px-5">Cancel</Link>
+        <button type="submit" disabled={saving || !canWrite} className="btn btn-dark min-h-11 py-2.5 px-6">{saving ? "Saving…" : "Save banner"}</button>
       </div>
     </form>
   );

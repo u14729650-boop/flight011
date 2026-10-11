@@ -1,13 +1,13 @@
-import { formatPrice } from "@/lib/format";
+import { cx, formatPrice } from "@/lib/format";
 import type { CartSummary } from "@/lib/cart";
 
 export function BagTotals({ summary }: { summary: Pick<CartSummary, "subtotal" | "unpricedLines" | "lines"> }) {
   const allUnpriced = summary.unpricedLines === summary.lines.length;
   return (
     <div className="space-y-2 text-sm">
-      <div className="flex items-baseline justify-between">
-        <span className="eyebrow text-[0.65rem] text-stone">Product subtotal</span>
-        <span className="font-serif text-2xl tabular-nums text-charcoal" data-testid="bag-subtotal">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <span className="eyebrow text-[0.65rem] whitespace-nowrap text-stone">Product subtotal</span>
+        <span className={cx("ml-auto text-right font-serif tabular-nums text-charcoal", allUnpriced ? "text-xl" : "text-2xl")} data-testid="bag-subtotal">
           {allUnpriced ? "To be confirmed" : formatPrice(summary.subtotal)}
         </span>
       </div>

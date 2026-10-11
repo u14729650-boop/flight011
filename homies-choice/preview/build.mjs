@@ -55,7 +55,9 @@ const css = readFileSync(path.join(dist, "app.css"), "utf8");
 
 writeFileSync(
   path.join(dist, "index.html"),
-  `<title>Homies Choice</title>
+  `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homies Choice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300..700&display=swap">

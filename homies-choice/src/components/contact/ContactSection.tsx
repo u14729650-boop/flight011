@@ -14,8 +14,8 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-forest/90 via-forest/60 to-forest/90" aria-hidden="true" />
       <div className="orb orb-gold -z-10 h-[30rem] w-[30rem] top-10 right-[20%] opacity-35" aria-hidden="true" />
 
-      <div className="container-luxe grid gap-6 py-20 md:py-28 lg:grid-cols-[1fr_1.05fr] lg:gap-8">
-        <div className="glass rounded-[2rem] p-8 md:p-12" data-reveal>
+      <div className="container-luxe grid gap-4 py-16 sm:gap-6 md:py-28 lg:grid-cols-[1fr_1.05fr] lg:gap-8">
+        <div className="glass rounded-[1.75rem] p-6 sm:p-8 md:rounded-[2rem] md:p-12" data-reveal>
           <p className="eyebrow text-gold">Visit · Call · Chat</p>
           <H id="contact-title" className="display mt-5 text-[2.5rem] sm:text-5xl lg:text-[3.4rem]">
             Let&rsquo;s find your next <em className="text-gold italic">favourite</em> fragrance.
@@ -29,7 +29,7 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
           </a>
 
           <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-            <div className="rounded-[1.25rem] border border-ivory/10 bg-ivory/[0.05] p-5">
+            <div className="rounded-[1.25rem] border border-ivory/10 bg-ivory/[0.05] p-4 sm:p-5">
               <dt className="eyebrow text-[0.58rem] text-ivory/55">WhatsApp &amp; phone</dt>
               <dd className="mt-2">
                 <a href={`tel:+${siteConfig.whatsapp.number}`} className="text-2xl font-light tracking-wide tabular-nums hover:text-gold">
@@ -41,7 +41,7 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
                 <CopyButton value={siteConfig.whatsapp.display} label="Copy number" className="rounded-full border border-gold/30 px-3 py-1.5 text-gold hover:bg-gold hover:text-forest" />
               </dd>
             </div>
-            <div className="rounded-[1.25rem] border border-ivory/10 bg-ivory/[0.05] p-5">
+            <div className="rounded-[1.25rem] border border-ivory/10 bg-ivory/[0.05] p-4 sm:p-5">
               <dt className="eyebrow text-[0.58rem] text-ivory/55">Store</dt>
               <dd className="mt-2 flex gap-2.5 leading-snug">
                 <MapPin className="mt-1 h-4 w-4 shrink-0 text-gold" strokeWidth={1.4} aria-hidden="true" />
@@ -68,7 +68,7 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
           </dl>
         </div>
 
-        <div className="glass-light rounded-[2rem] !bg-ivory/[0.94] p-8 text-charcoal md:p-12" data-reveal data-reveal-delay="150">
+        <div className="glass-light rounded-[1.75rem] !bg-ivory/[0.94] p-6 text-charcoal sm:p-8 md:rounded-[2rem] md:p-12" data-reveal data-reveal-delay="150">
           <p className="eyebrow text-gold-deep">Send an enquiry</p>
           <p className="display mt-5 text-4xl">How can we help?</p>
           <div className="mt-8">

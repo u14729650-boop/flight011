@@ -107,7 +107,8 @@ test("enquiries and announcement settings", async ({ page, context }) => {
   await page.getByRole("button", { name: "Save settings" }).click();
   await expect(page.getByText("Saved. The announcement bar is updated.")).toBeVisible();
   await page.goto("/");
-  await expect(page.getByText("Now open in Paldi — visit us this weekend")).toBeVisible();
+  // Phones get a scrolling copy of the line, so match the copy shown at this width.
+  await expect(page.getByText("Now open in Paldi — visit us this weekend").filter({ visible: true })).toBeVisible();
 
   await page.goto("/hc-admin");
   await page.getByRole("button", { name: "Sign out" }).click();

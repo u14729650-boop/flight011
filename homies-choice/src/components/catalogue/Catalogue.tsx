@@ -103,9 +103,10 @@ export function Catalogue({
   return (
     <div className="container-luxe pb-24">
       {/* Toolbar */}
-      <div className="glass-light sticky top-[4.75rem] z-20 mt-6 flex flex-wrap items-center gap-3 rounded-[1.5rem] px-4 py-3 md:rounded-full md:px-5 lg:top-[8.4rem]">
+      {/* Phones: a compact two-column grid that scrolls away (a sticky card would eat the screen). */}
+      <div className="glass-light relative z-20 mt-6 grid grid-cols-2 items-center gap-2.5 rounded-[1.5rem] p-3 sm:sticky sm:top-[4.75rem] sm:flex sm:flex-wrap sm:gap-3 sm:px-4 md:rounded-full md:px-5 lg:top-[8.4rem]">
         {showSearch && (
-          <div className="relative order-first w-full sm:order-none sm:w-72">
+          <div className="relative col-span-2 sm:w-72">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-stone" strokeWidth={1.5} aria-hidden="true" />
             <label htmlFor="catalogue-search" className="sr-only">Search by name or brand</label>
             <input
@@ -121,20 +122,20 @@ export function Catalogue({
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-white/70 px-4 text-xs font-medium tracking-[0.12em] uppercase hover:border-charcoal lg:hidden"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-line bg-white/70 px-4 text-xs font-medium tracking-[0.12em] uppercase hover:border-charcoal lg:hidden"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" /> Filters{count > 0 && ` (${count})`}
         </button>
-        <p className="text-sm text-stone" aria-live="polite" data-testid="result-count">
+        <p className="order-last col-span-2 px-1 text-xs text-stone sm:order-none sm:text-sm" aria-live="polite" data-testid="result-count">
           {results.length} {countNoun(results.length, scope?.category === "watch" ? "watch" : results.every((p) => p.category === "fragrance") ? "fragrance" : "product")}
         </p>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 sm:ml-auto">
           <label htmlFor="catalogue-sort" className="eyebrow hidden text-[0.6rem] text-stone sm:block">Sort</label>
           <select
             id="catalogue-sort"
             value={filters.sort}
             onChange={(e) => update({ sort: e.target.value as SortKey })}
-            className="h-10 rounded-full border border-line bg-white/70 px-4 text-sm hover:border-charcoal"
+            className="h-10 w-full min-w-0 rounded-full border border-line bg-white/70 px-4 text-sm hover:border-charcoal sm:w-auto"
           >
             {sortOptions.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>

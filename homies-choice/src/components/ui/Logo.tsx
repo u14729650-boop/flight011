@@ -24,7 +24,7 @@ export function Logo({ compact = false, priority = false }: { compact?: boolean;
         height={wordmark.height}
         priority={priority}
         sizes={compact ? "170px" : "230px"}
-        className={cx("w-auto", compact ? "h-[0.85rem]" : "h-[1.15rem]")}
+        className={cx("w-auto", compact ? "h-[0.74rem] min-[400px]:h-[0.85rem]" : "h-[1.15rem]")}
       />
     </span>
   );

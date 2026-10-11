@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import { navigation, siteConfig } from "@/config/site";
 import { cx } from "@/lib/format";
@@ -56,7 +56,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
               scrolled ? "max-h-0" : "max-h-10",
             )}
           >
-            <p className="eyebrow truncate px-4 py-2.5 text-[0.58rem] tracking-[0.16em] md:text-[0.625rem] md:tracking-[0.22em]">
+            <p className="eyebrow hidden truncate px-4 py-2.5 text-[0.625rem] tracking-[0.22em] sm:block">
               {announcement.href ? (
                 <Link href={announcement.href} className="hover:text-gold">
                   {announcement.text}
@@ -65,6 +65,16 @@ export function Header({ announcement }: { announcement: Announcement }) {
                 announcement.text
               )}
             </p>
+            {/* Phones: the line glides past instead of being cut off with an ellipsis. */}
+            <AnnouncementLine href={announcement.href} className="marquee-pause block overflow-hidden py-2.5 sm:hidden">
+              <span className="animate-marquee eyebrow flex w-max text-[0.58rem] tracking-[0.16em]">
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className="flex items-center gap-6 pr-6" aria-hidden={i > 0 || undefined}>
+                    {announcement.text} <span className="h-1 w-1 rounded-full bg-gold" />
+                  </span>
+                ))}
+              </span>
+            </AnnouncementLine>
           </div>
         )}
 
@@ -89,7 +99,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="inline-flex h-11 items-center gap-2.5 rounded-full px-3 text-ivory transition-colors hover:bg-ivory/10 hover:text-gold lg:-ml-3 lg:border lg:border-ivory/15 lg:px-4"
+                className="inline-flex h-11 w-11 items-center justify-center gap-2.5 rounded-full text-ivory transition-colors hover:bg-ivory/10 hover:text-gold lg:-ml-3 lg:w-auto lg:border lg:border-ivory/15 lg:px-4"
                 aria-label="Search perfumes"
               >
                 <Search className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
@@ -162,5 +172,15 @@ export function Header({ announcement }: { announcement: Announcement }) {
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} isActive={(href) => isActive(pathname, href)} />
     </>
+  );
+}
+
+function AnnouncementLine({ href, className, children }: { href?: string | null; className: string; children: ReactNode }) {
+  return href ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
   );
 }
