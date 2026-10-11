@@ -1,0 +1,40 @@
+import { storeJsonLd } from "@/lib/seo";
+import { getCatalogue } from "@/lib/server/catalogue-source";
+import { getSettings } from "@/lib/server/settings";
+import { CatalogueProvider } from "@/components/catalogue/CatalogueProvider";
+import { CartProvider } from "@/components/cart/CartProvider";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { JsonLd } from "@/components/ui/JsonLd";
+import { PageTransition, RevealProvider } from "@/components/motion/RevealProvider";
+import { StoreProvider } from "@/components/store/StoreProvider";
+
+export default async function ShopLayout({ children }: { children: React.ReactNode }) {
+  const [catalogue, settings] = await Promise.all([getCatalogue(), getSettings()]);
+  return (
+    <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-gold focus:px-4 focus:py-2 focus:text-forest"
+      >
+        Skip to content
+      </a>
+      <StoreProvider settings={settings}>
+        <CatalogueProvider products={catalogue}>
+          <CartProvider>
+            <Header announcement={settings.announcement} />
+            <RevealProvider>
+              <main id="main">
+                <PageTransition>{children}</PageTransition>
+              </main>
+            </RevealProvider>
+            <Footer settings={settings} />
+            <CartDrawer />
+          </CartProvider>
+        </CatalogueProvider>
+      </StoreProvider>
+      <JsonLd data={storeJsonLd(settings)} />
+    </>
+  );
+}

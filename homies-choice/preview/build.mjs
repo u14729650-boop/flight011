@@ -1,0 +1,78 @@
+// Builds a browser-only preview of the site (no server) into preview/dist/.
+// Usage: node preview/build.mjs
+import { build } from "esbuild";
+import { execFileSync } from "node:child_process";
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const dist = path.join(root, "preview/dist");
+mkdirSync(dist, { recursive: true });
+for (const f of readdirSync(dist)) if (/^chunk-.*\.js$/.test(f)) rmSync(path.join(dist, f));
+
+// ES modules with code splitting: three.js (the 3D bottle) lands in its own chunk,
+// fetched only when the bottle starts, so the preview's first load stays small.
+await build({
+  entryPoints: { app: path.join(root, "preview/main.tsx") },
+  bundle: true,
+  minify: true,
+  format: "esm",
+  splitting: true,
+  chunkNames: "chunk-[hash]",
+  target: "es2020",
+  jsx: "automatic",
+  outdir: dist,
+  tsconfig: path.join(root, "tsconfig.json"),
+  plugins: [
+    {
+      // Swap server-only data access and the admin API for browser demo versions.
+      name: "preview-shims",
+      setup(b) {
+        const map = {
+          "@/lib/server/catalogue-source": "preview/shims/catalogue-source.ts",
+          "@/lib/server/settings": "preview/shims/settings.ts",
+          "@/lib/server/banners": "preview/shims/banners.ts",
+          "@/lib/admin-client": "preview/shims/admin-client.ts",
+          "@/lib/enquiry-client": "preview/shims/enquiry-client.ts",
+          "@/lib/order-client": "preview/shims/order-client.ts",
+        };
+        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|server\/banners|admin-client|enquiry-client|order-client)$/ }, (args) => ({
+          path: path.join(root, map[args.path]),
+        }));
+      },
+    },
+  ],
+  alias: {
+    "next/link": path.join(root, "preview/shims/link.tsx"),
+    "next/image": path.join(root, "preview/shims/image.tsx"),
+    "next/navigation": path.join(root, "preview/shims/router.ts"),
+    "next/font/google": path.join(root, "preview/shims/font.ts"),
+  },
+  define: { "process.env.NODE_ENV": '"production"' },
+  banner: { js: "var process={env:{}};" },
+  logLevel: "warning",
+  logOverride: { "unsupported-directive": "silent" },
+});
+
+execFileSync("npx", ["@tailwindcss/cli", "-i", "src/app/globals.css", "-o", "preview/dist/app.css", "--minify"], { cwd: root, stdio: "inherit" });
+cpSync(path.join(root, "public/images"), path.join(dist, "images"), { recursive: true });
+const css = readFileSync(path.join(dist, "app.css"), "utf8");
+
+writeFileSync(
+  path.join(dist, "index.html"),
+  `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homies Choice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300..700&display=swap">
+<style>
+:root{--font-display:"Bodoni Moda";--font-body:"Jost";color-scheme:light}
+${css}
+</style>
+<div id="hc-root"></div>
+<script type="module" src="app.js"></script>
+`,
+);
+console.log("Preview written to preview/dist/:", readdirSync(dist).filter((f) => f.endsWith(".js")).join(", "));

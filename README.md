@@ -1,5 +1,7 @@
 # ✈ SkyVoyage — Flight Booking Website (Python)
 
+> **Also in this repository:** [`homies-choice/`](homies-choice/README.md) — the HOMIES CHOICE perfume store website (Next.js).
+
 A flight booking website written in **Python** with **Flask** and **SQLite**. It has dark and light mode, a glass look, a moving sky background, 3-D scroll effects, an interactive world map and fares that change the way real airline prices do.
 
 ## Features
