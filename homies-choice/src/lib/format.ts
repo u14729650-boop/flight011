@@ -10,6 +10,13 @@ export function formatSize(sizeMl: number | null): string {
   return sizeMl == null ? "Size to be confirmed" : `${sizeMl} ml`;
 }
 
+/** Human label for a variant: its own label, else bottle size, else a sensible default. */
+export function variantLabel(v: Pick<ProductVariant, "label" | "sizeMl">, category: "fragrance" | "watch" = "fragrance"): string {
+  if (v.label && v.label.trim()) return v.label.trim();
+  if (v.sizeMl != null) return `${v.sizeMl} ml`;
+  return category === "watch" ? "Standard" : "Size to be confirmed";
+}
+
 export const availabilityLabel: Record<Availability, string> = {
   in_stock: "In stock",
   low_stock: "Only a few left",

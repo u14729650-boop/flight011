@@ -17,7 +17,13 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 }
 
-export function Header() {
+export interface Announcement {
+  enabled: boolean;
+  text: string;
+  href: string | null;
+}
+
+export function Header({ announcement }: { announcement: Announcement }) {
   const pathname = usePathname();
   const overHero = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -39,7 +45,6 @@ export function Header() {
   }, [pathname]);
 
   const transparent = overHero && !scrolled;
-  const announcement = siteConfig.announcement;
 
   return (
     <>
@@ -126,7 +131,7 @@ export function Header() {
           </div>
 
           <nav aria-label="Main" className="hidden lg:block">
-            <ul className="container-luxe flex h-11 items-center justify-center gap-9 border-t border-ivory/[0.07]">
+            <ul className="container-luxe flex h-11 items-center justify-center gap-6 border-t xl:gap-9 border-ivory/[0.07]">
               {navigation.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (

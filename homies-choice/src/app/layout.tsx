@@ -1,12 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { siteConfig } from "@/config/site";
-import { storeJsonLd } from "@/lib/seo";
-import { CartProvider } from "@/components/cart/CartProvider";
-import { CartDrawer } from "@/components/cart/CartDrawer";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { JsonLd } from "@/components/ui/JsonLd";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -59,21 +53,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN" className={`${cormorant.variable} ${manrope.variable}`} data-scroll-behavior="smooth">
-      <body className="min-h-screen">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-gold focus:px-4 focus:py-2 focus:text-forest"
-        >
-          Skip to content
-        </a>
-        <CartProvider>
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
-        <JsonLd data={storeJsonLd()} />
-      </body>
+      <body className="min-h-screen">{children}</body>
     </html>
   );
 }

@@ -59,9 +59,9 @@ test.describe("search & filters", () => {
   test("header search shows live results and opens the shop", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Search perfumes" }).click();
-    await page.getByLabel("Perfume name or brand").fill("lattafa");
+    await page.getByLabel("Product name or brand").fill("lattafa");
     await expect(page.getByRole("dialog").getByRole("link", { name: /Khamrah/ })).toBeVisible();
-    await page.getByLabel("Perfume name or brand").press("Enter");
+    await page.getByLabel("Product name or brand").press("Enter");
     await expect(page).toHaveURL(/\/shop\?q=lattafa/);
     await expect(page.getByTestId("result-count")).toHaveText("2 fragrances");
   });
@@ -81,7 +81,7 @@ test.describe("search & filters", () => {
     await expect(page).toHaveURL(/sort=name-asc/);
     await expect(page.locator("main article h3").first()).toHaveText("9 PM");
 
-    await page.getByLabel("Search by perfume or brand").fill("zzz");
+    await page.getByLabel("Search by name or brand").fill("zzz");
     await expect(page.getByText("Nothing matches those filters.")).toBeVisible();
     await page.getByRole("button", { name: "Clear filters" }).click();
     await expect(page.getByTestId("result-count")).toHaveText("7 fragrances");

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { products } from "@/data/products";
+import { type ProductCategory } from "@/data/products";
+import { useCatalogue } from "./CatalogueProvider";
 import type { CollectionScope } from "@/data/collections";
 import { fragranceFamilies, genderLabels, originLabels, type FragranceFamily, type Gender, type Origin } from "@/data/taxonomy";
 import {
@@ -25,11 +26,25 @@ import { whatsappUrl } from "@/lib/whatsapp";
 import { ProductCard } from "@/components/product/ProductCard";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
+function countNoun(n: number, kind: "watch" | "fragrance" | "product") {
+  const plural = { watch: "watches", fragrance: "fragrances", product: "products" }[kind];
+  return n === 1 ? kind : plural;
+}
+
 function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
-export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScope; showSearch?: boolean }) {
+export function Catalogue({
+  scope,
+  showSearch = true,
+  emptyCopy,
+}: {
+  scope?: CollectionScope;
+  showSearch?: boolean;
+  emptyCopy?: { eyebrow: string; title: string; body: string; ask: string };
+}) {
+  const products = useCatalogue();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -39,12 +54,13 @@ export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScop
 
   useEffect(() => setQuery(filters.q), [filters.q]);
 
-  const scoped = useMemo(() => products.filter((p) => inScope(p, scope)), [scope]);
+  const scoped = useMemo(() => products.filter((p) => inScope(p, scope)), [products, scope]);
   const results = useMemo(() => applyFilters(scoped, filters), [scoped, filters]);
   const facets = useMemo(
     () => ({
+      categories: (["fragrance", "watch"] as ProductCategory[]).filter((c) => scoped.some((p) => p.category === c)),
       genders: (["men", "women", "unisex"] as Gender[]).filter((g) => scoped.some((p) => p.gender === g)),
-      origins: (["designer", "arabic"] as Origin[]).filter((o) => scoped.some((p) => p.origin === o)),
+      origins: (["designer", "arabic"] as Origin[]).filter((o) => scoped.some((p) => p.category === "fragrance" && p.origin === o)),
       families: availableFamilies(scoped),
       sizes: availableSizes(scoped),
     }),
@@ -91,13 +107,13 @@ export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScop
         {showSearch && (
           <div className="relative order-first w-full sm:order-none sm:w-72">
             <Search className="pointer-events-none absolute top-1/2 left-0 h-4 w-4 -translate-y-1/2 text-stone" strokeWidth={1.5} aria-hidden="true" />
-            <label htmlFor="catalogue-search" className="sr-only">Search by perfume or brand</label>
+            <label htmlFor="catalogue-search" className="sr-only">Search by name or brand</label>
             <input
               id="catalogue-search"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search perfume or brand"
+              placeholder="Search by name or brand"
               className="field py-2 pl-7 text-sm"
             />
           </div>
@@ -110,7 +126,7 @@ export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScop
           <SlidersHorizontal className="h-3.5 w-3.5" /> Filters{count > 0 && ` (${count})`}
         </button>
         <p className="text-sm text-stone" aria-live="polite" data-testid="result-count">
-          {results.length} {results.length === 1 ? "fragrance" : "fragrances"}
+          {results.length} {countNoun(results.length, scope?.category === "watch" ? "watch" : results.every((p) => p.category === "fragrance") ? "fragrance" : "product")}
         </p>
         <div className="ml-auto flex items-center gap-2">
           <label htmlFor="catalogue-sort" className="eyebrow hidden text-[0.6rem] text-stone sm:block">Sort</label>
@@ -130,6 +146,7 @@ export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScop
       {/* Active filter chips */}
       {hasAnyFilter && (
         <div className="flex flex-wrap items-center gap-2 pt-5" aria-label="Active filters">
+          {filters.category.map((c) => <Chip key={c} label={c === "watch" ? "Watches" : "Fragrances"} onRemove={() => update({ category: toggle(filters.category, c) })} />)}
           {filters.q.trim() && <Chip label={`“${filters.q.trim()}”`} onRemove={() => { setQuery(""); update({ q: "" }); }} />}
           {filters.gender.map((g) => <Chip key={g} label={genderLabels[g]} onRemove={() => update({ gender: toggle(filters.gender, g) })} />)}
           {filters.origin.map((o) => <Chip key={o} label={originLabels[o]} onRemove={() => update({ origin: toggle(filters.origin, o) })} />)}
@@ -163,7 +180,7 @@ export function Catalogue({ scope, showSearch = true }: { scope?: CollectionScop
               ))}
             </ul>
           ) : (
-            <EmptyState filtered={hasAnyFilter || scoped.length > 0} onReset={reset} />
+            <EmptyState filtered={hasAnyFilter || scoped.length > 0} onReset={reset} copy={emptyCopy} />
           )}
         </div>
       </div>
@@ -205,15 +222,23 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   );
 }
 
-function EmptyState({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
+function EmptyState({
+  filtered,
+  onReset,
+  copy,
+}: {
+  filtered: boolean;
+  onReset: () => void;
+  copy?: { eyebrow: string; title: string; body: string; ask: string };
+}) {
   return (
     <div className="flex flex-col items-center border border-line px-6 py-20 text-center">
-      <p className="eyebrow text-gold-deep">{filtered ? "No exact match" : "Coming soon"}</p>
-      <p className="display mt-4 text-4xl">{filtered ? "Nothing matches those filters." : "This selection is being curated."}</p>
+      <p className="eyebrow text-gold-deep">{filtered ? "No exact match" : copy?.eyebrow ?? "Coming soon"}</p>
+      <p className="display mt-4 text-4xl text-balance">{filtered ? "Nothing matches those filters." : copy?.title ?? "This selection is being curated."}</p>
       <p className="mt-4 max-w-md text-sm leading-relaxed text-stone">
         {filtered
           ? "Try removing a filter — or tell us what you're looking for and we'll check what we can source for you."
-          : "Our team is adding fragrances to this collection. Message us and we'll share what's available in store today."}
+          : copy?.body ?? "Our team is adding fragrances to this collection. Message us and we'll share what's available in store today."}
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         {filtered ? (
@@ -222,7 +247,7 @@ function EmptyState({ filtered, onReset }: { filtered: boolean; onReset: () => v
           <Link href="/shop" className="btn btn-dark">Browse all fragrances</Link>
         )}
         <a
-          href={whatsappUrl("Hello Homies Choice, I'm looking for a fragrance I couldn't find on the website.")}
+          href={whatsappUrl(!filtered && copy ? copy.ask : "Hello Homies Choice, I'm looking for something I couldn't find on the website.")}
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-outline-dark"
@@ -260,7 +285,7 @@ function FilterPanel({
   showOrigin,
 }: {
   filters: CatalogueFilters;
-  facets: { genders: Gender[]; origins: Origin[]; families: FragranceFamily[]; sizes: number[] };
+  facets: { categories: ProductCategory[]; genders: Gender[]; origins: Origin[]; families: FragranceFamily[]; sizes: number[] };
   onChange: (f: Partial<CatalogueFilters>) => void;
   showGender: boolean;
   showOrigin: boolean;
@@ -283,6 +308,18 @@ function FilterPanel({
 
   return (
     <div>
+      {facets.categories.length > 1 && (
+        <FilterGroup title="Category">
+          {facets.categories.map((c) => (
+            <Check
+              key={c}
+              label={c === "watch" ? "Watches" : "Fragrances"}
+              checked={filters.category.includes(c)}
+              onChange={() => onChange({ category: toggle(filters.category, c) })}
+            />
+          ))}
+        </FilterGroup>
+      )}
       {showGender && facets.genders.length > 0 && (
         <FilterGroup title="For">
           {facets.genders.map((g) => (

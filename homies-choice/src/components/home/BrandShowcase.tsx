@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 
 /** Text-only brand list, derived from what is actually in the catalogue. */
-export function BrandShowcase() {
+export function BrandShowcase({ products }: { products: Product[] }) {
   const brands = [...new Set(products.map((p) => p.brand))].sort((a, b) => a.localeCompare(b));
   return (
     <section className="border-y border-line py-20 md:py-24" aria-labelledby="brands-title">

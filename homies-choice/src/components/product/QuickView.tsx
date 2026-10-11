@@ -47,7 +47,7 @@ export function QuickView({ product, open, onOpenChange }: { product: Product; o
             </div>
 
             <div className="mt-6">
-              <SizeSelector variants={product.variants} value={variant.id} onChange={setVariantId} name={`qv-size-${product.slug}`} />
+              <SizeSelector category={product.category} variants={product.variants} value={variant.id} onChange={setVariantId} name={`qv-size-${product.slug}`} />
             </div>
 
             <div className="mt-6 flex gap-3">

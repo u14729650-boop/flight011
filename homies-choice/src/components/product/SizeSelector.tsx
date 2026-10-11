@@ -1,22 +1,24 @@
 "use client";
 
 import type { ProductVariant } from "@/data/products";
-import { cx, formatSize } from "@/lib/format";
+import { cx, variantLabel } from "@/lib/format";
 
 export function SizeSelector({
   variants,
   value,
   onChange,
   name,
+  category = "fragrance",
 }: {
   variants: ProductVariant[];
   value: string;
   onChange: (id: string) => void;
   name: string;
+  category?: "fragrance" | "watch";
 }) {
   return (
     <fieldset>
-      <legend className="eyebrow mb-3 text-[0.625rem] text-stone">Bottle size</legend>
+      <legend className="eyebrow mb-3 text-[0.625rem] text-stone">{category === "watch" ? "Option" : "Bottle size"}</legend>
       <div className="flex flex-wrap gap-2">
         {variants.map((v) => {
           const selected = v.id === value;
@@ -38,7 +40,7 @@ export function SizeSelector({
                 onChange={() => onChange(v.id)}
                 className="sr-only"
               />
-              {formatSize(v.sizeMl)}
+              {variantLabel(v, category)}
               {sold && <span className="sr-only"> (out of stock)</span>}
             </label>
           );

@@ -66,6 +66,7 @@ export const navigation = [
   { label: "Women's Fragrances", href: "/collections/women" },
   { label: "Unisex", href: "/collections/unisex" },
   { label: "Arabic Perfumes", href: "/collections/arabic" },
+  { label: "Watches", href: "/watches" },
   { label: "Bestsellers", href: "/collections/bestsellers" },
   { label: "Contact", href: "/contact" },
 ] as const;

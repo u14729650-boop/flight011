@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { validateEnquiry, type EnquiryErrors, type EnquiryInput } from "@/lib/validation";
 import { contactMessage, whatsappUrl } from "@/lib/whatsapp";
+import { submitEnquiryCopy } from "@/lib/enquiry-client";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
 const empty: EnquiryInput = { name: "", phone: "", message: "" };
@@ -30,12 +31,7 @@ export function ContactForm() {
     // Open WhatsApp synchronously (inside the click) so pop-up blockers allow it.
     window.open(whatsappUrl(contactMessage(values)), "_blank", "noopener,noreferrer");
     // Optionally keep a copy server-side when storage is configured; failures are non-blocking.
-    fetch("/api/enquiry", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-      keepalive: true,
-    }).catch(() => {});
+    submitEnquiryCopy(values);
     setSent(true);
   };
 

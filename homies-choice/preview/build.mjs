@@ -19,6 +19,23 @@ await build({
   jsx: "automatic",
   outfile: path.join(dist, "app.js"),
   tsconfig: path.join(root, "tsconfig.json"),
+  plugins: [
+    {
+      // Swap server-only data access and the admin API for browser demo versions.
+      name: "preview-shims",
+      setup(b) {
+        const map = {
+          "@/lib/server/catalogue-source": "preview/shims/catalogue-source.ts",
+          "@/lib/server/settings": "preview/shims/settings.ts",
+          "@/lib/admin-client": "preview/shims/admin-client.ts",
+          "@/lib/enquiry-client": "preview/shims/enquiry-client.ts",
+        };
+        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|admin-client|enquiry-client)$/ }, (args) => ({
+          path: path.join(root, map[args.path]),
+        }));
+      },
+    },
+  ],
   alias: {
     "next/link": path.join(root, "preview/shims/link.tsx"),
     "next/image": path.join(root, "preview/shims/image.tsx"),

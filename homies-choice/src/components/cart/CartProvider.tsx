@@ -12,6 +12,8 @@ import {
   type CartItem,
   type CartSummary,
 } from "@/lib/cart";
+import type { Product } from "@/data/products";
+import { useCatalogue } from "@/components/catalogue/CatalogueProvider";
 
 interface CartContextValue extends CartSummary {
   items: CartItem[];
@@ -28,16 +30,17 @@ interface CartContextValue extends CartSummary {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function readStorage(): CartItem[] {
+function readStorage(catalogue: Product[]): CartItem[] {
   try {
     const raw = window.localStorage.getItem(CART_STORAGE_KEY);
-    return raw ? sanitize(JSON.parse(raw)) : [];
+    return raw ? sanitize(JSON.parse(raw), catalogue) : [];
   } catch {
     return [];
   }
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const catalogue = useCatalogue();
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -45,16 +48,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const skipWrite = useRef(true);
 
   useEffect(() => {
-    setItems(readStorage());
+    setItems(readStorage(catalogue));
     setHydrated(true);
     const onStorage = (e: StorageEvent) => {
       if (e.key === CART_STORAGE_KEY) {
         skipWrite.current = true;
-        setItems(readStorage());
+        setItems(readStorage(catalogue));
       }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(
     () => ({
-      ...summarize(items),
+      ...summarize(items, catalogue),
       items,
       hydrated,
       isOpen,
@@ -89,7 +93,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove: (key) => setItems((prev) => removeItem(prev, key)),
       clear: () => setItems([]),
     }),
-    [items, hydrated, isOpen, add],
+    [items, hydrated, isOpen, add, catalogue],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

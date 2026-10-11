@@ -29,7 +29,7 @@ export function PurchasePanel({ product }: { product: Product }) {
       </div>
 
       <div className="mt-7">
-        <SizeSelector variants={product.variants} value={variant.id} onChange={setVariantId} name="size" />
+        <SizeSelector category={product.category} variants={product.variants} value={variant.id} onChange={setVariantId} name="size" />
       </div>
 
       <div className="mt-7">

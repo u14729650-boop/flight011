@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Product } from "@/data/products";
 import { productTitle } from "@/data/products";
 import { cx } from "@/lib/format";
+import { Monogram } from "@/components/ui/Logo";
 
 /**
  * Product photograph, or — until an authentic photo is supplied — a clearly
@@ -32,6 +33,8 @@ export function ProductImage({
           fill
           sizes={sizes}
           priority={priority}
+          // Remote images (uploaded via the admin, or linked) are served as-is.
+          unoptimized={image.src.startsWith("http")}
           className="object-contain p-[8%] transition-transform duration-[1.2s] ease-luxe group-hover:scale-[1.04]"
         />
       </div>
@@ -48,7 +51,10 @@ export function ProductImage({
       <div className="absolute inset-[7%] border border-gold/45" aria-hidden="true" />
       <div className="relative flex flex-col items-center px-[12%]" aria-hidden="true">
         {variant !== "thumb" && (
-          <span className="eyebrow mb-3 text-[0.6rem] text-gold-deep">{product.brand}</span>
+          <>
+            <Monogram className={cx("mb-5 opacity-80", variant === "hero" ? "h-14" : "h-8 md:h-10")} />
+            <span className="eyebrow mb-3 text-[0.6rem] text-gold-deep">{product.brand}</span>
+          </>
         )}
         <span
           className={cx(

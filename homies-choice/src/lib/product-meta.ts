@@ -1,14 +1,19 @@
 import type { Product } from "@/data/products";
 import { genderLabels, originLabels } from "@/data/taxonomy";
-import { formatSize } from "./format";
+import { variantLabel } from "./format";
 
 /** "Eau de Parfum · Men · Arabic" */
 export function categoryLine(p: Product): string {
-  return [p.concentration, genderLabels[p.gender], originLabels[p.origin]].filter(Boolean).join(" · ");
+  if (p.category === "watch") return ["Watch", genderLabels[p.gender]].join(" · ");
+  return [p.concentration, genderLabels[p.gender], p.origin ? originLabels[p.origin] : null].filter(Boolean).join(" · ");
+}
+
+export function optionNoun(p: Pick<Product, "category">): string {
+  return p.category === "watch" ? "Option" : "Bottle size";
 }
 
 export function sizesLine(p: Product): string {
-  return p.variants.map((v) => formatSize(v.sizeMl)).join(" / ");
+  return p.variants.map((v) => variantLabel(v, p.category)).join(" / ");
 }
 
 /** The variant a card shows/adds by default: first one that can be bought. */

@@ -5,15 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ArrowRight, Search, X } from "lucide-react";
-import { products, productTitle } from "@/data/products";
+import { useCatalogue } from "@/components/catalogue/CatalogueProvider";
 import { matchesQuery } from "@/lib/catalogue";
 import { ProductImage } from "@/components/product/ProductImage";
 
 export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const products = useCatalogue();
   const [q, setQ] = useState("");
   const router = useRouter();
-  const results = useMemo(() => (q.trim() ? products.filter((p) => matchesQuery(p, q)).slice(0, 6) : []), [q]);
-  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), []);
+  const results = useMemo(() => (q.trim() ? products.filter((p) => matchesQuery(p, q)).slice(0, 6) : []), [q, products]);
+  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), [products]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,17 +35,17 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 <X className="h-5 w-5" strokeWidth={1.4} />
               </Dialog.Close>
             </div>
-            <Dialog.Description className="sr-only">Search by perfume name or brand.</Dialog.Description>
+            <Dialog.Description className="sr-only">Search by product name or brand.</Dialog.Description>
             <form onSubmit={submit} role="search" className="mt-4 flex items-center gap-4 border-b border-charcoal/70 pb-3">
               <Search className="h-6 w-6 shrink-0 text-stone" strokeWidth={1.2} aria-hidden="true" />
-              <label htmlFor="site-search" className="sr-only">Perfume name or brand</label>
+              <label htmlFor="site-search" className="sr-only">Product name or brand</label>
               <input
                 id="site-search"
                 autoFocus
                 type="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Perfume or brand, e.g. Khamrah, Lattafa"
+                placeholder="Perfume, watch or brand"
                 className="w-full bg-transparent font-serif text-2xl text-charcoal outline-none placeholder:text-stone/60 md:text-4xl"
                 autoComplete="off"
               />

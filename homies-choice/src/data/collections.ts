@@ -1,8 +1,10 @@
 import type { Gender, Mood, Origin } from "./taxonomy";
+import type { ProductCategory } from "./products";
 import { moods } from "./taxonomy";
 import type { MediaKey } from "./media";
 
 export interface CollectionScope {
+  category?: ProductCategory;
   gender?: Gender;
   origin?: Origin;
   bestseller?: boolean;
@@ -29,7 +31,7 @@ const baseCollections: Collection[] = [
     metaTitle: "Men's Perfumes in Ahmedabad",
     metaDescription:
       "Shop men's fragrances in Ahmedabad at Homies Choice — designer perfumes and Arabic attars-inspired scents, with easy WhatsApp ordering.",
-    scope: { gender: "men" },
+    scope: { category: "fragrance", gender: "men" },
     media: "collectionMen",
   },
   {
@@ -40,7 +42,7 @@ const baseCollections: Collection[] = [
     metaTitle: "Women's Perfumes in Ahmedabad",
     metaDescription:
       "Discover women's fragrances at Homies Choice, Ahmedabad — designer and Arabic perfumes with personal guidance on WhatsApp.",
-    scope: { gender: "women" },
+    scope: { category: "fragrance", gender: "women" },
     media: "collectionWomen",
   },
   {
@@ -50,7 +52,7 @@ const baseCollections: Collection[] = [
     intro: "Compositions that belong to whoever wears them best.",
     metaTitle: "Unisex Perfumes in Ahmedabad",
     metaDescription: "Unisex fragrances from designer and Arabic perfume houses, available at Homies Choice in Ahmedabad.",
-    scope: { gender: "unisex" },
+    scope: { category: "fragrance", gender: "unisex" },
     media: "discovery",
   },
   {
@@ -61,7 +63,7 @@ const baseCollections: Collection[] = [
     metaTitle: "Arabic Perfumes in Ahmedabad",
     metaDescription:
       "Shop Arabic perfumes in Ahmedabad — Lattafa, Afnan, Rasasi, French Avenue and more at Homies Choice. Order easily on WhatsApp.",
-    scope: { origin: "arabic" },
+    scope: { category: "fragrance", origin: "arabic" },
     media: "collectionArabic",
   },
   {
@@ -71,7 +73,7 @@ const baseCollections: Collection[] = [
     intro: "Modern classics and new favourites from the world's best-known fashion and fragrance houses.",
     metaTitle: "Designer Fragrances in Ahmedabad",
     metaDescription: "Designer fragrances in Ahmedabad at Homies Choice — iconic international perfumes with easy WhatsApp ordering.",
-    scope: { origin: "designer" },
+    scope: { category: "fragrance", origin: "designer" },
     media: "collectionDesigner",
   },
   {
@@ -93,7 +95,7 @@ const moodCollections: Collection[] = (Object.keys(moods) as Mood[]).map((mood) 
   intro: moods[mood].blurb,
   metaTitle: `${moods[mood].label} Perfumes`,
   metaDescription: `${moods[mood].label} fragrances at Homies Choice, Ahmedabad. ${moods[mood].blurb}`,
-  scope: { mood },
+  scope: { category: "fragrance", mood },
   media: `mood-${mood}` as MediaKey,
 }));
 

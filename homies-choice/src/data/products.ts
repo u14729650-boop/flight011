@@ -19,10 +19,19 @@ import type { FragranceFamily, Gender, Mood, Origin } from "./taxonomy";
 
 export type Availability = "in_stock" | "low_stock" | "out_of_stock" | "on_request";
 
+export type ProductCategory = "fragrance" | "watch";
+
+export const categoryLabels: Record<ProductCategory, string> = {
+  fragrance: "Fragrance",
+  watch: "Watch",
+};
+
 export interface ProductVariant {
   id: string;
-  /** Bottle size in millilitres; null while the size is unconfirmed. */
+  /** Bottle size in millilitres (fragrances); null while unconfirmed or not applicable. */
   sizeMl: number | null;
+  /** Free-text option name, e.g. "Black dial · Steel bracelet" (watches). Overrides the size label. */
+  label?: string | null;
   /** Selling price in Indian rupees; null = price on request. */
   price: number | null;
   /** Genuine comparison price in rupees, only when one exists. */
@@ -45,27 +54,43 @@ export interface FragranceNotes {
   source: string;
 }
 
+export interface ProductSpec {
+  label: string;
+  value: string;
+}
+
 export interface Product {
   slug: string;
+  category: ProductCategory;
   brand: string;
   name: string;
+  /** Fragrance concentration, e.g. "Eau de Parfum"; null for watches. */
   concentration: string | null;
   gender: Gender;
-  origin: Origin;
+  /** Arabic / designer — fragrances only. */
+  origin: Origin | null;
   /** Editorial classification used for filtering. Empty = not yet classified. */
   families: FragranceFamily[];
   moods: Mood[];
   description: string;
   notes: FragranceNotes | null;
+  /** Verified specifications shown on the product page (e.g. movement, case size for watches). */
+  specs: ProductSpec[];
   images: ProductImage[];
   variants: ProductVariant[];
   bestseller: boolean;
+  /** Hidden from the shop when false (admin drafts). */
+  published: boolean;
   /** Shown to the shop team only (README / data) — what still needs checking. */
   pendingVerification?: string;
 }
 
+/** Starter catalogue. Used as-is when no database is connected, and to seed the database from the admin panel. */
 export const products: Product[] = [
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "lattafa-khamrah",
     brand: "Lattafa",
     name: "Khamrah",
@@ -83,6 +108,9 @@ export const products: Product[] = [
     pendingVerification: "Selling price, stock and product photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "french-avenue-liquid-brun",
     brand: "French Avenue",
     name: "Liquid Brun",
@@ -100,6 +128,9 @@ export const products: Product[] = [
     pendingVerification: "Selling price, stock and product photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "emporio-armani-stronger-with-you-intensely",
     brand: "Emporio Armani",
     name: "Stronger With You Intensely",
@@ -120,6 +151,9 @@ export const products: Product[] = [
     pendingVerification: "Which sizes are stocked, selling prices and product photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "rayhaan",
     brand: "Rayhaan",
     name: "Rayhaan",
@@ -138,6 +172,9 @@ export const products: Product[] = [
       "Exact fragrance name within the Rayhaan range, gender, concentration, bottle size, price, classification and photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "rasasi-hawas-for-him",
     brand: "Rasasi",
     name: "Hawas for Him",
@@ -155,6 +192,9 @@ export const products: Product[] = [
     pendingVerification: "Selling price, stock and product photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "afnan-9-pm",
     brand: "Afnan",
     name: "9 PM",
@@ -172,6 +212,9 @@ export const products: Product[] = [
     pendingVerification: "Selling price, stock and product photograph.",
   },
   {
+    category: "fragrance",
+    specs: [],
+    published: true,
     slug: "lattafa-asad-bourbon",
     brand: "Lattafa",
     name: "Asad Bourbon",
@@ -190,8 +233,13 @@ export const products: Product[] = [
   },
 ];
 
+export function findProduct(catalogue: Product[], slug: string): Product | undefined {
+  return catalogue.find((p) => p.slug === slug);
+}
+
+/** @deprecated use findProduct with the live catalogue */
 export function getProduct(slug: string): Product | undefined {
-  return products.find((p) => p.slug === slug);
+  return findProduct(products, slug);
 }
 
 export function getVariant(product: Product, variantId: string): ProductVariant | undefined {

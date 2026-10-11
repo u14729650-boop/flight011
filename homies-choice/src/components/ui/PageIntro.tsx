@@ -18,7 +18,7 @@ export function PageIntro({
   return (
     <section className="on-dark relative isolate overflow-hidden bg-forest text-ivory">
       {/* Only use the photo slot once a real photograph exists; otherwise keep the emerald backdrop. */}
-      {media && mediaSlots[media].src ? <EditorialImage slot={media} priority className="absolute inset-0 -z-10 opacity-60" /> : <div className="tone-emerald grain absolute inset-0 -z-10" />}
+      {media && mediaSlots[media].src && !["beige", "ivory"].includes(mediaSlots[media].tone) ? <EditorialImage slot={media} priority className="absolute inset-0 -z-10 opacity-60" /> : <div className="tone-emerald grain absolute inset-0 -z-10" />}
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-forest/90 via-forest/60 to-forest/20" aria-hidden="true" />
       <div className="container-luxe py-14 md:py-20">
         {crumbs && (

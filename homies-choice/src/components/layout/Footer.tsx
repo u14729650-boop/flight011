@@ -12,6 +12,7 @@ const shopLinks = [
   { label: "Unisex", href: "/collections/unisex" },
   { label: "Arabic Perfumes", href: "/collections/arabic" },
   { label: "Designer Fragrances", href: "/collections/designer" },
+  { label: "Watches", href: "/watches" },
   { label: "Bestsellers", href: "/collections/bestsellers" },
 ];
 

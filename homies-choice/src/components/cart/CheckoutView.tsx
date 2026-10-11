@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Info, ShoppingBag, Trash2 } from "lucide-react";
 import { productTitle } from "@/data/products";
-import { formatPrice, formatSize } from "@/lib/format";
+import { formatPrice, variantLabel } from "@/lib/format";
 import { orderMessage, whatsappUrl } from "@/lib/whatsapp";
 import { ProductImage } from "@/components/product/ProductImage";
 import { QtyStepper } from "@/components/product/QtyStepper";
@@ -66,15 +66,15 @@ export function CheckoutView() {
                     </div>
                     {line.product.variants.length > 1 ? (
                       <label className="mt-2 text-sm text-stone">
-                        <span className="sr-only">Bottle size for {title}</span>
+                        <span className="sr-only">{line.product.category === "watch" ? "Option" : "Bottle size"} for {title}</span>
                         <select value={line.variant.id} onChange={(e) => cart.updateVariant(line.key, e.target.value)} className="border-b border-line bg-transparent py-1 text-sm text-charcoal">
                           {line.product.variants.map((v) => (
-                            <option key={v.id} value={v.id} disabled={v.availability === "out_of_stock"}>{formatSize(v.sizeMl)}</option>
+                            <option key={v.id} value={v.id} disabled={v.availability === "out_of_stock"}>{variantLabel(v, line.product.category)}</option>
                           ))}
                         </select>
                       </label>
                     ) : (
-                      <p className="mt-2 text-sm text-stone">{formatSize(line.variant.sizeMl)}</p>
+                      <p className="mt-2 text-sm text-stone">{variantLabel(line.variant, line.product.category)}</p>
                     )}
                     <div className="mt-auto flex items-end justify-between pt-4">
                       <QtyStepper size="sm" value={line.qty} onChange={(n) => cart.updateQty(line.key, n)} label={`Quantity of ${title}`} />

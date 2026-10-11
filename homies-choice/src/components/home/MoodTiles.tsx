@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 import { moods, type Mood } from "@/data/taxonomy";
 import { media } from "@/data/media";
 import { cx } from "@/lib/format";
@@ -8,7 +8,7 @@ import { whatsappUrl } from "@/lib/whatsapp";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
-export function MoodTiles() {
+export function MoodTiles({ products }: { products: Product[] }) {
   const keys = Object.keys(moods) as Mood[];
   return (
     <section className="on-dark bg-forest py-20 text-ivory md:py-28" aria-labelledby="mood-title">
@@ -23,7 +23,7 @@ export function MoodTiles() {
           {keys.map((key) => {
             const count = products.filter((p) => p.moods.includes(key)).length;
             const slot = `mood-${key}` as const;
-            const light = (media[slot].tone === "ivory" || media[slot].tone === "beige") && !media[slot].src;
+            const light = media[slot].tone === "ivory" || media[slot].tone === "beige";
             const body = (
               <>
                 <EditorialImage
@@ -31,10 +31,10 @@ export function MoodTiles() {
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="absolute inset-0 opacity-90 transition-transform duration-[1.4s] ease-luxe group-hover:scale-[1.05]"
                 />
-                {!light && <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" />}
+                <div className={cx("absolute inset-0 bg-gradient-to-t to-transparent", light ? "from-ivory/90 via-ivory/40" : "from-black/55")} aria-hidden="true" />
                 <div className={cx("relative flex h-full flex-col justify-end p-7", light ? "text-charcoal" : "text-ivory")}>
                   <h3 className="display text-[2rem]">{moods[key].label}</h3>
-                  <p className={cx("mt-2 max-w-xs text-sm", light ? "text-stone" : "text-ivory/70")}>{moods[key].blurb}</p>
+                  <p className={cx("mt-2 max-w-xs text-sm", light ? "text-charcoal/75" : "text-ivory/75")}>{moods[key].blurb}</p>
                   <span className="mt-5 inline-flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
                     {count > 0 ? `${count} fragrance${count > 1 ? "s" : ""}` : "Ask for recommendations"}
                     <ArrowUpRight className="h-3.5 w-3.5" />

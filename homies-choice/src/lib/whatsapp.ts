@@ -1,7 +1,7 @@
 import { siteConfig } from "@/config/site";
 import { productTitle, type Product, type ProductVariant } from "@/data/products";
 import type { CartSummary } from "./cart";
-import { formatPrice, formatSize } from "./format";
+import { formatPrice, variantLabel } from "./format";
 
 export function whatsappUrl(message?: string): string {
   const base = `https://wa.me/${siteConfig.whatsapp.number}`;
@@ -9,12 +9,12 @@ export function whatsappUrl(message?: string): string {
 }
 
 export function productEnquiryMessage(product: Product, variant: ProductVariant | undefined): string {
-  const size = variant ? formatSize(variant.sizeMl) : "any size";
+  const size = variant ? variantLabel(variant, product.category) : "any option";
   return [
     `Hello ${siteConfig.shortName}, I'd like to know more about this perfume:`,
     "",
     `${productTitle(product)}${product.concentration ? ` (${product.concentration})` : ""}`,
-    `Size: ${size}`,
+    `${product.category === "watch" ? "Option" : "Size"}: ${size}`,
     "",
     "Could you please share the price and availability?",
   ].join("\n");
@@ -36,7 +36,7 @@ export function orderMessage(summary: CartSummary, details: OrderDetails = {}): 
 
   summary.lines.forEach((line, i) => {
     const price = line.lineTotal == null ? "price to be confirmed" : formatPrice(line.lineTotal);
-    out.push(`${i + 1}. ${productTitle(line.product)} — ${formatSize(line.variant.sizeMl)} × ${line.qty} — ${price}`);
+    out.push(`${i + 1}. ${productTitle(line.product)} — ${variantLabel(line.variant, line.product.category)} × ${line.qty} — ${price}`);
   });
   out.push("");
 

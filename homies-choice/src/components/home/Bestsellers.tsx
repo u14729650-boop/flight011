@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
-export function Bestsellers() {
-  const items = products.filter((p) => p.bestseller).slice(0, 7);
+export function Bestsellers({ products }: { products: Product[] }) {
+  const items = products.filter((p) => p.bestseller && p.category === "fragrance").slice(0, 7);
   return (
     <section className="bg-[#f1ebdf] py-20 md:py-28" aria-labelledby="bestsellers-title">
       <div className="container-luxe">

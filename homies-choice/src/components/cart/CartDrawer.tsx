@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag, Trash2, X } from "lucide-react";
 import { productTitle } from "@/data/products";
-import { formatPrice, formatSize } from "@/lib/format";
+import { formatPrice, variantLabel } from "@/lib/format";
 import { orderMessage, whatsappUrl } from "@/lib/whatsapp";
 import { ProductImage } from "@/components/product/ProductImage";
 import { QtyStepper } from "@/components/product/QtyStepper";
@@ -72,7 +72,7 @@ export function CartDrawer() {
                         </div>
                         {line.product.variants.length > 1 ? (
                           <label className="mt-2 text-xs text-stone">
-                            <span className="sr-only">Bottle size for {title}</span>
+                            <span className="sr-only">{line.product.category === "watch" ? "Option" : "Bottle size"} for {title}</span>
                             <select
                               value={line.variant.id}
                               onChange={(e) => cart.updateVariant(line.key, e.target.value)}
@@ -80,13 +80,13 @@ export function CartDrawer() {
                             >
                               {line.product.variants.map((v) => (
                                 <option key={v.id} value={v.id} disabled={v.availability === "out_of_stock"}>
-                                  {formatSize(v.sizeMl)}
+                                  {variantLabel(v, line.product.category)}
                                 </option>
                               ))}
                             </select>
                           </label>
                         ) : (
-                          <p className="mt-2 text-xs text-stone">{formatSize(line.variant.sizeMl)}</p>
+                          <p className="mt-2 text-xs text-stone">{variantLabel(line.variant, line.product.category)}</p>
                         )}
                         <div className="mt-auto flex items-end justify-between pt-3">
                           <QtyStepper size="sm" value={line.qty} onChange={(n) => cart.updateQty(line.key, n)} label={`Quantity of ${title}`} />

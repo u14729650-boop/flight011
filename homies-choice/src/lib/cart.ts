@@ -1,4 +1,4 @@
-import { getProduct, getVariant, productTitle, type Product, type ProductVariant } from "@/data/products";
+import { findProduct, getVariant, productTitle, type Product, type ProductVariant } from "@/data/products";
 
 export const MAX_QTY = 10;
 export const CART_STORAGE_KEY = "hc-bag-v1";
@@ -62,14 +62,14 @@ export function changeVariant(items: CartItem[], key: string, newVariantId: stri
 }
 
 /** Drop anything that no longer exists in the catalogue or has invalid data. */
-export function sanitize(raw: unknown): CartItem[] {
+export function sanitize(raw: unknown, catalogue: Product[]): CartItem[] {
   if (!Array.isArray(raw)) return [];
   const out: CartItem[] = [];
   for (const entry of raw) {
     if (!entry || typeof entry !== "object") continue;
     const { slug, variantId, qty } = entry as Record<string, unknown>;
     if (typeof slug !== "string" || typeof variantId !== "string" || typeof qty !== "number") continue;
-    const product = getProduct(slug);
+    const product = findProduct(catalogue, slug);
     if (!product || !getVariant(product, variantId)) continue;
     const merged = addItem(out, slug, variantId, qty);
     out.splice(0, out.length, ...merged);
@@ -77,10 +77,10 @@ export function sanitize(raw: unknown): CartItem[] {
   return out;
 }
 
-export function summarize(items: CartItem[]): CartSummary {
+export function summarize(items: CartItem[], catalogue: Product[]): CartSummary {
   const lines: CartLine[] = [];
   for (const item of items) {
-    const product = getProduct(item.slug);
+    const product = findProduct(catalogue, item.slug);
     const variant = product && getVariant(product, item.variantId);
     if (!product || !variant) continue;
     lines.push({

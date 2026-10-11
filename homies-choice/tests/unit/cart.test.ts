@@ -1,32 +1,30 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-// Use a fixture catalogue with confirmed prices so the maths can be checked.
-vi.mock("@/data/products", async (orig) => {
-  const real = await orig<typeof import("@/data/products")>();
-  const products: import("@/data/products").Product[] = [
-    {
-      slug: "a", brand: "Brand", name: "Alpha", concentration: "Eau de Parfum", gender: "men", origin: "arabic",
-      families: [], moods: [], description: "", notes: null, images: [], bestseller: false,
-      variants: [
-        { id: "a-50", sizeMl: 50, price: 1500, compareAtPrice: null, availability: "in_stock" },
-        { id: "a-100", sizeMl: 100, price: 2499, compareAtPrice: null, availability: "in_stock" },
-      ],
-    },
-    {
-      slug: "b", brand: "Other", name: "Beta", concentration: null, gender: "women", origin: "designer",
-      families: [], moods: [], description: "", notes: null, images: [], bestseller: false,
-      variants: [{ id: "b-1", sizeMl: null, price: null, compareAtPrice: null, availability: "on_request" }],
-    },
-  ];
-  return {
-    ...real,
-    products,
-    getProduct: (slug: string) => products.find((p) => p.slug === slug),
-  };
-});
+import type { Product } from "@/data/products";
+import { addItem, changeVariant, clampQty, lineKey, removeItem, sanitize, setQty, summarize, MAX_QTY } from "@/lib/cart";
+import { orderMessage } from "@/lib/whatsapp";
 
-const { addItem, changeVariant, clampQty, lineKey, removeItem, sanitize, setQty, summarize, MAX_QTY } = await import("@/lib/cart");
-const { orderMessage } = await import("@/lib/whatsapp");
+// Fixture catalogue with confirmed prices so the maths can be checked.
+const catalogue: Product[] = [
+  {
+    slug: "a", category: "fragrance", brand: "Brand", name: "Alpha", concentration: "Eau de Parfum", gender: "men", origin: "arabic",
+    families: [], moods: [], description: "", notes: null, specs: [], images: [], bestseller: false, published: true,
+    variants: [
+      { id: "a-50", sizeMl: 50, price: 1500, compareAtPrice: null, availability: "in_stock" },
+      { id: "a-100", sizeMl: 100, price: 2499, compareAtPrice: null, availability: "in_stock" },
+    ],
+  },
+  {
+    slug: "b", category: "fragrance", brand: "Other", name: "Beta", concentration: null, gender: "women", origin: "designer",
+    families: [], moods: [], description: "", notes: null, specs: [], images: [], bestseller: false, published: true,
+    variants: [{ id: "b-1", sizeMl: null, price: null, compareAtPrice: null, availability: "on_request" }],
+  },
+  {
+    slug: "w", category: "watch", brand: "Maker", name: "Classic", concentration: null, gender: "men", origin: null,
+    families: [], moods: [], description: "", notes: null, specs: [], images: [], bestseller: false, published: true,
+    variants: [{ id: "w-1", sizeMl: null, label: "Black dial · Steel", price: 8999, compareAtPrice: null, availability: "in_stock" }],
+  },
+];
 
 describe("cart", () => {
   it("adds, merges and caps quantities", () => {
@@ -61,7 +59,7 @@ describe("cart", () => {
       { slug: "a", variantId: "a-100", qty: 1 },
       { slug: "b", variantId: "b-1", qty: 4 },
     ];
-    const s = summarize(items);
+    const s = summarize(items, catalogue);
     expect(s.subtotal).toBe(1500 * 2 + 2499);
     expect(s.itemCount).toBe(7);
     expect(s.unpricedLines).toBe(1);
@@ -69,7 +67,7 @@ describe("cart", () => {
   });
 
   it("sanitizes stored data", () => {
-    expect(sanitize("nope")).toEqual([]);
+    expect(sanitize("nope", catalogue)).toEqual([]);
     expect(
       sanitize([
         { slug: "a", variantId: "a-50", qty: 2 },
@@ -77,15 +75,18 @@ describe("cart", () => {
         { slug: "ghost", variantId: "x", qty: 1 },
         { slug: "a", variantId: "missing", qty: 1 },
         { slug: "a" },
-      ]),
+      ], catalogue),
     ).toEqual([{ slug: "a", variantId: "a-50", qty: 3 }]);
   });
 
   it("builds a WhatsApp order message with sizes, quantities and subtotal", () => {
-    const s = summarize([
-      { slug: "a", variantId: "a-100", qty: 2 },
-      { slug: "b", variantId: "b-1", qty: 1 },
-    ]);
+    const s = summarize(
+      [
+        { slug: "a", variantId: "a-100", qty: 2 },
+        { slug: "b", variantId: "b-1", qty: 1 },
+      ],
+      catalogue,
+    );
     const msg = orderMessage(s, { name: "  Riya  ", area: "Paldi" });
     expect(msg).toContain("Name: Riya");
     expect(msg).toContain("Delivery area: Paldi");
@@ -97,8 +98,13 @@ describe("cart", () => {
   });
 
   it("omits name lines when no name is entered", () => {
-    const msg = orderMessage(summarize([{ slug: "a", variantId: "a-50", qty: 1 }]));
+    const msg = orderMessage(summarize([{ slug: "a", variantId: "a-50", qty: 1 }], catalogue));
     expect(msg).not.toContain("Name:");
     expect(msg).toContain("Product subtotal: ₹1,500");
+  });
+
+  it("labels watch options in the order message", () => {
+    const msg = orderMessage(summarize([{ slug: "w", variantId: "w-1", qty: 1 }], catalogue));
+    expect(msg).toContain("1. Maker Classic — Black dial · Steel × 1 — ₹8,999");
   });
 });

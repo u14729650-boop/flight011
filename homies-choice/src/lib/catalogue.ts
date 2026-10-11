@@ -1,4 +1,4 @@
-import type { Product } from "@/data/products";
+import type { Product, ProductCategory } from "@/data/products";
 import type { CollectionScope } from "@/data/collections";
 import { fragranceFamilies, type FragranceFamily, type Gender, type Origin } from "@/data/taxonomy";
 
@@ -14,6 +14,7 @@ export const sortOptions: { value: SortKey; label: string }[] = [
 
 export interface CatalogueFilters {
   q: string;
+  category: ProductCategory[];
   gender: Gender[];
   origin: Origin[];
   family: FragranceFamily[];
@@ -25,6 +26,7 @@ export interface CatalogueFilters {
 
 export const emptyFilters: CatalogueFilters = {
   q: "",
+  category: [],
   gender: [],
   origin: [],
   family: [],
@@ -36,6 +38,7 @@ export const emptyFilters: CatalogueFilters = {
 
 const GENDERS: Gender[] = ["men", "women", "unisex"];
 const ORIGINS: Origin[] = ["designer", "arabic"];
+const CATEGORIES: ProductCategory[] = ["fragrance", "watch"];
 const SORTS = sortOptions.map((s) => s.value);
 
 function list(params: URLSearchParams, key: string): string[] {
@@ -56,6 +59,7 @@ export function parseFilters(params: URLSearchParams): CatalogueFilters {
   const sort = params.get("sort") as SortKey | null;
   return {
     q: (params.get("q") ?? "").slice(0, 80),
+    category: list(params, "cat").filter((c): c is ProductCategory => CATEGORIES.includes(c as ProductCategory)),
     gender: list(params, "gender").filter((g): g is Gender => GENDERS.includes(g as Gender)),
     origin: list(params, "origin").filter((o): o is Origin => ORIGINS.includes(o as Origin)),
     family: list(params, "family").filter((f): f is FragranceFamily => f in fragranceFamilies),
@@ -69,6 +73,7 @@ export function parseFilters(params: URLSearchParams): CatalogueFilters {
 export function serializeFilters(filters: CatalogueFilters): string {
   const p = new URLSearchParams();
   if (filters.q.trim()) p.set("q", filters.q.trim());
+  if (filters.category.length) p.set("cat", filters.category.join(","));
   if (filters.gender.length) p.set("gender", filters.gender.join(","));
   if (filters.origin.length) p.set("origin", filters.origin.join(","));
   if (filters.family.length) p.set("family", filters.family.join(","));
@@ -81,6 +86,7 @@ export function serializeFilters(filters: CatalogueFilters): string {
 
 export function activeFilterCount(f: CatalogueFilters): number {
   return (
+    f.category.length +
     f.gender.length +
     f.origin.length +
     f.family.length +
@@ -92,6 +98,7 @@ export function activeFilterCount(f: CatalogueFilters): number {
 
 export function inScope(product: Product, scope: CollectionScope | undefined): boolean {
   if (!scope) return true;
+  if (scope.category && product.category !== scope.category) return false;
   if (scope.gender && product.gender !== scope.gender) return false;
   if (scope.origin && product.origin !== scope.origin) return false;
   if (scope.bestseller && !product.bestseller) return false;
@@ -111,7 +118,7 @@ function normalise(s: string): string {
 export function matchesQuery(product: Product, q: string): boolean {
   const query = normalise(q);
   if (!query) return true;
-  const haystack = normalise(`${product.brand} ${product.name}`);
+  const haystack = normalise(`${product.brand} ${product.name} ${product.category === "watch" ? "watch watches" : "perfume fragrance"}`);
   return query.split(" ").every((term) => haystack.includes(term));
 }
 
@@ -137,8 +144,9 @@ export function applyFilters(items: Product[], f: CatalogueFilters): Product[] {
   const priceFiltered = f.minPrice != null || f.maxPrice != null;
   const result = items.filter((p) => {
     if (!matchesQuery(p, f.q)) return false;
+    if (f.category.length && !f.category.includes(p.category)) return false;
     if (f.gender.length && !f.gender.includes(p.gender)) return false;
-    if (f.origin.length && !f.origin.includes(p.origin)) return false;
+    if (f.origin.length && !(p.origin && f.origin.includes(p.origin))) return false;
     if (f.family.length && !f.family.some((fam) => p.families.includes(fam))) return false;
     if (f.size.length && !p.variants.some((v) => v.sizeMl != null && f.size.includes(v.sizeMl))) return false;
     if (priceFiltered) {
