@@ -3,6 +3,7 @@
  * so it works in both the proxy and route handlers.
  *
  * Required env (server-side only):
+ *   ADMIN_USERNAME        — the admin login username (e.g. homies@choice)
  *   ADMIN_PASSWORD        — the admin login password
  *   ADMIN_SESSION_SECRET  — long random string used to sign sessions (optional; derived from the password if unset)
  */
@@ -57,17 +58,30 @@ export async function verifySessionToken(token: string | undefined | null): Prom
   }
 }
 
-/** Constant-time password check (compares SHA-256 digests). */
-export async function checkPassword(candidate: unknown): Promise<boolean> {
-  if (!adminConfigured() || typeof candidate !== "string") return false;
+/** Constant-time string comparison (compares SHA-256 digests). */
+async function safeEqual(candidate: string, expected: string): Promise<boolean> {
   const [a, b] = await Promise.all([
     crypto.subtle.digest("SHA-256", enc.encode(candidate)),
-    crypto.subtle.digest("SHA-256", enc.encode(process.env.ADMIN_PASSWORD!)),
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
   ]);
   const x = new Uint8Array(a), y = new Uint8Array(b);
   let diff = 0;
   for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
   return diff === 0;
+}
+
+export async function checkPassword(candidate: unknown): Promise<boolean> {
+  if (!adminConfigured() || typeof candidate !== "string") return false;
+  return safeEqual(candidate, process.env.ADMIN_PASSWORD!);
+}
+
+/** Username (when ADMIN_USERNAME is set, case-insensitive) and password must both match. */
+export async function checkCredentials(username: unknown, password: unknown): Promise<boolean> {
+  const expectedUser = (process.env.ADMIN_USERNAME ?? "").trim().toLowerCase();
+  const user = typeof username === "string" ? username.trim().toLowerCase() : "";
+  // Always run both comparisons so timing doesn't reveal which one failed.
+  const [userOk, passOk] = await Promise.all([expectedUser ? safeEqual(user, expectedUser) : Promise.resolve(true), checkPassword(password)]);
+  return userOk && passOk;
 }
 
 export function readCookie(header: string | null, name: string): string | undefined {

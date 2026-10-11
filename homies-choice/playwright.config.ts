@@ -21,6 +21,7 @@ export default defineConfig({
       env: {
         SUPABASE_URL: `http://localhost:${DB_PORT}`,
         SUPABASE_SERVICE_ROLE_KEY: "test-service-key",
+        ADMIN_USERNAME: "test@admin",
         ADMIN_PASSWORD: "test-admin-pass",
         ADMIN_SESSION_SECRET: "test-secret",
       },

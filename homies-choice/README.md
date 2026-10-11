@@ -19,7 +19,7 @@ Built with **Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Radix UI
 
 ## Admin panel (hidden)
 
-The admin lives at **`/hc-admin`**. It is not linked anywhere on the site, is excluded from search engines (noindex headers, not in the sitemap or robots.txt) and requires a password. Sessions are signed, http-only cookies that expire after 12 hours, and repeated wrong passwords are throttled.
+The admin lives at **`/hc-admin`**. It is not linked anywhere on the site, is excluded from search engines (noindex headers, not in the sitemap or robots.txt) and requires a username and password. Sessions are signed, http-only cookies that expire after 12 hours, and repeated wrong passwords are throttled.
 
 What the team can do there:
 
@@ -35,6 +35,7 @@ Changes appear on the live shop straight away.
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In **SQL Editor**, run `supabase/schema.sql`.
 3. In your hosting settings (for example Vercel → Settings → Environment Variables), add:
+   - `ADMIN_USERNAME`: the admin username
    - `ADMIN_PASSWORD`: a strong password
    - `ADMIN_SESSION_SECRET`: a long random string
    - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, from Supabase → Project Settings → API
@@ -100,4 +101,4 @@ src/lib/server/           database access, admin auth (server only)
 
 ## Browser-only preview
 
-`npm run preview:build` bundles the same components into `preview/dist/`. That is a single page with an in-memory router and no server, used to share a clickable preview as a Claude artifact. In the preview, the admin is a demo that saves to your browser only: add `#hc-admin` to the preview link and use the password `preview`. The real site is the Next.js build above.
+`npm run preview:build` bundles the same components into `preview/dist/`. That is a single page with an in-memory router and no server, used to share a clickable preview as a Claude artifact. In the preview, the admin is a demo that saves to your browser only: add `#hc-admin` to the preview link and sign in with the demo credentials (the bundle only contains their SHA-256 fingerprints). The real site is the Next.js build above.

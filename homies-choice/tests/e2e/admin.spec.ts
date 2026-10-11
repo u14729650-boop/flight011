@@ -5,6 +5,7 @@ test.describe.configure({ mode: "serial" });
 async function signIn(page: Page) {
   await page.goto("/hc-admin");
   await expect(page).toHaveURL(/\/hc-admin\/login$/);
+  await page.getByLabel("Username").fill("Test@Admin");
   await page.getByLabel("Password").fill("test-admin-pass");
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByRole("heading", { name: "Good to see you." })).toBeVisible();
@@ -24,9 +25,13 @@ test("admin is hidden and protected", async ({ page, request }) => {
   expect((await request.get("/hc-admin/login")).headers()["x-robots-tag"]).toContain("noindex");
 
   await page.goto("/hc-admin/login");
+  await page.getByLabel("Username").fill("test@admin");
   await page.getByLabel("Password").fill("wrong-password");
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.locator("#admin-password-error")).toHaveText("That password isn't right.");
+  await expect(page.locator("#admin-password-error")).toHaveText("That username or password isn't right.");
+  // The right password with the wrong username is also refused.
+  const res2 = await page.request.post("/api/admin/login", { data: { username: "someone@else", password: "test-admin-pass" } });
+  expect(res2.status()).toBe(401);
 });
 
 test("import, edit a price, add and remove a watch", async ({ page }) => {

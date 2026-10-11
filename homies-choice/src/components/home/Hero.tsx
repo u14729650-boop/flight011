@@ -5,6 +5,7 @@ import { media } from "@/data/media";
 import { variantLabel } from "@/lib/format";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { EditorialImage } from "@/components/ui/EditorialImage";
+import { HeroMobileSpacer, HeroPicture } from "@/components/ui/HeroPicture";
 import { Monogram } from "@/components/ui/Logo";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -16,13 +17,15 @@ export function Hero({ products }: { products: Product[] }) {
 
   return (
     <section className="on-dark relative isolate overflow-hidden bg-forest text-ivory" aria-labelledby="hero-title">
-      <EditorialImage slot="hero" priority className="absolute inset-0 -z-10" imageClassName="scale-105" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-forest via-forest/70 to-forest/5" aria-hidden="true" />
+      <HeroPicture className="absolute inset-0 -z-10" />
+      {/* Phones: text sits low over a darkening fade; desktop: fade from the left. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-forest via-forest/70 to-forest/5 portrait:max-lg:hidden" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-forest/90 to-transparent" aria-hidden="true" />
       <div className="orb orb-gold -z-10 h-[28rem] w-[28rem] top-[18%] right-[8%] opacity-40" aria-hidden="true" />
 
-      <div className="container-luxe grid min-h-[100svh] items-center gap-14 pt-36 pb-20 lg:grid-cols-[1.1fr_0.9fr] lg:pt-44 lg:pb-24">
+      <div className="container-luxe grid min-h-[100svh] items-center gap-14 pt-36 pb-24 portrait:max-lg:min-h-0 portrait:max-lg:pt-24 lg:grid-cols-[1.1fr_0.9fr] lg:pt-44">
         <div className="max-w-2xl">
+          <HeroMobileSpacer />
           <p className="eyebrow animate-fade-up inline-flex items-center gap-3 rounded-full border border-ivory/15 bg-ivory/[0.06] px-4 py-2 text-gold backdrop-blur-md">
             <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
             Your scent. Your signature.
@@ -38,7 +41,7 @@ export function Hero({ products }: { products: Product[] }) {
             <Link href="/collections/arabic" className="btn btn-outline-light">Explore Arabic perfumes</Link>
           </div>
 
-          <dl className="glass animate-fade-up mt-14 grid max-w-lg grid-cols-3 divide-x divide-ivory/10 rounded-[1.25rem] [animation-delay:480ms]">
+          <dl className="glass animate-fade-up mt-14 hidden max-w-lg grid-cols-3 sm:grid divide-x divide-ivory/10 rounded-[1.25rem] [animation-delay:480ms]">
             {[
               { k: "Fragrances", v: fragrances },
               { k: "Perfume houses", v: houses },

@@ -8,17 +8,18 @@ import { Logo } from "@/components/ui/Logo";
 
 export function LoginForm() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) return setError("Enter the admin password.");
+    if (!username.trim() || !password) return setError("Enter your username and password.");
     setBusy(true);
     setError(null);
     try {
-      await adminApi.login(password);
+      await adminApi.login(username, password);
       router.replace("/hc-admin");
     } catch (err) {
       setError(err instanceof AdminApiError ? err.message : "Couldn't sign in. Try again.");
@@ -40,14 +41,26 @@ export function LoginForm() {
           <h1 id="login-title" className="display mt-3 text-4xl">Studio sign in</h1>
           <p className="mt-2 text-sm text-stone">For the Homies Choice team only.</p>
           {adminApi.isPreview && (
-            <p className="mt-4 border-l-2 border-gold pl-3 text-xs text-stone">Preview demo — use the password <strong>preview</strong>. Changes are saved in this browser only.</p>
+            <p className="mt-4 rounded-xl bg-gold/10 px-3 py-2 text-xs text-stone">Preview demo — changes are saved in this browser only.</p>
           )}
-          <label htmlFor="admin-password" className="eyebrow mt-8 block text-[0.6rem] text-stone">Password</label>
+          <label htmlFor="admin-username" className="eyebrow mt-8 block text-[0.6rem] text-stone">Username</label>
+          <input
+            id="admin-username"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            autoFocus
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            aria-invalid={!!error}
+            className="field"
+          />
+          <label htmlFor="admin-password" className="eyebrow mt-5 block text-[0.6rem] text-stone">Password</label>
           <input
             id="admin-password"
             type="password"
             autoComplete="current-password"
-            autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             aria-invalid={!!error}

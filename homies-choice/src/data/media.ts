@@ -25,6 +25,7 @@ export interface MediaSlot {
 type MoodKey = `mood-${Mood}`;
 export type MediaKey =
   | "hero"
+  | "heroMobile"
   | "discovery"
   | "collectionDesigner"
   | "collectionArabic"
@@ -39,6 +40,7 @@ const art = (file: string, alt: string, tone: Tone): MediaSlot => ({ src: `/imag
 
 export const media: Record<MediaKey, MediaSlot> = {
   hero: art("hero.jpg", "Emerald satin in soft studio light", "emerald"),
+  heroMobile: art("hero-mobile.jpg", "The HC monogram in a gold arch on emerald satin", "emerald"),
   discovery: art("discovery.jpg", "Warm beige satin drape", "beige"),
   collectionDesigner: art("collection-designer.jpg", "Charcoal satin with a soft gold sheen", "charcoal"),
   collectionArabic: art("collection-arabic.jpg", "Amber satin drape", "charcoal"),

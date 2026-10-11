@@ -12,6 +12,13 @@ export class AdminApiError extends Error {
 }
 
 const SESSION = "hc-preview-admin";
+// Only SHA-256 fingerprints of the demo credentials ship in the preview bundle.
+const USER_SHA256 = "58b14d4a701392e166e00414188cec0f0984f8a6b5ab8985de1b735820071f1f";
+const PASS_SHA256 = "0201c7775611d7a61e5e921d9fd968578b21170e3a7a29ca2736bf08b465112a";
+async function sha256(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 export const isPreviewSignedIn = () => {
   try {
     return sessionStorage.getItem(SESSION) === "1";
@@ -29,10 +36,11 @@ function validate(p: Product) {
 
 export const adminApi = {
   isPreview: true,
-  async login(password: string) {
-    if (password !== "preview") {
+  async login(username: string, password: string) {
+    const [u, pw] = await Promise.all([sha256(username.trim().toLowerCase()), sha256(password)]);
+    if (u !== USER_SHA256 || pw !== PASS_SHA256) {
       await wait(null);
-      throw new AdminApiError("That password isn't right.", 401);
+      throw new AdminApiError("That username or password isn't right.", 401);
     }
     try {
       sessionStorage.setItem(SESSION, "1");

@@ -30,7 +30,7 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const adminApi = {
   isPreview: false,
-  login: (password: string) => call<{ ok: true }>("login", { method: "POST", body: JSON.stringify({ password }) }),
+  login: (username: string, password: string) => call<{ ok: true }>("login", { method: "POST", body: JSON.stringify({ username, password }) }),
   logout: () => call<{ ok: true }>("logout", { method: "POST" }),
   status: () => call<AdminStatus>("status"),
   listProducts: () => call<{ products: Product[]; source: "database" | "starter" }>("products"),

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { parseProductInput, slugify } from "@/lib/product-schema";
-import { checkPassword, createSessionToken, verifySessionToken } from "@/lib/server/admin-auth";
+import { checkCredentials, checkPassword, createSessionToken, verifySessionToken } from "@/lib/server/admin-auth";
 
 describe("product validation (admin)", () => {
   const base = {
@@ -70,6 +70,16 @@ describe("admin sessions", () => {
     expect(await verifySessionToken("garbage")).toBe(false);
     process.env.ADMIN_SESSION_SECRET = "a-different-secret";
     expect(await verifySessionToken(token)).toBe(false);
+  });
+
+  it("requires both username and password", async () => {
+    process.env.ADMIN_USERNAME = "owner@example";
+    process.env.ADMIN_PASSWORD = "Sample-Pass_1234";
+    expect(await checkCredentials("owner@example", "Sample-Pass_1234")).toBe(true);
+    expect(await checkCredentials("  OWNER@example ", "Sample-Pass_1234")).toBe(true);
+    expect(await checkCredentials("owner@example", "owner@example_2026")).toBe(false);
+    expect(await checkCredentials("someone", "Sample-Pass_1234")).toBe(false);
+    expect(await checkCredentials(undefined, "Sample-Pass_1234")).toBe(false);
   });
 
   it("checks the password and refuses when admin is not configured", async () => {
