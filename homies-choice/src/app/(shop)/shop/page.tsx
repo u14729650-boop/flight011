@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getBanners } from "@/lib/server/banners";
+import { BannerCarousel } from "@/components/banners/BannerCarousel";
 import { Catalogue } from "@/components/catalogue/Catalogue";
 import { CatalogueFallback } from "@/components/catalogue/CatalogueFallback";
 import { PageIntro } from "@/components/ui/PageIntro";
@@ -11,7 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/shop" },
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const banners = await getBanners("shop");
   return (
     <>
       <PageIntro
@@ -20,6 +23,7 @@ export default function ShopPage() {
         title="Shop all fragrances"
         intro="Designer icons and Arabic favourites — search by name or brand, or refine by family, size and price."
       />
+      <BannerCarousel banners={banners} variant="shop" label="Shop news" />
       <Suspense fallback={<CatalogueFallback />}>
         <Catalogue />
       </Suspense>

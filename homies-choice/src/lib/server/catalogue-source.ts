@@ -1,33 +1,14 @@
 import { products as starterCatalogue, type Product } from "@/data/products";
-import { CATALOGUE_TAG, rest, supabaseConfigured } from "./supabase";
+import type { FragranceFamily, Mood } from "@/data/taxonomy";
+import type { ProductRow } from "./database.types";
+import { CATALOGUE_TAG, db, supabaseConfigured, unwrap } from "./supabase";
 
 /**
  * Catalogue for the storefront.
  * - Supabase connected and seeded → published products from the database
- *   (cached, refreshed instantly when the admin saves).
+ *   (cached with the "catalogue" tag, refreshed instantly when the admin saves).
  * - Otherwise → the starter catalogue in src/data/products.ts.
  */
-
-interface ProductRow {
-  slug: string;
-  category: Product["category"];
-  brand: string;
-  name: string;
-  concentration: string | null;
-  gender: Product["gender"];
-  origin: Product["origin"];
-  families: Product["families"];
-  moods: Product["moods"];
-  description: string;
-  notes: Product["notes"];
-  specs: Product["specs"];
-  images: Product["images"];
-  variants: Product["variants"];
-  bestseller: boolean;
-  is_published: boolean;
-  pending_verification: string | null;
-  sort_order: number;
-}
 
 export function rowToProduct(r: ProductRow): Product {
   return {
@@ -38,8 +19,8 @@ export function rowToProduct(r: ProductRow): Product {
     concentration: r.concentration,
     gender: r.gender,
     origin: r.origin,
-    families: r.families ?? [],
-    moods: r.moods ?? [],
+    families: (r.families ?? []) as FragranceFamily[],
+    moods: (r.moods ?? []) as Mood[],
     description: r.description ?? "",
     notes: r.notes ?? null,
     specs: r.specs ?? [],
@@ -51,7 +32,7 @@ export function rowToProduct(r: ProductRow): Product {
   };
 }
 
-export function productToRow(p: Product, sortOrder?: number): Omit<ProductRow, "sort_order"> & { sort_order?: number; updated_at: string } {
+export function productToRow(p: Product, sortOrder?: number) {
   return {
     slug: p.slug,
     category: p.category,
@@ -71,26 +52,33 @@ export function productToRow(p: Product, sortOrder?: number): Omit<ProductRow, "
     is_published: p.published,
     pending_verification: p.pendingVerification ?? null,
     ...(sortOrder != null ? { sort_order: sortOrder } : {}),
-    updated_at: new Date().toISOString(),
   };
 }
+
+// Only the columns the site uses (smaller, faster responses).
+const PRODUCT_COLUMNS =
+  "slug,category,brand,name,concentration,gender,origin,families,moods,description,notes,specs,images,variants,bestseller,is_published,pending_verification,sort_order";
 
 /** Every product, including drafts (admin only). Null when the database is empty or unavailable. */
 export async function fetchAllProducts(): Promise<Product[] | null> {
   if (!supabaseConfigured()) return null;
-  const rows = await rest<ProductRow[]>("products?select=*&order=sort_order.asc,created_at.asc", { cache: "no-store" });
+  const rows = unwrap(
+    await db().from("products").select(PRODUCT_COLUMNS).order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
+  ) as ProductRow[];
   return rows.length ? rows.map(rowToProduct) : null;
 }
 
-/** Published catalogue for the storefront. */
+/** Published catalogue for the storefront (cached). */
 export async function getCatalogue(): Promise<Product[]> {
   if (!supabaseConfigured()) return starterCatalogue;
   try {
-    const rows = await rest<ProductRow[]>("products?select=*&order=sort_order.asc,created_at.asc", {
-      next: { tags: [CATALOGUE_TAG], revalidate: 600 },
-    });
-    if (!rows.length) return starterCatalogue; // not seeded yet
-    return rows.map(rowToProduct).filter((p) => p.published);
+    const client = db({ tags: [CATALOGUE_TAG] });
+    const [published, any] = await Promise.all([
+      client.from("products").select(PRODUCT_COLUMNS).eq("is_published", true).order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
+      client.from("products").select("slug").limit(1),
+    ]);
+    if (!(unwrap(any) as unknown[]).length) return starterCatalogue; // not seeded yet
+    return (unwrap(published) as ProductRow[]).map(rowToProduct);
   } catch (err) {
     console.error("Catalogue fetch failed, using starter catalogue", err);
     return starterCatalogue;

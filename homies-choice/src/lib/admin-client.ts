@@ -3,6 +3,7 @@
  * for a local demo store.)
  */
 import type { Product } from "@/data/products";
+import type { Banner } from "@/data/banners";
 
 import type { AdminSettings, AdminStatus, Enquiry } from "./admin-client-types";
 
@@ -48,6 +49,11 @@ export const adminApi = {
   listEnquiries: () => call<{ enquiries: Enquiry[]; database: boolean }>("enquiries"),
   setEnquiryHandled: (id: string, handled: boolean) =>
     call<{ ok: true }>(`enquiries/${id}`, { method: "PATCH", body: JSON.stringify({ handled }) }),
+  listBanners: () => call<{ banners: Banner[]; source: "database" | "starter" }>("banners"),
+  createBanner: (b: Banner) => call<{ banner: Banner }>("banners", { method: "POST", body: JSON.stringify(b) }),
+  updateBanner: (id: string, b: Banner) => call<{ banner: Banner }>(`banners/${id}`, { method: "PUT", body: JSON.stringify(b) }),
+  deleteBanner: (id: string) => call<{ ok: true }>(`banners/${id}`, { method: "DELETE" }),
+  reorderBanners: (ids: string[]) => call<{ ok: true }>("banners/order", { method: "PUT", body: JSON.stringify({ ids }) }),
   getSettings: () => call<{ settings: AdminSettings }>("settings"),
   saveSettings: (s: AdminSettings) => call<{ settings: AdminSettings }>("settings", { method: "PUT", body: JSON.stringify(s) }),
 };

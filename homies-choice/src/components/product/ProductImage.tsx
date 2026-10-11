@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Product } from "@/data/products";
 import { productTitle } from "@/data/products";
 import { cx } from "@/lib/format";
+import { isExternalImage } from "@/lib/images";
 import { Monogram } from "@/components/ui/Logo";
 
 /**
@@ -33,8 +34,8 @@ export function ProductImage({
           fill
           sizes={sizes}
           priority={priority}
-          // Remote images (uploaded via the admin, or linked) are served as-is.
-          unoptimized={image.src.startsWith("http")}
+          // Supabase Storage photos are optimised by next/image; other links are served as-is.
+          unoptimized={isExternalImage(image.src)}
           className="object-contain p-[8%] transition-transform duration-[1.2s] ease-luxe group-hover:scale-[1.04]"
         />
       </div>

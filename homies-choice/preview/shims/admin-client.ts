@@ -1,6 +1,8 @@
 // Demo implementation of the admin API for the browser-only preview.
 import type { Product } from "@/data/products";
 import { parseProductInput } from "@/lib/product-schema";
+import { parseBannerInput } from "@/lib/banner-schema";
+import type { Banner } from "@/data/banners";
 import { getStore, updateStore } from "./demo-store";
 
 export type { AdminStatus, Enquiry, AdminSettings } from "@/lib/admin-client-types";
@@ -92,6 +94,30 @@ export const adminApi = {
   async setEnquiryHandled(id: string, handled: boolean) {
     updateStore((s) => ({ ...s, enquiries: s.enquiries.map((e) => (e.id === id ? { ...e, handled } : e)) }));
     return { ok: true as const };
+  },
+  listBanners: () => wait({ banners: getStore().banners, source: "database" as const }),
+  async createBanner(b: Banner) {
+    const { banner, errors } = parseBannerInput(b, { allowDataImages: true });
+    if (Object.keys(errors).length) throw new AdminApiError("Please fix the highlighted fields.", 422, errors);
+    const sortOrder = getStore().banners.filter((x) => x.placement === banner.placement).reduce((m, x) => Math.max(m, x.sortOrder + 1), 0);
+    const saved = { ...banner, id: crypto.randomUUID(), sortOrder };
+    updateStore((s) => ({ ...s, banners: [...s.banners, saved] }));
+    return wait({ banner: saved });
+  },
+  async updateBanner(id: string, b: Banner) {
+    const { banner, errors } = parseBannerInput(b, { allowDataImages: true });
+    if (Object.keys(errors).length) throw new AdminApiError("Please fix the highlighted fields.", 422, errors);
+    const saved = { ...banner, id };
+    updateStore((s) => ({ ...s, banners: s.banners.map((x) => (x.id === id ? { ...saved, sortOrder: x.sortOrder } : x)) }));
+    return wait({ banner: saved });
+  },
+  async deleteBanner(id: string) {
+    updateStore((s) => ({ ...s, banners: s.banners.filter((x) => x.id !== id) }));
+    return wait({ ok: true as const });
+  },
+  async reorderBanners(ids: string[]) {
+    updateStore((s) => ({ ...s, banners: s.banners.map((b) => (ids.includes(b.id) ? { ...b, sortOrder: ids.indexOf(b.id) } : b)) }));
+    return wait({ ok: true as const });
   },
   getSettings: () => wait({ settings: getStore().settings }),
   async saveSettings(settings: import("@/lib/admin-client-types").AdminSettings) {

@@ -114,3 +114,32 @@ test("enquiries and announcement settings", async ({ page, context }) => {
   await expect(page).toHaveURL(/\/hc-admin\/login$/);
   expect((await page.request.get("/api/admin/products")).status()).toBe(401);
 });
+
+test("banners: edit, hide and reorder", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Banners" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Banners" })).toBeVisible();
+  await expect(page.getByText("Rich, long-lasting Arabic perfumes", { exact: true })).toBeVisible();
+
+  // Edit the first home banner's headline.
+  await page.getByRole("link", { name: "Edit “Rich, long-lasting Arabic perfumes”" }).click();
+  await page.getByLabel("Headline").fill("The festive Arabic edit");
+  await page.getByRole("button", { name: "Save banner" }).click();
+  await expect(page.getByText("Saved. The website is updated.")).toBeVisible();
+
+  await page.goto("/");
+  const carousel = page.getByRole("region", { name: "Featured at Homies Choice" });
+  await expect(carousel.getByRole("heading", { name: "The festive Arabic edit" })).toBeAttached();
+
+  // Reorder: move the watches banner first, then hide it.
+  await page.goto("/hc-admin/banners");
+  await page.getByRole("button", { name: "Move “Watches, chosen with the same care” earlier" }).click();
+  await expect(page.locator("li").filter({ hasText: "Watches, chosen with the same care" }).getByRole("button", { name: /earlier/ })).toBeDisabled();
+  await page.getByRole("checkbox", { name: /Show “Watches, chosen with the same care”/ }).uncheck();
+  await expect(page.locator("li").filter({ hasText: "Watches, chosen with the same care" }).getByText("Off")).toBeVisible();
+
+  await page.goto("/");
+  await expect(carousel.getByRole("heading", { name: "Watches, chosen with the same care" })).toHaveCount(0);
+  await expect(carousel.getByRole("heading", { name: "The festive Arabic edit" })).toBeAttached();
+});
+

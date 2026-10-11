@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import { rest, SETTINGS_TAG, supabaseConfigured } from "./supabase";
+import { db, SETTINGS_TAG, supabaseConfigured, unwrap } from "./supabase";
 
 export interface StoreSettings {
   announcement: { enabled: boolean; text: string; href: string | null };
@@ -29,11 +29,9 @@ export function parseSettings(raw: unknown): StoreSettings {
 export async function getSettings(opts: { fresh?: boolean } = {}): Promise<StoreSettings> {
   if (!supabaseConfigured()) return defaultSettings;
   try {
-    const rows = await rest<{ value: unknown }[]>(
-      "settings?key=eq.store&select=value",
-      opts.fresh ? { cache: "no-store" } : { next: { tags: [SETTINGS_TAG], revalidate: 600 } },
-    );
-    return rows[0] ? parseSettings(rows[0].value) : defaultSettings;
+    const client = db(opts.fresh ? "no-store" : { tags: [SETTINGS_TAG] });
+    const row = unwrap(await client.from("settings").select("value").eq("key", "store").maybeSingle());
+    return row ? parseSettings(row.value) : defaultSettings;
   } catch {
     return defaultSettings;
   }

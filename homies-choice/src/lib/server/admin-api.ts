@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "./admin-auth";
-import { CATALOGUE_TAG, SETTINGS_TAG, SupabaseError, supabaseConfigured } from "./supabase";
+import { BANNERS_TAG, CATALOGUE_TAG, DbError, SETTINGS_TAG, supabaseConfigured } from "./supabase";
 
 const noStore = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" };
 
@@ -26,13 +26,18 @@ export function adminRoute<A extends unknown[]>(
       return await handler(req, ...args);
     } catch (err) {
       console.error("Admin API error", err);
-      const msg = err instanceof SupabaseError ? `Database error (${err.status}). Check the Supabase setup in the README.` : "Something went wrong.";
+      const msg =
+        err instanceof DbError
+          ? `Database error: ${err.message}. Check the Supabase setup in the README (run supabase/schema.sql).`
+          : "Something went wrong.";
       return json({ error: msg }, 500);
     }
   };
 }
 
-export function refreshStorefront(kind: "catalogue" | "settings") {
-  revalidateTag(kind === "catalogue" ? CATALOGUE_TAG : SETTINGS_TAG, { expire: 0 });
+const TAGS = { catalogue: CATALOGUE_TAG, settings: SETTINGS_TAG, banners: BANNERS_TAG } as const;
+
+export function refreshStorefront(kind: keyof typeof TAGS) {
+  revalidateTag(TAGS[kind], { expire: 0 });
   revalidatePath("/", "layout");
 }

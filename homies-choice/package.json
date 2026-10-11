@@ -2,7 +2,7 @@
   "name": "homies-choice",
   "version": "0.1.0",
   "private": true,
-  "description": "HOMIES CHOICE \u2014 premium perfume store, Ahmedabad",
+  "description": "HOMIES CHOICE — premium perfume store, Ahmedabad",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.2.0",
+    "@supabase/supabase-js": "^2.117.3",
     "lucide-react": "^1.55.0",
     "next": "^16.4.0",
     "react": "^19.3.0",

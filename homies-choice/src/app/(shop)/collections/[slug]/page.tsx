@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { getBanners } from "@/lib/server/banners";
+import { BannerCarousel } from "@/components/banners/BannerCarousel";
 import { collections, getCollection } from "@/data/collections";
 import { Catalogue } from "@/components/catalogue/Catalogue";
 import { CatalogueFallback } from "@/components/catalogue/CatalogueFallback";
@@ -28,6 +30,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const c = getCollection(slug);
   if (!c) notFound();
+  const banners = await getBanners("shop");
   return (
     <>
       <PageIntro
@@ -37,6 +40,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
         intro={c.intro}
         media={c.media}
       />
+      <BannerCarousel banners={banners} variant="shop" label="Shop news" />
       <Suspense fallback={<CatalogueFallback />}>
         <Catalogue scope={c.scope} />
       </Suspense>

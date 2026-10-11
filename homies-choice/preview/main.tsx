@@ -26,6 +26,8 @@ import { ProductsTable } from "@/components/admin/ProductsTable";
 import { ProductEditor } from "@/components/admin/ProductEditor";
 import { EnquiriesTable } from "@/components/admin/EnquiriesTable";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { BannersManager } from "@/components/admin/BannersManager";
+import { BannerEditor } from "@/components/admin/BannerEditor";
 
 // Async route components (they await data) are resolved once per path and data version.
 const cache = new Map<string, Promise<React.ReactNode>>();
@@ -43,8 +45,8 @@ function ShopRoute({ path, version }: { path: string; version: number }) {
   const params = Promise.resolve({ slug: slug ?? "" });
   const id = `${version}:${path}`;
   if (path === "/") return <AsyncPage id={id} render={() => HomePage()} />;
-  if (path === "/shop") return <ShopPage />;
-  if (path === "/watches") return <WatchesPage />;
+  if (path === "/shop") return <AsyncPage id={id} render={() => ShopPage()} />;
+  if (path === "/watches") return <AsyncPage id={id} render={() => WatchesPage()} />;
   if (path === "/checkout") return <CheckoutPage />;
   if (path === "/contact") return <ContactPage />;
   if (section === "collections" && slug && getCollection(slug)) return <AsyncPage id={id} render={() => CollectionPage({ params })} />;
@@ -62,6 +64,9 @@ function AdminRoute({ path, search }: { path: string; search: string }) {
   else if (sub === "/products") page = <ProductsTable />;
   else if (sub === "/products/new") page = <ProductEditor initialCategory={new URLSearchParams(search).get("category") === "watch" ? "watch" : "fragrance"} />;
   else if (sub.startsWith("/products/")) page = <ProductEditor key={sub} slug={decodeURIComponent(sub.slice("/products/".length))} />;
+  else if (sub === "/banners") page = <BannersManager />;
+  else if (sub === "/banners/new") page = <BannerEditor initialPlacement={new URLSearchParams(search).get("placement") === "shop" ? "shop" : "home"} />;
+  else if (sub.startsWith("/banners/")) page = <BannerEditor key={sub} id={decodeURIComponent(sub.slice("/banners/".length))} />;
   else if (sub === "/enquiries") page = <EnquiriesTable />;
   else if (sub === "/settings") page = <SettingsForm />;
   else page = <Dashboard />;

@@ -8,7 +8,7 @@ export default function Image({ src, alt, fill, width, height, className, priori
 }
 
 // Minimal getImageProps for the preview: plain relative URLs, no optimisation.
-export function getImageProps({ src, alt, width, height, priority, sizes, quality, ...rest }: any) {
+export function getImageProps({ src, alt, width, height, priority, sizes, quality, unoptimized, fill, ...rest }: any) {
   const url = typeof src === "string" && src.startsWith("/") ? src.slice(1) : src;
   return { props: { src: url, srcSet: url, alt, width, height, loading: priority ? "eager" : "lazy", ...rest } };
 }

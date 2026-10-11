@@ -1,52 +1,58 @@
 /**
- * Minimal Supabase REST client for server code only.
- * Uses the service-role key, which must never reach the browser.
+ * Supabase access for server code only (route handlers, server components).
+ * Uses the official client with the service-role key, which must never reach
+ * the browser. Storefront reads are cached by Next.js with tags, so pages stay
+ * static and fast until the admin saves a change (which revalidates the tag).
  */
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types";
 
 export const CATALOGUE_TAG = "catalogue";
 export const SETTINGS_TAG = "settings";
+export const BANNERS_TAG = "banners";
 export const IMAGE_BUCKET = "product-images";
+
+/** Cached storefront reads refresh at least daily; admin saves refresh them instantly. */
+export const STOREFRONT_REVALIDATE = 60 * 60 * 24;
+
+export type Db = SupabaseClient<Database>;
 
 export function supabaseConfigured(): boolean {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-function base(): string {
-  return process.env.SUPABASE_URL!.replace(/\/$/, "");
+type CacheMode = { tags: string[]; revalidate?: number } | "no-store";
+
+/**
+ * A server client whose HTTP requests use Next's data cache.
+ * - `{ tags }`  → cached and shared across requests, invalidated by revalidateTag()
+ * - "no-store" → always fresh (admin panel, writes)
+ */
+export function db(cache: CacheMode = "no-store"): Db {
+  const cachedFetch: typeof fetch = (input, init) =>
+    fetch(input, cache === "no-store" ? { ...init, cache: "no-store" } : { ...init, next: { tags: cache.tags, revalidate: cache.revalidate ?? STOREFRONT_REVALIDATE } });
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: cachedFetch },
+  });
 }
 
-function headers(extra: Record<string, string> = {}): Record<string, string> {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return { apikey: key, Authorization: `Bearer ${key}`, ...extra };
-}
-
-export class SupabaseError extends Error {
-  constructor(public status: number, message: string) {
+export class DbError extends Error {
+  constructor(message: string, public code?: string) {
     super(message);
   }
 }
 
-/** Call PostgREST: `rest("products?select=*")`. */
-export async function rest<T = unknown>(
-  path: string,
-  init: RequestInit & { next?: { tags?: string[]; revalidate?: number | false } } = {},
-): Promise<T> {
-  const res = await fetch(`${base()}/rest/v1/${path}`, {
-    ...init,
-    headers: headers({ "Content-Type": "application/json", ...(init.headers as Record<string, string>) }),
-  });
-  if (!res.ok) throw new SupabaseError(res.status, await res.text().catch(() => res.statusText));
-  if (res.status === 204) return undefined as T;
-  const text = await res.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+/** Throws on a Supabase error and returns the data. */
+export function unwrap<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
+  if (res.error) throw new DbError(res.error.message, res.error.code);
+  return res.data;
 }
 
+/** Upload to Supabase Storage and return the public URL. */
 export async function uploadObject(objectPath: string, body: ArrayBuffer, contentType: string): Promise<string> {
-  const res = await fetch(`${base()}/storage/v1/object/${IMAGE_BUCKET}/${objectPath}`, {
-    method: "POST",
-    headers: headers({ "Content-Type": contentType, "x-upsert": "true", "Cache-Control": "31536000" }),
-    body,
-  });
-  if (!res.ok) throw new SupabaseError(res.status, await res.text().catch(() => res.statusText));
-  return `${base()}/storage/v1/object/public/${IMAGE_BUCKET}/${objectPath}`;
+  const client = db();
+  const { error } = await client.storage.from(IMAGE_BUCKET).upload(objectPath, body, { contentType, upsert: true, cacheControl: "31536000" });
+  if (error) throw new DbError(error.message);
+  return client.storage.from(IMAGE_BUCKET).getPublicUrl(objectPath).data.publicUrl;
 }

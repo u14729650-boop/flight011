@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getBanners } from "@/lib/server/banners";
+import { BannerCarousel } from "@/components/banners/BannerCarousel";
 import { Catalogue } from "@/components/catalogue/Catalogue";
 import { CatalogueFallback } from "@/components/catalogue/CatalogueFallback";
 import { WatchesIntro } from "@/components/watches/WatchesIntro";
@@ -11,10 +13,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/watches" },
 };
 
-export default function WatchesPage() {
+export default async function WatchesPage() {
+  const banners = await getBanners("shop");
   return (
     <>
       <WatchesIntro />
+      <BannerCarousel banners={banners} variant="shop" label="Shop news" />
       <Suspense fallback={<CatalogueFallback />}>
         <Catalogue
           scope={{ category: "watch" }}

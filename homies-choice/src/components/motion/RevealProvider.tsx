@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 /**
  * Scroll-reveal for any element marked `data-reveal` (optional `data-reveal-delay` in ms).
@@ -46,11 +46,22 @@ export function RevealProvider({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-/** Fades each page in on navigation. */
+// The first page load paints immediately (no fade, so it doesn't delay LCP);
+// later client-side navigations fade in.
+let navigated = false;
+
+/** Fades each page in on navigation (not on the first load). */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [animate, setAnimate] = useState(navigated);
+  useEffect(() => {
+    if (navigated) setAnimate(true);
+    return () => {
+      navigated = true;
+    };
+  }, [pathname]);
   return (
-    <div key={pathname} className="page-transition">
+    <div key={pathname} className={animate ? "page-transition" : undefined}>
       {children}
     </div>
   );

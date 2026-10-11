@@ -27,10 +27,11 @@ await build({
         const map = {
           "@/lib/server/catalogue-source": "preview/shims/catalogue-source.ts",
           "@/lib/server/settings": "preview/shims/settings.ts",
+          "@/lib/server/banners": "preview/shims/banners.ts",
           "@/lib/admin-client": "preview/shims/admin-client.ts",
           "@/lib/enquiry-client": "preview/shims/enquiry-client.ts",
         };
-        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|admin-client|enquiry-client)$/ }, (args) => ({
+        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|server\/banners|admin-client|enquiry-client)$/ }, (args) => ({
           path: path.join(root, map[args.path]),
         }));
       },

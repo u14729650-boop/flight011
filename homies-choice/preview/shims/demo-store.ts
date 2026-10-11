@@ -2,9 +2,11 @@
 import { products as starter, type Product } from "@/data/products";
 import { siteConfig } from "@/config/site";
 import type { AdminSettings, Enquiry } from "@/lib/admin-client";
+import { starterBanners, type Banner } from "@/data/banners";
 
 interface Store {
   products: Product[];
+  banners: Banner[];
   enquiries: Enquiry[];
   settings: AdminSettings;
 }
@@ -16,6 +18,7 @@ let version = 0;
 function fresh(): Store {
   return {
     products: structuredClone(starter),
+    banners: structuredClone(starterBanners).map((b) => ({ ...b, id: crypto.randomUUID() })),
     enquiries: [],
     settings: { announcement: { enabled: siteConfig.announcement.enabled, text: siteConfig.announcement.text, href: siteConfig.announcement.href } },
   };

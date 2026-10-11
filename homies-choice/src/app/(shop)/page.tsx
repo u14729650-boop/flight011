@@ -1,4 +1,6 @@
 import { getCatalogue } from "@/lib/server/catalogue-source";
+import { getBanners } from "@/lib/server/banners";
+import { BannerCarousel } from "@/components/banners/BannerCarousel";
 import { Hero } from "@/components/home/Hero";
 import { ServiceStrip } from "@/components/home/ServiceStrip";
 import { CollectionTiles } from "@/components/home/CollectionTiles";
@@ -11,11 +13,12 @@ import { WhyUs } from "@/components/home/WhyUs";
 import { ContactSection } from "@/components/contact/ContactSection";
 
 export default async function HomePage() {
-  const products = await getCatalogue();
+  const [products, banners] = await Promise.all([getCatalogue(), getBanners("home")]);
   return (
     <>
       <Hero products={products} />
       <ServiceStrip />
+      <BannerCarousel banners={banners} label="Featured at Homies Choice" />
       <CollectionTiles />
       <Bestsellers products={products} />
       <Discovery />

@@ -25,6 +25,7 @@ What the team can do there:
 
 - **Products:** add and edit perfumes and **watches**, set prices per size or option, stock status, bestseller flag, draft or live, fragrance family and mood, verified notes, watch specifications, and upload product photos.
 - **Overview:** see what still needs a price or a photograph.
+- **Banners:** create website banners for the home-page carousel or the top of the shop pages, with a headline, button, wide and phone images, a light or dark style, an on/off switch, a start/end schedule and a display order. A live preview shows the result as you edit.
 - **Enquiries:** read contact-form messages, reply on WhatsApp in one tap, and mark them as replied.
 - **Store settings:** change the announcement bar.
 
@@ -33,7 +34,7 @@ Changes appear on the live shop straight away.
 ### Setting it up (about 10 minutes)
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. In **SQL Editor**, run `supabase/schema.sql`.
+2. In **SQL Editor**, run `supabase/schema.sql`. It's safe to run again after updates; for example, it adds the `banners` table, indexes and storage rules.
 3. In your hosting settings (for example Vercel → Settings → Environment Variables), add:
    - `ADMIN_USERNAME`: the admin username
    - `ADMIN_PASSWORD`: a strong password
@@ -41,7 +42,22 @@ Changes appear on the live shop straight away.
    - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, from Supabase → Project Settings → API
 4. Redeploy, open `https://your-domain/hc-admin`, sign in, and press **Import starter catalogue**.
 
-Without Supabase the shop still works from the built-in catalogue (`src/data/products.ts`), and the admin opens in read-only mode.
+Without Supabase the shop still works from the built-in catalogue (`src/data/products.ts`) and the starter banners (`src/data/banners.ts`), and the admin opens in read-only mode.
+
+### How the backend works
+
+- The server talks to Supabase with the official `@supabase/supabase-js` client, typed against the schema (`src/lib/server/database.types.ts`), using the service-role key. That key never reaches the browser.
+- Storefront reads (products, banners, settings) are cached by Next.js with tags. Pages stay static and fast, and a save in the admin refreshes just the affected data straight away.
+- Photos are uploaded to Supabase Storage (`product-images` bucket) and served through Next.js image optimisation as resized AVIF/WebP, cached for 30 days.
+- The database uses indexes for every storefront query, keeps `updated_at` current automatically, and has row-level security on every table.
+
+## Performance
+
+Lighthouse mobile scores, measured locally on a simulated mid-range phone: home page 90, shop, product and watches pages 92, cumulative layout shift 0. What does it:
+
+- One high-priority, art-directed hero `<picture>`: the phone image on portrait screens, the landscape image elsewhere.
+- No streaming "Loading…" swap on first load, and page fade transitions only on in-app navigation.
+- Optimised fonts (self-hosted via `next/font`), light glass effects on phones, and a small favicon.
 
 ## Art direction
 
