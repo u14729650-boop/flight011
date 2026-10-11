@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPolicy, policies } from "@/data/policies";
+import { getSettings } from "@/lib/server/settings";
 import { PageIntro } from "@/components/ui/PageIntro";
 
 export const dynamicParams = false;
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PolicyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const policy = getPolicy(slug);
+  const policy = getPolicy(slug, await getSettings());
   if (!policy) notFound();
   return (
     <>
@@ -26,7 +27,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
         {policy.updated && <p className="text-xs text-stone">Last updated {policy.updated}</p>}
         <div className="space-y-5 text-[1.02rem] leading-relaxed text-charcoal/85">
           {policy.body.map((para, i) => (
-            <p key={i}>{para}</p>
+            <p key={i} className="whitespace-pre-line">{para}</p>
           ))}
         </div>
       </article>

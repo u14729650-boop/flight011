@@ -105,7 +105,7 @@ test("enquiries and announcement settings", async ({ page, context }) => {
   await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Store settings" }).click();
   await page.getByLabel(/^Text/).fill("Now open in Paldi — visit us this weekend");
   await page.getByRole("button", { name: "Save settings" }).click();
-  await expect(page.getByText("Saved. The announcement bar is updated.")).toBeVisible();
+  await expect(page.getByText("Saved. Your details are updated across the website.")).toBeVisible();
   await page.goto("/");
   // Phones get a scrolling copy of the line, so match the copy shown at this width.
   await expect(page.getByText("Now open in Paldi — visit us this weekend").filter({ visible: true })).toBeVisible();
@@ -144,3 +144,109 @@ test("banners: edit, hide and reorder", async ({ page }) => {
   await expect(carousel.getByRole("heading", { name: "The festive Arabic edit" })).toBeAttached();
 });
 
+
+test("payments: cash on delivery with a token, UPI, and the order in the dashboard", async ({ page, browser }) => {
+  await signIn(page);
+  await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Payments" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Payments" })).toBeVisible();
+
+  // UPI can't be switched on without a valid UPI ID.
+  await expect(page.getByRole("switch", { name: /Offer UPI at checkout/ })).toBeDisabled();
+  await page.getByText("Ask for an advance token").click();
+  await page.getByLabel(/Token amount/).fill("0");
+  await page.getByRole("button", { name: "Save payments" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Token amount" })).toContainText("set an amount above ₹0");
+
+  await page.getByLabel(/Token amount/).fill("200");
+  await page.getByLabel(/Your UPI ID/).fill("example@upi");
+  await page.getByText("Offer UPI at checkout").click();
+  await expect(page.getByRole("img", { name: "Test UPI QR for example@upi" })).toBeVisible();
+  await page.getByRole("button", { name: "Save payments" }).click();
+  await expect(page.getByText("Saved. Checkout now shows these payment options.")).toBeVisible();
+
+  // A shopper checks out.
+  const shopper = await browser.newPage();
+  await shopper.context().route("https://wa.me/**", (route) => route.fulfill({ status: 200, body: "ok" }));
+  await shopper.goto("/products/lattafa-khamrah");
+  await shopper.getByRole("button", { name: "Buy now" }).click();
+  await expect(shopper).toHaveURL(/\/checkout$/);
+  await expect(shopper.getByRole("radio", { name: "Cash on delivery" })).toBeChecked();
+  await expect(shopper.getByRole("radio", { name: "Cash on delivery" })).toHaveAccessibleDescription(/₹200 advance token/);
+  await expect(shopper.getByTestId("upi-pay")).toContainText("Advance token to confirm your order");
+  await expect(shopper.getByTestId("upi-app-link")).toHaveAttribute("href", /^upi:\/\/pay\?pa=example%40upi&pn=HOMIES%20CHOICE&am=200\.00&cu=INR&tn=Token%20HC-/);
+  await expect(shopper.getByTestId("due-summary")).toContainText("₹200");
+
+  await shopper.getByRole("radio", { name: "UPI" }).check();
+  await expect(shopper.getByTestId("upi-id")).toHaveText("example@upi");
+  await shopper.getByLabel(/UPI transaction ID/).fill("412345678901");
+  await shopper.getByLabel("Name").fill("Riya Shah");
+  const ref = (await shopper.getByTestId("order-ref").textContent())!.trim();
+  await shopper.getByText("Preview the message").click();
+  const preview = shopper.getByTestId("order-preview");
+  await expect(preview).toContainText(`ref ${ref}`);
+  await expect(preview).toContainText("Payment: UPI");
+  await expect(preview).toContainText("UPI transaction ID 412345678901");
+  const popup = shopper.waitForEvent("popup");
+  await shopper.getByRole("link", { name: "Place order on WhatsApp" }).click();
+  expect((await popup).url()).toContain("https://wa.me/919662041440?text=");
+  await shopper.close();
+
+  // It shows up under Orders, where the status can be changed.
+  await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Orders" }).click();
+  const row = page.getByTestId("order-row").filter({ hasText: ref });
+  await expect(row).toContainText("Lattafa Khamrah");
+  await expect(row).toContainText("Riya Shah");
+  await expect(row).toContainText("412345678901");
+  await row.getByLabel(`Status of ${ref}`).selectOption("paid");
+  await page.reload();
+  await page.getByRole("tab", { name: /^Paid/ }).click();
+  await expect(page.getByTestId("order-row").filter({ hasText: ref })).toBeVisible();
+
+  // Switch UPI back off so the storefront tests see the defaults on a re-run.
+  await page.goto("/hc-admin/payments");
+  await page.getByText("Offer UPI at checkout").click();
+  await page.getByText("Ask for an advance token").click();
+  await page.getByRole("button", { name: "Save payments" }).click();
+  await expect(page.getByText("Saved. Checkout now shows these payment options.")).toBeVisible();
+});
+
+test("home page and store details are controlled from the dashboard", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Home page" }).click();
+  await page.getByLabel("Highlighted word").fill("favourite");
+  await page.getByText("Rose", { exact: true }).click();
+  await page.getByText("Brand names", { exact: true }).click();
+  await page.getByRole("button", { name: "Save home page" }).click();
+  await expect(page.getByText("Saved. The home page is updated.")).toBeVisible();
+
+  await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Store settings" }).click();
+  await page.getByLabel(/WhatsApp number/).fill("+91 98765 43210");
+  await page.getByLabel(/Opening hours/).fill("Open daily, 11 am – 10 pm");
+  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByText("Saved. Your details are updated across the website.")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Find your favourite scent.");
+  await expect(page.getByRole("img", { name: /rose Homies Choice perfume bottle/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Iconic names/ })).toHaveCount(0);
+  await expect(page.locator("footer")).toContainText("Open daily, 11 am – 10 pm");
+  await expect(page.locator('footer a[href^="https://wa.me/919876543210"]').first()).toBeAttached();
+
+  // Every page of the site is reachable from the overview.
+  await page.goto("/hc-admin");
+  await expect(page.getByRole("link", { name: "Open Checkout & payments in a new tab" })).toHaveAttribute("href", "/checkout");
+  await expect(page.getByRole("link", { name: "Edit Home page" })).toHaveAttribute("href", "/hc-admin/home");
+
+  // Put things back.
+  await page.goto("/hc-admin/home");
+  await page.getByLabel("Highlighted word").fill("signature");
+  await page.getByText("Emerald", { exact: true }).click();
+  await page.getByText("Brand names", { exact: true }).click();
+  await page.getByRole("button", { name: "Save home page" }).click();
+  await expect(page.getByText("Saved. The home page is updated.")).toBeVisible();
+  await page.goto("/hc-admin/settings");
+  await page.getByLabel(/WhatsApp number/).fill("+91 96620 41440");
+  await page.getByLabel(/Opening hours/).fill("");
+  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByText("Saved. Your details are updated across the website.")).toBeVisible();
+});

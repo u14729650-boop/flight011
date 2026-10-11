@@ -1,4 +1,7 @@
 /** Shapes shared by the admin UI and its API client. */
+import type { StoreSettings } from "./store-settings";
+import type { Order } from "./orders";
+
 export interface AdminStatus {
   database: boolean;
   seeded: boolean;
@@ -14,6 +17,5 @@ export interface Enquiry {
   created_at: string;
 }
 
-export interface AdminSettings {
-  announcement: { enabled: boolean; text: string; href: string | null };
-}
+export type AdminSettings = StoreSettings;
+export type { Order };

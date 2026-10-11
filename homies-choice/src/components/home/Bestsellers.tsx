@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Product } from "@/data/products";
-import { whatsappUrl } from "@/lib/whatsapp";
+import type { StoreSettings } from "@/lib/store-settings";
+import { whatsappFor } from "@/lib/whatsapp";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
-export function Bestsellers({ products }: { products: Product[] }) {
+export function Bestsellers({ products, settings }: { products: Product[]; settings: StoreSettings }) {
+  const wa = whatsappFor(settings);
   const items = products.filter((p) => p.bestseller && p.category === "fragrance").slice(0, 7);
   return (
     <section className="relative isolate overflow-hidden bg-[#f1ebdf] py-20 md:py-28" aria-labelledby="bestsellers-title">
@@ -40,7 +42,7 @@ export function Bestsellers({ products }: { products: Product[] }) {
                     Our team can help you find it — or suggest something close to it.
                   </p>
                   <a
-                    href={whatsappUrl("Hello Homies Choice, I'm looking for a fragrance. Could you help me?")}
+                    href={wa("Hello Homies Choice, I'm looking for a fragrance. Could you help me?")}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-gold mt-7"

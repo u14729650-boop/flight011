@@ -26,7 +26,8 @@ export function HeroPicture({ className }: { className?: string }) {
     height: 1920,
     sizes: "(min-width: 576px) 576px, 100vw",
     quality: 85,
-    priority: true,
+    loading: "eager",
+    fetchPriority: "high",
   });
 
   return (
@@ -52,4 +53,31 @@ export function HeroPicture({ className }: { className?: string }) {
 /** Reserves the space the portrait monogram occupies, so the headline never overlaps it. */
 export function HeroMobileSpacer() {
   return <div aria-hidden="true" className="hidden h-[min(66vw,26rem)] portrait:max-lg:block" />;
+}
+
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+/**
+ * Backdrop behind the 3D bottle. Desktop gets the emerald satin; phones get a
+ * light-weight glow (the bottle is the picture there), so they skip the download.
+ */
+export function HeroBackdrop({ className }: { className?: string }) {
+  const desktop = media.hero;
+  const glow = (
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_22%,rgba(16,98,74,0.85),transparent_58%),radial-gradient(ellipse_at_80%_90%,rgba(213,180,119,0.12),transparent_50%)] lg:hidden" />
+  );
+  if (!desktop.src) return <div className={cx("tone-emerald grain", className)} aria-hidden="true">{glow}</div>;
+  const {
+    props: { srcSet, ...img },
+  } = getImageProps({ alt: "", src: desktop.src, width: 1200, height: 1600, sizes: "100vw", quality: 80 });
+  return (
+    <div className={cx("overflow-hidden bg-forest", className)} aria-hidden="true">
+      {glow}
+      <picture>
+        <source media="(min-width: 1024px)" srcSet={srcSet} sizes="100vw" />
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
+        <img {...img} src={BLANK} srcSet={BLANK} className="h-full w-full scale-105 object-cover max-lg:hidden" />
+      </picture>
+    </div>
+  );
 }

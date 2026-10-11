@@ -5,14 +5,16 @@ import Link from "next/link";
 import { ArrowRight, ShoppingBag, Trash2, X } from "lucide-react";
 import { productTitle } from "@/data/products";
 import { formatPrice, variantLabel } from "@/lib/format";
-import { orderMessage, whatsappUrl } from "@/lib/whatsapp";
+import { orderMessage } from "@/lib/whatsapp";
 import { ProductImage } from "@/components/product/ProductImage";
 import { QtyStepper } from "@/components/product/QtyStepper";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { useCart } from "./CartProvider";
 import { BagTotals } from "./BagTotals";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 
 export function CartDrawer() {
+  const wa = useWhatsapp();
   const cart = useCart();
 
   return (
@@ -106,7 +108,7 @@ export function CartDrawer() {
                   Review order <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href={whatsappUrl(orderMessage(cart))}
+                  href={wa(orderMessage(cart))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-outline-dark mt-2 w-full"

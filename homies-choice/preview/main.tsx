@@ -26,6 +26,10 @@ import { ProductsTable } from "@/components/admin/ProductsTable";
 import { ProductEditor } from "@/components/admin/ProductEditor";
 import { EnquiriesTable } from "@/components/admin/EnquiriesTable";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { HomePageForm } from "@/components/admin/HomePageForm";
+import { PaymentsForm } from "@/components/admin/PaymentsForm";
+import { OrdersTable } from "@/components/admin/OrdersTable";
+import { StoreProvider } from "@/components/store/StoreProvider";
 import { BannersManager } from "@/components/admin/BannersManager";
 import { BannerEditor } from "@/components/admin/BannerEditor";
 
@@ -48,7 +52,7 @@ function ShopRoute({ path, version }: { path: string; version: number }) {
   if (path === "/shop") return <AsyncPage id={id} render={() => ShopPage()} />;
   if (path === "/watches") return <AsyncPage id={id} render={() => WatchesPage()} />;
   if (path === "/checkout") return <CheckoutPage />;
-  if (path === "/contact") return <ContactPage />;
+  if (path === "/contact") return <AsyncPage id={id} render={() => ContactPage()} />;
   if (section === "collections" && slug && getCollection(slug)) return <AsyncPage id={id} render={() => CollectionPage({ params })} />;
   if (section === "products" && slug && getStore().products.some((p) => p.slug === slug && p.published))
     return <AsyncPage id={id} render={() => ProductPage({ params })} />;
@@ -69,6 +73,9 @@ function AdminRoute({ path, search }: { path: string; search: string }) {
   else if (sub.startsWith("/banners/")) page = <BannerEditor key={sub} id={decodeURIComponent(sub.slice("/banners/".length))} />;
   else if (sub === "/enquiries") page = <EnquiriesTable />;
   else if (sub === "/settings") page = <SettingsForm />;
+  else if (sub === "/home") page = <HomePageForm />;
+  else if (sub === "/payments") page = <PaymentsForm />;
+  else if (sub === "/orders") page = <OrdersTable />;
   else page = <Dashboard />;
   return <AdminShell>{page}</AdminShell>;
 }
@@ -100,18 +107,20 @@ function App() {
   if (path.startsWith("/hc-admin")) return <AdminRoute path={path} search={search} />;
 
   return (
-    <CatalogueProvider products={store.products.filter((p) => p.published)}>
-      <CartProvider>
-        <Header announcement={store.settings.announcement} />
-        <main id="main">
-          <Suspense fallback={<div className="min-h-[60vh]" />}>
-            <ShopRoute path={path} version={version} />
-          </Suspense>
-        </main>
-        <Footer />
-        <CartDrawer />
-      </CartProvider>
-    </CatalogueProvider>
+    <StoreProvider settings={store.settings}>
+      <CatalogueProvider products={store.products.filter((p) => p.published)}>
+        <CartProvider>
+          <Header announcement={store.settings.announcement} />
+          <main id="main">
+            <Suspense fallback={<div className="min-h-[60vh]" />}>
+              <ShopRoute path={path} version={version} />
+            </Suspense>
+          </main>
+          <Footer settings={store.settings} />
+          <CartDrawer />
+        </CartProvider>
+      </CatalogueProvider>
+    </StoreProvider>
   );
 }
 

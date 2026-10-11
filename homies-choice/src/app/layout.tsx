@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Jost } from "next/font/google";
 import { siteConfig } from "@/config/site";
+import { getSettings } from "@/lib/server/settings";
 import "./globals.css";
 
 // Display: Bodoni Moda — a high-contrast fashion serif with optical sizing.
@@ -19,34 +20,38 @@ const body = Jost({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: "HOMIES CHOICE — Perfume Shop in Ahmedabad | Designer & Arabic Fragrances",
-    template: "%s | HOMIES CHOICE Ahmedabad",
-  },
-  description: siteConfig.description,
-  applicationName: siteConfig.name,
-  keywords: [
-    "perfume shop in Ahmedabad",
-    "Arabic perfumes in Ahmedabad",
-    "designer fragrances in Ahmedabad",
-    "Homies Choice perfumes",
-    "men's fragrances",
-    "women's fragrances",
-  ],
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    siteName: siteConfig.name,
-    locale: "en_IN",
-    url: "/",
-    title: "HOMIES CHOICE — Find your signature scent",
-    description: siteConfig.description,
-  },
-  twitter: { card: "summary_large_image" },
-  formatDetection: { telephone: false },
-};
+// The default title and description are set in Dashboard → Store settings → Search engines.
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getSettings();
+  return {
+    metadataBase: new URL(siteConfig.url),
+    title: {
+      default: seo.title,
+      template: "%s | HOMIES CHOICE Ahmedabad",
+    },
+    description: seo.description,
+    applicationName: siteConfig.name,
+    keywords: [
+      "perfume shop in Ahmedabad",
+      "Arabic perfumes in Ahmedabad",
+      "designer fragrances in Ahmedabad",
+      "Homies Choice perfumes",
+      "men's fragrances",
+      "women's fragrances",
+    ],
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      siteName: siteConfig.name,
+      locale: "en_IN",
+      url: "/",
+      title: "HOMIES CHOICE — Find your signature scent",
+      description: seo.description,
+    },
+    twitter: { card: "summary_large_image" },
+    formatDetection: { telephone: false },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#021C16",

@@ -5,7 +5,10 @@ import { parseBannerInput } from "@/lib/banner-schema";
 import type { Banner } from "@/data/banners";
 import { getStore, updateStore } from "./demo-store";
 
-export type { AdminStatus, Enquiry, AdminSettings } from "@/lib/admin-client-types";
+export type { AdminStatus, Enquiry, AdminSettings, Order } from "@/lib/admin-client-types";
+import type { AdminSettings } from "@/lib/admin-client-types";
+import { isOrderStatus, type OrderStatus } from "@/lib/orders";
+import { parseSettings, settingsProblems } from "@/lib/store-settings";
 
 export class AdminApiError extends Error {
   constructor(message: string, public status: number, public errors?: Record<string, string>) {
@@ -120,8 +123,17 @@ export const adminApi = {
     return wait({ ok: true as const });
   },
   getSettings: () => wait({ settings: getStore().settings }),
-  async saveSettings(settings: import("@/lib/admin-client-types").AdminSettings) {
+  async saveSettings(patch: Partial<AdminSettings>) {
+    const problems = settingsProblems(patch);
+    if (problems.length) throw new AdminApiError(problems.join(" "), 422);
+    const settings = parseSettings(patch, getStore().settings);
     updateStore((s) => ({ ...s, settings }));
     return wait({ settings });
+  },
+  listOrders: () => wait({ orders: getStore().orders, database: true }),
+  async setOrderStatus(id: string, status: OrderStatus) {
+    if (!isOrderStatus(status)) throw new AdminApiError("Unknown status.", 422);
+    updateStore((s) => ({ ...s, orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)) }));
+    return { ok: true as const };
   },
 };

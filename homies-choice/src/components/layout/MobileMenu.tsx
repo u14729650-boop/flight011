@@ -3,9 +3,9 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { X } from "lucide-react";
-import { navigation, siteConfig } from "@/config/site";
+import { navigation } from "@/config/site";
+import { useStore, useWhatsapp } from "@/components/store/StoreProvider";
 import { cx } from "@/lib/format";
-import { whatsappUrl } from "@/lib/whatsapp";
 import { Logo } from "@/components/ui/Logo";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -18,6 +18,8 @@ export function MobileMenu({
   onOpenChange: (o: boolean) => void;
   isActive: (href: string) => boolean;
 }) {
+  const wa = useWhatsapp();
+  const { business } = useStore();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -48,10 +50,10 @@ export function MobileMenu({
             </ul>
           </nav>
           <div className="border-t border-ivory/10 p-5">
-            <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-gold w-full">
+            <a href={wa()} target="_blank" rel="noopener noreferrer" className="btn btn-gold w-full">
               <WhatsAppIcon className="h-4 w-4" /> Chat on WhatsApp
             </a>
-            <p className="mt-4 text-center text-xs text-ivory/60">{siteConfig.whatsapp.display} · {siteConfig.address.locality}</p>
+            <p className="mt-4 text-center text-xs text-ivory/60">{business.whatsapp} · {business.locality}</p>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

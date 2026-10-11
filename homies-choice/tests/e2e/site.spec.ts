@@ -97,6 +97,22 @@ test.describe("search & filters", () => {
   });
 });
 
+test.describe("3D hero bottle", () => {
+  test("shows the still image at once, then the live bottle (or keeps the still without WebGL)", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto("/");
+    const bottle = page.getByRole("img", { name: /Homies Choice perfume bottle/ });
+    await expect(bottle).toBeVisible();
+    const box = await bottle.boundingBox();
+    expect(box!.height).toBeGreaterThan(200);
+    await expect(bottle.locator("img")).toHaveJSProperty("complete", true);
+    await expect(bottle).not.toHaveAttribute("data-bottle", "poster", { timeout: 45_000 });
+    if ((await bottle.getAttribute("data-bottle")) === "live") await expect(bottle.locator("canvas")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe("bag & WhatsApp ordering", () => {
   test("add, change quantity and size, persist across reload, order message", async ({ page }) => {
     await page.goto("/products/emporio-armani-stronger-with-you-intensely");

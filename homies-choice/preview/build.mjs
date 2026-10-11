@@ -2,22 +2,27 @@
 // Usage: node preview/build.mjs
 import { build } from "esbuild";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "preview/dist");
 mkdirSync(dist, { recursive: true });
+for (const f of readdirSync(dist)) if (/^chunk-.*\.js$/.test(f)) rmSync(path.join(dist, f));
 
+// ES modules with code splitting: three.js (the 3D bottle) lands in its own chunk,
+// fetched only when the bottle starts, so the preview's first load stays small.
 await build({
-  entryPoints: [path.join(root, "preview/main.tsx")],
+  entryPoints: { app: path.join(root, "preview/main.tsx") },
   bundle: true,
   minify: true,
-  format: "iife",
+  format: "esm",
+  splitting: true,
+  chunkNames: "chunk-[hash]",
   target: "es2020",
   jsx: "automatic",
-  outfile: path.join(dist, "app.js"),
+  outdir: dist,
   tsconfig: path.join(root, "tsconfig.json"),
   plugins: [
     {
@@ -30,8 +35,9 @@ await build({
           "@/lib/server/banners": "preview/shims/banners.ts",
           "@/lib/admin-client": "preview/shims/admin-client.ts",
           "@/lib/enquiry-client": "preview/shims/enquiry-client.ts",
+          "@/lib/order-client": "preview/shims/order-client.ts",
         };
-        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|server\/banners|admin-client|enquiry-client)$/ }, (args) => ({
+        b.onResolve({ filter: /^@\/lib\/(server\/catalogue-source|server\/settings|server\/banners|admin-client|enquiry-client|order-client)$/ }, (args) => ({
           path: path.join(root, map[args.path]),
         }));
       },
@@ -66,7 +72,7 @@ writeFileSync(
 ${css}
 </style>
 <div id="hc-root"></div>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 `,
 );
-console.log("Preview written to preview/dist/");
+console.log("Preview written to preview/dist/:", readdirSync(dist).filter((f) => f.endsWith(".js")).join(", "));

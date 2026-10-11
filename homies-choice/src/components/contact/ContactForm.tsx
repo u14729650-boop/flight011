@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { validateEnquiry, type EnquiryErrors, type EnquiryInput } from "@/lib/validation";
-import { contactMessage, whatsappUrl } from "@/lib/whatsapp";
+import { contactMessage } from "@/lib/whatsapp";
 import { submitEnquiryCopy } from "@/lib/enquiry-client";
 import { WhatsAppIcon } from "@/components/ui/icons";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 
 const empty: EnquiryInput = { name: "", phone: "", message: "" };
 
 export function ContactForm() {
+  const wa = useWhatsapp();
   const [values, setValues] = useState<EnquiryInput>(empty);
   const [errors, setErrors] = useState<EnquiryErrors>({});
   const [sent, setSent] = useState(false);
@@ -29,7 +31,7 @@ export function ContactForm() {
       return;
     }
     // Open WhatsApp synchronously (inside the click) so pop-up blockers allow it.
-    window.open(whatsappUrl(contactMessage(values)), "_blank", "noopener,noreferrer");
+    window.open(wa(contactMessage(values)), "_blank", "noopener,noreferrer");
     // Optionally keep a copy server-side when storage is configured; failures are non-blocking.
     submitEnquiryCopy(values);
     setSent(true);
@@ -42,7 +44,7 @@ export function ContactForm() {
         <p className="display mt-5 text-3xl">Your message is ready in WhatsApp.</p>
         <p className="mt-3 text-sm leading-relaxed text-stone">
           Press send in WhatsApp to reach our team. If WhatsApp didn&rsquo;t open,{" "}
-          <a href={whatsappUrl(contactMessage(values))} target="_blank" rel="noopener noreferrer" className="text-emerald underline underline-offset-4">
+          <a href={wa(contactMessage(values))} target="_blank" rel="noopener noreferrer" className="text-emerald underline underline-offset-4">
             open it here
           </a>
           .

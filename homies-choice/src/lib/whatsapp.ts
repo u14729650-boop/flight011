@@ -2,11 +2,17 @@ import { siteConfig } from "@/config/site";
 import { productTitle, type Product, type ProductVariant } from "@/data/products";
 import type { CartSummary } from "./cart";
 import { formatPrice, variantLabel } from "./format";
+import { whatsappDigits, type StoreSettings } from "./store-settings";
 
-export function whatsappUrl(message?: string): string {
-  const base = `https://wa.me/${siteConfig.whatsapp.number}`;
+/** A wa.me link to the shop (or to `number`, digits only), optionally with a pre-written message. */
+export function whatsappUrl(message?: string, number: string = siteConfig.whatsapp.number): string {
+  const base = `https://wa.me/${number}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
+
+/** WhatsApp links to the number saved in the dashboard (Store settings). */
+export const whatsappFor = (settings: Pick<StoreSettings, "business">) => (message?: string) =>
+  whatsappUrl(message, whatsappDigits(settings.business.whatsapp));
 
 export function productEnquiryMessage(product: Product, variant: ProductVariant | undefined): string {
   const size = variant ? variantLabel(variant, product.category) : "any option";
@@ -24,10 +30,17 @@ export interface OrderDetails {
   name?: string;
   area?: string;
   note?: string;
+  /** Order reference shared with the dashboard, e.g. HC-7K4Q2M. */
+  ref?: string;
+  /** Payment choice and anything already paid, one line each. */
+  payment?: string[];
 }
 
 export function orderMessage(summary: CartSummary, details: OrderDetails = {}): string {
-  const out: string[] = [`Hello ${siteConfig.shortName}, I'd like to place an order enquiry.`, ""];
+  const out: string[] = [
+    details.ref ? `Hello ${siteConfig.shortName}, I'd like to place an order (ref ${details.ref}).` : `Hello ${siteConfig.shortName}, I'd like to place an order enquiry.`,
+    "",
+  ];
   const name = details.name?.trim();
   const area = details.area?.trim();
   if (name) out.push(`Name: ${name}`);
@@ -51,6 +64,8 @@ export function orderMessage(summary: CartSummary, details: OrderDetails = {}): 
   } else {
     out.push(`Product subtotal: ${formatPrice(summary.subtotal)}`);
   }
+
+  if (details.payment?.length) out.push("", ...details.payment);
 
   const note = details.note?.trim();
   if (note) out.push("", `Note: ${note}`);

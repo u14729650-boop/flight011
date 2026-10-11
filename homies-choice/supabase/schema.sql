@@ -81,7 +81,28 @@ create table if not exists public.enquiries (
 create index if not exists enquiries_created_idx on public.enquiries (created_at desc);
 create index if not exists enquiries_open_idx on public.enquiries (created_at desc) where not handled;
 
--- ── Store settings (announcement bar, …) ────────────────────────────────────
+-- ── Orders from the checkout (copy of what the customer sends on WhatsApp) ───
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  ref text not null unique check (ref ~ '^HC-[2-9A-HJKMNP-Z]{6}$'),
+  status text not null default 'new' check (status in ('new', 'confirmed', 'paid', 'shipped', 'delivered', 'cancelled')),
+  customer_name text not null default '' check (char_length(customer_name) <= 80),
+  area text not null default '' check (char_length(area) <= 120),
+  note text not null default '' check (char_length(note) <= 500),
+  payment_method text not null check (payment_method in ('cod', 'upi', 'whatsapp')),
+  payment_ref text not null default '' check (char_length(payment_ref) <= 40),
+  token_amount integer check (token_amount is null or token_amount >= 0),
+  subtotal integer check (subtotal is null or subtotal >= 0),
+  unpriced_items integer not null default 0,
+  items jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists orders_created_idx on public.orders (created_at desc);
+drop trigger if exists orders_touch on public.orders;
+create trigger orders_touch before update on public.orders for each row execute function public.touch_updated_at();
+
+-- ── Store settings (business details, home page, payments, SEO, announcement) ─
 create table if not exists public.settings (
   key text primary key,
   value jsonb not null,
@@ -95,6 +116,7 @@ alter table public.products enable row level security;
 alter table public.banners enable row level security;
 alter table public.enquiries enable row level security;
 alter table public.settings enable row level security;
+alter table public.orders enable row level security;
 
 drop policy if exists "public read published products" on public.products;
 create policy "public read published products" on public.products for select using (is_published);
@@ -103,7 +125,7 @@ drop policy if exists "public read live banners" on public.banners;
 create policy "public read live banners" on public.banners for select
   using (is_active and (starts_at is null or starts_at <= now()) and (ends_at is null or ends_at > now()));
 
--- enquiries and settings: no public policies (server-only access).
+-- enquiries, orders and settings: no public policies (server-only access).
 
 -- ── Storage: product and banner photos ──────────────────────────────────────
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

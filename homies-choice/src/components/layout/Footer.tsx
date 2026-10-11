@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import { whatsappUrl } from "@/lib/whatsapp";
+import { addressLines, type StoreSettings } from "@/lib/store-settings";
+import { whatsappFor } from "@/lib/whatsapp";
 import { Logo } from "@/components/ui/Logo";
 import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
 
@@ -23,8 +24,11 @@ const policyLinks = [
   { label: "Returns & Refunds", href: "/policies/returns" },
 ];
 
-export function Footer() {
+export function Footer({ settings }: { settings: StoreSettings }) {
   const year = new Date().getFullYear();
+  const b = settings.business;
+  const wa = whatsappFor(settings);
+  const [street, city] = addressLines(b);
   return (
     <footer className="on-dark relative isolate mt-6 overflow-hidden rounded-t-[2.5rem] bg-forest text-ivory">
       <div className="orb orb-emerald h-[30rem] w-[30rem] -top-40 left-[10%]" aria-hidden="true" />
@@ -34,12 +38,10 @@ export function Footer() {
           <Link href="/" aria-label={`${siteConfig.name} — home`} className="inline-block">
             <Logo />
           </Link>
-          <p className="mt-6 max-w-xs text-sm leading-relaxed text-ivory/65">
-            A fragrance store in Ahmedabad for designer perfumes and Arabic fragrances — chosen with care, with personal guidance on WhatsApp.
-          </p>
+          <p className="mt-6 max-w-xs text-sm leading-relaxed text-ivory/65">{b.footerBlurb}</p>
           <div className="mt-6 flex gap-2">
             <a
-              href={whatsappUrl()}
+              href={wa()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-ivory/[0.04] text-gold transition-all hover:-translate-y-0.5 hover:bg-gold hover:text-forest"
@@ -47,9 +49,9 @@ export function Footer() {
             >
               <WhatsAppIcon className="h-4 w-4" />
             </a>
-            {siteConfig.instagram && (
+            {b.instagram && (
               <a
-                href={siteConfig.instagram}
+                href={b.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-ivory/[0.04] text-gold transition-all hover:-translate-y-0.5 hover:bg-gold hover:text-forest"
@@ -89,18 +91,36 @@ export function Footer() {
           <address className="mt-5 space-y-4 text-sm leading-relaxed text-ivory/75 not-italic">
             <p className="flex gap-3">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold" strokeWidth={1.4} aria-hidden="true" />
-              <span>
-                {siteConfig.address.lines.join(", ")},<br />
-                {siteConfig.address.locality}, {siteConfig.address.region}, {siteConfig.address.country}
-              </span>
+              <a href={b.mapsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold">
+                {street},<br />
+                {city}, India
+              </a>
             </p>
             <p className="flex gap-3">
               <WhatsAppIcon className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-              <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="hover:text-gold">
-                {siteConfig.whatsapp.display}
+              <a href={wa()} target="_blank" rel="noopener noreferrer" className="hover:text-gold">
+                {b.whatsapp}
               </a>
             </p>
-            <p className="text-ivory/55">Contact: {siteConfig.owner}</p>
+            {b.phone && (
+              <p className="flex gap-3">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gold" strokeWidth={1.4} aria-hidden="true" />
+                <a href={`tel:+${b.phone.replace(/\D/g, "")}`} className="hover:text-gold">{b.phone}</a>
+              </p>
+            )}
+            {b.email && (
+              <p className="flex gap-3">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold" strokeWidth={1.4} aria-hidden="true" />
+                <a href={`mailto:${b.email}`} className="break-all hover:text-gold">{b.email}</a>
+              </p>
+            )}
+            {b.hours && (
+              <p className="flex gap-3">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gold" strokeWidth={1.4} aria-hidden="true" />
+                <span>{b.hours}</span>
+              </p>
+            )}
+            <p className="text-ivory/55">Contact: {b.owner}</p>
           </address>
         </div>
       </div>

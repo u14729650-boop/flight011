@@ -2,19 +2,39 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, ImageOff, IndianRupee, Plus, Watch } from "lucide-react";
+import { ArrowRight, ExternalLink, ImageOff, IndianRupee, Plus, Watch } from "lucide-react";
+import { collections } from "@/data/collections";
+import { policies } from "@/data/policies";
 import { productTitle } from "@/data/products";
-import { adminApi, AdminApiError, type Enquiry } from "@/lib/admin-client";
+import { adminApi, AdminApiError, type Enquiry, type Order } from "@/lib/admin-client";
+import { formatPrice } from "@/lib/format";
+import { paymentLabels } from "@/lib/orders";
 import { useAdminData } from "./AdminShell";
-import { AdminPageHeader, Notice, Panel, Spinner } from "./ui";
+import { AdminPageHeader, Badge, Notice, Panel, Spinner } from "./ui";
+
+/** Every page of the shop, with where it is changed in the dashboard. */
+const sitePages: { label: string; href: string; edit: string; editLabel: string }[] = [
+  { label: "Home page", href: "/", edit: "/hc-admin/home", editLabel: "Home page" },
+  { label: "Shop all", href: "/shop", edit: "/hc-admin/products", editLabel: "Products" },
+  ...collections
+    .filter((c) => !c.slug.includes("-"))
+    .map((c) => ({ label: c.title, href: `/collections/${c.slug}`, edit: "/hc-admin/products", editLabel: "Products" })),
+  { label: "Shop by mood", href: "/collections/warm-spicy", edit: "/hc-admin/products", editLabel: "Products" },
+  { label: "Watches", href: "/watches", edit: "/hc-admin/products?category=watch", editLabel: "Products" },
+  { label: "Contact", href: "/contact", edit: "/hc-admin/settings", editLabel: "Store settings" },
+  { label: "Checkout & payments", href: "/checkout", edit: "/hc-admin/payments", editLabel: "Payments" },
+  ...policies.map((p) => ({ label: p.title, href: `/policies/${p.slug}`, edit: "/hc-admin/settings", editLabel: "Store settings" })),
+];
 
 export function Dashboard() {
   const { products, status, source, refresh, error } = useAdminData();
   const [enquiries, setEnquiries] = useState<Enquiry[] | null>(null);
+  const [orders, setOrders] = useState<Order[] | null>(null);
   const [seedState, setSeedState] = useState<{ busy: boolean; msg?: string; tone?: "success" | "error" }>({ busy: false });
 
   useEffect(() => {
     adminApi.listEnquiries().then((r) => setEnquiries(r.enquiries)).catch(() => setEnquiries([]));
+    adminApi.listOrders().then((r) => setOrders(r.orders)).catch(() => setOrders([]));
   }, []);
 
   if (error) return <Notice tone="error">{error}</Notice>;
@@ -27,11 +47,12 @@ export function Dashboard() {
   const noPhoto = products.filter((p) => p.images.length === 0);
   const openEnquiries = (enquiries ?? []).filter((e) => !e.handled);
 
+  const newOrders = (orders ?? []).filter((o) => o.status === "new");
   const stats = [
-    { label: "Live products", value: live.length, note: drafts ? `${drafts} draft${drafts > 1 ? "s" : ""}` : "No drafts" },
-    { label: "Fragrances", value: products.length - watches, note: "Perfumes in the catalogue" },
-    { label: "Watches", value: watches, note: watches ? "In the watch edit" : "None added yet" },
-    { label: "Open enquiries", value: enquiries ? openEnquiries.length : "–", note: status.database ? "From the contact form" : "Needs a database" },
+    { label: "New orders", value: orders ? newOrders.length : "–", note: status.database ? "Waiting for your reply" : "Needs a database", href: "/hc-admin/orders" },
+    { label: "Live products", value: live.length, note: drafts ? `${drafts} draft${drafts > 1 ? "s" : ""}` : "No drafts", href: "/hc-admin/products" },
+    { label: "Watches", value: watches, note: watches ? "In the watch edit" : "None added yet", href: "/hc-admin/products" },
+    { label: "Open enquiries", value: enquiries ? openEnquiries.length : "–", note: status.database ? "From the contact form" : "Needs a database", href: "/hc-admin/enquiries" },
   ];
 
   const seed = async () => {
@@ -73,13 +94,43 @@ export function Dashboard() {
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-[1.5rem] border border-white/80 bg-white/75 p-5 shadow-[0_20px_50px_-35px_rgba(6,59,46,0.35)] backdrop-blur-xl md:p-6">
-            <dt className="eyebrow text-[0.58rem] text-stone">{s.label}</dt>
+          <div key={s.label} className="relative rounded-[1.5rem] border border-white/80 bg-white/75 p-5 shadow-[0_20px_50px_-35px_rgba(6,59,46,0.35)] backdrop-blur-xl transition-colors hover:border-gold/60 md:p-6">
+            <dt className="eyebrow text-[0.58rem] text-stone">
+              <Link href={s.href} className="after:absolute after:inset-0">{s.label}</Link>
+            </dt>
             <dd className="mt-3 font-serif text-5xl leading-none tabular-nums">{s.value}</dd>
             <dd className="mt-2 text-xs text-stone">{s.note}</dd>
           </div>
         ))}
       </dl>
+
+      <Panel title="Latest orders">
+        {!orders ? (
+          <Spinner />
+        ) : orders.length === 0 ? (
+          <p className="text-sm text-stone">
+            {status.database ? "No orders yet. Orders sent from the checkout page appear here." : "Orders are stored once a database is connected. They always reach you on WhatsApp."}
+          </p>
+        ) : (
+          <ul className="divide-y divide-line">
+            {orders.slice(0, 5).map((o) => (
+              <li key={o.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3 text-sm">
+                <span className="min-w-0">
+                  <span className="font-medium tabular-nums">{o.ref}</span>
+                  <span className="text-stone"> · {o.items.reduce((n, i) => n + i.qty, 0)} item(s){o.name ? ` · ${o.name}` : ""}</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="tabular-nums">{o.subtotal != null ? formatPrice(o.subtotal) : "On request"}</span>
+                  <Badge tone={o.payment === "upi" ? "good" : "neutral"}>{paymentLabels[o.payment]}</Badge>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Link href="/hc-admin/orders" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold hover:text-emerald">
+          All orders <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Panel>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Needs a price" description="These show “Price on request” in the shop.">
@@ -123,6 +174,33 @@ export function Dashboard() {
         <Link href="/hc-admin/enquiries" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold hover:text-emerald">
           All enquiries <ArrowRight className="h-4 w-4" />
         </Link>
+      </Panel>
+
+      <Panel title="Your website" description="Every page of the shop — open it, or go to where it's changed.">
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {sitePages.map((p) => (
+            <li key={p.href} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/60 py-2.5 pr-2 pl-4">
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{p.label}</span>
+                <span className="block truncate text-xs text-stone">Edit in {p.editLabel}</span>
+              </span>
+              <span className="flex shrink-0 items-center gap-1">
+                <Link href={p.edit} className="rounded-full px-3 py-1.5 text-xs font-semibold hover:bg-charcoal/5" aria-label={`Edit ${p.label}`}>
+                  Edit
+                </Link>
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-stone hover:bg-charcoal/5 hover:text-charcoal"
+                  aria-label={`Open ${p.label} in a new tab`}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </span>
+            </li>
+          ))}
+        </ul>
       </Panel>
 
       <p className="text-xs text-stone">

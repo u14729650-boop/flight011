@@ -89,3 +89,43 @@ export function Spinner({ label = "Loading" }: { label?: string }) {
     </div>
   );
 }
+
+/** An on/off switch (a real checkbox underneath, so it works with labels and keyboards). */
+export function Toggle({
+  checked,
+  onChange,
+  label,
+  hint,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: ReactNode;
+  hint?: ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <label className={cx("flex cursor-pointer items-start gap-3", disabled && "cursor-not-allowed opacity-50")}>
+      <input type="checkbox" role="switch" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <span
+        aria-hidden="true"
+        className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-charcoal/15 transition-colors peer-checked:bg-emerald peer-focus-visible:ring-2 peer-focus-visible:ring-gold peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
+      />
+      <span className="min-w-0 text-sm">
+        <span className="block font-medium">{label}</span>
+        {hint && <span className="mt-0.5 block text-xs leading-relaxed text-stone">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
+/** Sticky save bar shared by the settings pages. */
+export function SaveBar({ saving, disabled, label = "Save changes" }: { saving: boolean; disabled?: boolean; label?: string }) {
+  return (
+    <div className="glass-light sticky bottom-4 z-30 flex justify-end gap-2 rounded-full !border-line/70 !bg-ivory/80 p-2 shadow-[0_24px_50px_-24px_rgba(6,59,46,0.55)] *:flex-1 sm:px-3 sm:py-3 sm:*:flex-none">
+      <button type="submit" disabled={saving || disabled} className="btn btn-dark min-h-11 px-6 py-2.5">
+        {saving ? "Saving…" : label}
+      </button>
+    </div>
+  );
+}

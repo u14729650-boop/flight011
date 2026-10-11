@@ -5,8 +5,8 @@ import { randomUUID } from "node:crypto";
 
 const port = Number(process.argv[2] ?? 54321);
 const KEY = "test-service-key";
-const tables = { products: [], enquiries: [], settings: [], banners: [] };
-const keys = { products: "slug", enquiries: "id", settings: "key", banners: "id" };
+const tables = { products: [], enquiries: [], settings: [], banners: [], orders: [] };
+const keys = { products: "slug", enquiries: "id", settings: "key", banners: "id", orders: "ref" };
 const objects = new Map();
 
 const RESERVED = new Set(["select", "order", "limit", "offset", "on_conflict", "columns"]);
@@ -44,6 +44,7 @@ const defaults = {
   banners: () => ({ id: randomUUID(), theme: "dark", is_active: true, sort_order: 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }),
   enquiries: () => ({ id: randomUUID(), handled: false, created_at: new Date().toISOString() }),
   settings: () => ({ updated_at: new Date().toISOString() }),
+  orders: () => ({ id: randomUUID(), status: "new", customer_name: "", area: "", note: "", payment_ref: "", token_amount: null, subtotal: null, unpriced_items: 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }),
 };
 
 const server = http.createServer(async (req, res) => {

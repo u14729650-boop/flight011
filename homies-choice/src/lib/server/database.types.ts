@@ -40,6 +40,23 @@ export type EnquiryRow = {
   created_at: string;
 };
 
+export type OrderRow = {
+  id: string;
+  ref: string;
+  status: "new" | "confirmed" | "paid" | "shipped" | "delivered" | "cancelled";
+  customer_name: string;
+  area: string;
+  note: string;
+  payment_method: "cod" | "upi" | "whatsapp";
+  payment_ref: string;
+  token_amount: number | null;
+  subtotal: number | null;
+  unpriced_items: number;
+  items: Json;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SettingRow = {
   key: string;
   value: Json;
@@ -77,6 +94,7 @@ export type Database = {
     Tables: {
       products: Table<ProductRow, "slug" | "category" | "brand" | "name" | "gender">;
       enquiries: Table<EnquiryRow, "name" | "phone" | "message">;
+      orders: Table<OrderRow, "ref" | "payment_method" | "items">;
       settings: Table<SettingRow, "key" | "value">;
       banners: Table<BannerRow, "placement" | "title">;
     };

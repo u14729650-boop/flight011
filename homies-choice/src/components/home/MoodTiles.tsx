@@ -4,11 +4,13 @@ import type { Product } from "@/data/products";
 import { moods, type Mood } from "@/data/taxonomy";
 import { media } from "@/data/media";
 import { cx } from "@/lib/format";
-import { whatsappUrl } from "@/lib/whatsapp";
+import type { StoreSettings } from "@/lib/store-settings";
+import { whatsappFor } from "@/lib/whatsapp";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
-export function MoodTiles({ products }: { products: Product[] }) {
+export function MoodTiles({ products, settings }: { products: Product[]; settings: StoreSettings }) {
+  const wa = whatsappFor(settings);
   const keys = Object.keys(moods) as Mood[];
   return (
     <section className="on-dark relative isolate overflow-hidden bg-forest py-20 text-ivory md:py-28" aria-labelledby="mood-title">
@@ -69,7 +71,7 @@ export function MoodTiles({ products }: { products: Product[] }) {
                   </Link>
                 ) : (
                   <a
-                    href={whatsappUrl(`Hello Homies Choice, could you recommend a ${moods[key].label.toLowerCase()} fragrance?`)}
+                    href={wa(`Hello Homies Choice, could you recommend a ${moods[key].label.toLowerCase()} fragrance?`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cls}

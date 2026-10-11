@@ -1,28 +1,33 @@
 import { siteConfig } from "@/config/site";
 import { productTitle, type Product } from "@/data/products";
+import { addressLines, defaultSettings, whatsappDigits, type StoreSettings } from "./store-settings";
 
 export function absoluteUrl(path = "/"): string {
   return `${siteConfig.url}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export function storeJsonLd() {
+export function storeJsonLd(settings: StoreSettings = defaultSettings) {
+  const b = settings.business;
   return {
     "@context": "https://schema.org",
     "@type": "Store",
     "@id": absoluteUrl("/#store"),
     name: siteConfig.name,
-    description: siteConfig.description,
+    description: settings.seo.description,
     url: absoluteUrl("/"),
-    telephone: `+${siteConfig.whatsapp.number}`,
-    founder: { "@type": "Person", name: siteConfig.owner },
+    telephone: `+${whatsappDigits(b.phone ?? b.whatsapp)}`,
+    founder: { "@type": "Person", name: b.owner },
+    ...(b.email ? { email: b.email } : {}),
     address: {
       "@type": "PostalAddress",
-      streetAddress: siteConfig.address.lines.join(", "),
-      addressLocality: siteConfig.address.locality,
-      addressRegion: siteConfig.address.region,
+      streetAddress: addressLines(b)[0],
+      addressLocality: b.locality,
+      addressRegion: b.region,
+      ...(b.postalCode ? { postalCode: b.postalCode } : {}),
       addressCountry: siteConfig.address.countryCode,
     },
-    ...(siteConfig.instagram ? { sameAs: [siteConfig.instagram] } : {}),
+    hasMap: b.mapsUrl,
+    ...(b.instagram ? { sameAs: [b.instagram] } : {}),
   };
 }
 

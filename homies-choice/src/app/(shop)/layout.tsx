@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { PageTransition, RevealProvider } from "@/components/motion/RevealProvider";
+import { StoreProvider } from "@/components/store/StoreProvider";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
   const [catalogue, settings] = await Promise.all([getCatalogue(), getSettings()]);
@@ -19,19 +20,21 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
       >
         Skip to content
       </a>
-      <CatalogueProvider products={catalogue}>
-        <CartProvider>
-          <Header announcement={settings.announcement} />
-          <RevealProvider>
-            <main id="main">
-              <PageTransition>{children}</PageTransition>
-            </main>
-          </RevealProvider>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
-      </CatalogueProvider>
-      <JsonLd data={storeJsonLd()} />
+      <StoreProvider settings={settings}>
+        <CatalogueProvider products={catalogue}>
+          <CartProvider>
+            <Header announcement={settings.announcement} />
+            <RevealProvider>
+              <main id="main">
+                <PageTransition>{children}</PageTransition>
+              </main>
+            </RevealProvider>
+            <Footer settings={settings} />
+            <CartDrawer />
+          </CartProvider>
+        </CatalogueProvider>
+      </StoreProvider>
+      <JsonLd data={storeJsonLd(settings)} />
     </>
   );
 }

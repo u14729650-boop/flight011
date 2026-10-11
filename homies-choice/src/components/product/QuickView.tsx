@@ -7,7 +7,7 @@ import { ArrowRight, X } from "lucide-react";
 import { productTitle, type Product } from "@/data/products";
 import { canPurchase } from "@/lib/format";
 import { categoryLine, defaultVariant } from "@/lib/product-meta";
-import { productEnquiryMessage, whatsappUrl } from "@/lib/whatsapp";
+import { productEnquiryMessage } from "@/lib/whatsapp";
 import { useCart } from "@/components/cart/CartProvider";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { ProductImage } from "./ProductImage";
@@ -15,8 +15,10 @@ import { PriceTag } from "./PriceTag";
 import { AvailabilityBadge } from "./AvailabilityBadge";
 import { SizeSelector } from "./SizeSelector";
 import { QtyStepper } from "./QtyStepper";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 
 export function QuickView({ product, open, onOpenChange }: { product: Product; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const wa = useWhatsapp();
   const cart = useCart();
   const [variantId, setVariantId] = useState(defaultVariant(product).id);
   const [qty, setQty] = useState(1);
@@ -66,7 +68,7 @@ export function QuickView({ product, open, onOpenChange }: { product: Product; o
               </button>
             </div>
             <a
-              href={whatsappUrl(productEnquiryMessage(product, variant))}
+              href={wa(productEnquiryMessage(product, variant))}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-dark mt-3"

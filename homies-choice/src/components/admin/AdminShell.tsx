@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { ExternalLink, Gauge, Images, LogOut, Menu, MessageSquareText, Package, Settings, X } from "lucide-react";
+import { ExternalLink, Gauge, Images, LayoutTemplate, LogOut, Menu, MessageSquareText, Package, Receipt, Settings, Wallet, X } from "lucide-react";
 import type { Product } from "@/data/products";
 import { adminApi, type AdminStatus } from "@/lib/admin-client";
 import { cx } from "@/lib/format";
@@ -27,8 +27,11 @@ export function useAdminData(): AdminData {
 
 const nav = [
   { href: "/hc-admin", label: "Overview", icon: Gauge },
+  { href: "/hc-admin/orders", label: "Orders", icon: Receipt },
   { href: "/hc-admin/products", label: "Products", icon: Package },
+  { href: "/hc-admin/home", label: "Home page", icon: LayoutTemplate },
   { href: "/hc-admin/banners", label: "Banners", icon: Images },
+  { href: "/hc-admin/payments", label: "Payments", icon: Wallet },
   { href: "/hc-admin/enquiries", label: "Enquiries", icon: MessageSquareText },
   { href: "/hc-admin/settings", label: "Store settings", icon: Settings },
 ];

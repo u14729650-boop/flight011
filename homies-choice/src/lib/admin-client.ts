@@ -5,9 +5,10 @@
 import type { Product } from "@/data/products";
 import type { Banner } from "@/data/banners";
 
-import type { AdminSettings, AdminStatus, Enquiry } from "./admin-client-types";
+import type { AdminSettings, AdminStatus, Enquiry, Order } from "./admin-client-types";
+import type { OrderStatus } from "./orders";
 
-export type { AdminSettings, AdminStatus, Enquiry };
+export type { AdminSettings, AdminStatus, Enquiry, Order };
 
 export class AdminApiError extends Error {
   constructor(message: string, public status: number, public errors?: Record<string, string>) {
@@ -55,5 +56,9 @@ export const adminApi = {
   deleteBanner: (id: string) => call<{ ok: true }>(`banners/${id}`, { method: "DELETE" }),
   reorderBanners: (ids: string[]) => call<{ ok: true }>("banners/order", { method: "PUT", body: JSON.stringify({ ids }) }),
   getSettings: () => call<{ settings: AdminSettings }>("settings"),
-  saveSettings: (s: AdminSettings) => call<{ settings: AdminSettings }>("settings", { method: "PUT", body: JSON.stringify(s) }),
+  /** Saves only the sections passed; the rest stay as they are. */
+  saveSettings: (s: Partial<AdminSettings>) => call<{ settings: AdminSettings }>("settings", { method: "PUT", body: JSON.stringify(s) }),
+  listOrders: () => call<{ orders: Order[]; database: boolean }>("orders"),
+  setOrderStatus: (id: string, status: OrderStatus) =>
+    call<{ ok: true }>(`orders/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
 };

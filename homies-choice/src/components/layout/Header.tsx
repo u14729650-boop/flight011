@@ -6,10 +6,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import { navigation, siteConfig } from "@/config/site";
 import { cx } from "@/lib/format";
-import { whatsappUrl } from "@/lib/whatsapp";
 import { Logo } from "@/components/ui/Logo";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { useCart } from "@/components/cart/CartProvider";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 import { SearchDialog } from "./SearchDialog";
 import { MobileMenu } from "./MobileMenu";
 
@@ -24,6 +24,7 @@ export interface Announcement {
 }
 
 export function Header({ announcement }: { announcement: Announcement }) {
+  const wa = useWhatsapp();
   const pathname = usePathname();
   const overHero = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -118,7 +119,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
 
             <div className="flex items-center justify-end gap-1 text-ivory">
               <a
-                href={whatsappUrl()}
+                href={wa()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-ivory/10 hover:text-gold"

@@ -69,7 +69,7 @@ function Slide({ banner, active, index, total, variant }: { banner: Banner; acti
           )}
         >
           {banner.eyebrow && <p className={cx("eyebrow text-[0.6rem]", dark ? "text-gold" : "text-gold-deep")}>{banner.eyebrow}</p>}
-          <h3 className={cx("display mt-3", variant === "home" ? "text-[1.9rem] md:text-[2.8rem]" : "text-[1.6rem] md:text-[2.2rem]")}>{banner.title}</h3>
+          <h2 className={cx("display mt-3", variant === "home" ? "text-[1.9rem] md:text-[2.8rem]" : "text-[1.6rem] md:text-[2.2rem]")}>{banner.title}</h2>
           {banner.subtitle && <p className={cx("mt-3 max-w-md text-sm leading-relaxed font-light", dark ? "text-ivory/80" : "text-charcoal/75")}>{banner.subtitle}</p>}
           {banner.ctaHref && banner.ctaLabel && (
             external ? (

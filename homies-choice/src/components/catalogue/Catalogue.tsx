@@ -22,9 +22,9 @@ import {
   type SortKey,
 } from "@/lib/catalogue";
 import { cx, formatPrice } from "@/lib/format";
-import { whatsappUrl } from "@/lib/whatsapp";
 import { ProductCard } from "@/components/product/ProductCard";
 import { WhatsAppIcon } from "@/components/ui/icons";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 
 function countNoun(n: number, kind: "watch" | "fragrance" | "product") {
   const plural = { watch: "watches", fragrance: "fragrances", product: "products" }[kind];
@@ -130,7 +130,7 @@ export function Catalogue({
           {results.length} {countNoun(results.length, scope?.category === "watch" ? "watch" : results.every((p) => p.category === "fragrance") ? "fragrance" : "product")}
         </p>
         <div className="flex min-w-0 items-center gap-2 sm:ml-auto">
-          <label htmlFor="catalogue-sort" className="eyebrow hidden text-[0.6rem] text-stone sm:block">Sort</label>
+          <label htmlFor="catalogue-sort" className="eyebrow sr-only text-[0.6rem] text-stone sm:not-sr-only">Sort</label>
           <select
             id="catalogue-sort"
             value={filters.sort}
@@ -232,6 +232,7 @@ function EmptyState({
   onReset: () => void;
   copy?: { eyebrow: string; title: string; body: string; ask: string };
 }) {
+  const wa = useWhatsapp();
   return (
     <div className="glass-light relative isolate flex flex-col items-center overflow-hidden rounded-[2rem] px-6 py-20 text-center">
       <div className="orb orb-gold h-72 w-72 -top-20 left-1/2 -translate-x-1/2 opacity-50" aria-hidden="true" />
@@ -249,7 +250,7 @@ function EmptyState({
           <Link href="/shop" className="btn btn-dark">Browse all fragrances</Link>
         )}
         <a
-          href={whatsappUrl(!filtered && copy ? copy.ask : "Hello Homies Choice, I'm looking for something I couldn't find on the website.")}
+          href={wa(!filtered && copy ? copy.ask : "Hello Homies Choice, I'm looking for something I couldn't find on the website.")}
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-outline-dark"

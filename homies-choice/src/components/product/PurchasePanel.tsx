@@ -5,15 +5,17 @@ import { useState } from "react";
 import type { Product } from "@/data/products";
 import { canPurchase } from "@/lib/format";
 import { defaultVariant } from "@/lib/product-meta";
-import { productEnquiryMessage, whatsappUrl } from "@/lib/whatsapp";
+import { productEnquiryMessage } from "@/lib/whatsapp";
 import { useCart } from "@/components/cart/CartProvider";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { PriceTag } from "./PriceTag";
 import { AvailabilityBadge } from "./AvailabilityBadge";
 import { SizeSelector } from "./SizeSelector";
 import { QtyStepper } from "./QtyStepper";
+import { useWhatsapp } from "@/components/store/StoreProvider";
 
 export function PurchasePanel({ product }: { product: Product }) {
+  const wa = useWhatsapp();
   const cart = useCart();
   const router = useRouter();
   const [variantId, setVariantId] = useState(defaultVariant(product).id);
@@ -54,7 +56,7 @@ export function PurchasePanel({ product }: { product: Product }) {
         </button>
       </div>
       <a
-        href={whatsappUrl(productEnquiryMessage(product, variant))}
+        href={wa(productEnquiryMessage(product, variant))}
         target="_blank"
         rel="noopener noreferrer"
         className="btn btn-gold mt-3 w-full"

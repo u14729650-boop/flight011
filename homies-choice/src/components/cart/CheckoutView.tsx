@@ -1,23 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Info, ShoppingBag, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Banknote, Info, ShoppingBag, Smartphone, Trash2 } from "lucide-react";
 import { productTitle } from "@/data/products";
-import { formatPrice, variantLabel } from "@/lib/format";
-import { orderMessage, whatsappUrl } from "@/lib/whatsapp";
+import { cx, formatPrice, variantLabel } from "@/lib/format";
+import { newOrderRef, paymentLabels, type PaymentMethod } from "@/lib/orders";
+import { submitOrderCopy } from "@/lib/order-client";
+import { codSummary, codTokenActive } from "@/lib/store-settings";
+import { orderMessage } from "@/lib/whatsapp";
 import { ProductImage } from "@/components/product/ProductImage";
 import { QtyStepper } from "@/components/product/QtyStepper";
 import { WhatsAppIcon } from "@/components/ui/icons";
+import { useStore, useWhatsapp } from "@/components/store/StoreProvider";
 import { useCart } from "./CartProvider";
 import { BagTotals } from "./BagTotals";
+import { UpiPay } from "./UpiPay";
 
 export function CheckoutView() {
   const cart = useCart();
+  const wa = useWhatsapp();
+  const { checkout } = useStore();
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
   const [note, setNote] = useState("");
   const [opened, setOpened] = useState(false);
+  const [ref, setRef] = useState(newOrderRef);
+  const [paymentRef, setPaymentRef] = useState("");
+  const options: PaymentMethod[] = [...(checkout.cod.enabled ? ["cod" as const] : []), ...(checkout.upi.enabled ? ["upi" as const] : [])];
+  const [chosen, setChosen] = useState<PaymentMethod | null>(null);
+  const method: PaymentMethod = chosen && options.includes(chosen) ? chosen : (options[0] ?? "whatsapp");
+
+  // A changed bag after sending is a new order: give it its own reference.
+  const sent = useRef(false);
+  const signature = cart.lines.map((l) => `${l.key}:${l.qty}`).join("|");
+  useEffect(() => {
+    if (!sent.current) return;
+    sent.current = false;
+    setOpened(false);
+    setRef(newOrderRef());
+  }, [signature]);
 
   if (!cart.hydrated) {
     return <div className="container-luxe min-h-[50vh] py-20" aria-busy="true" />;
@@ -34,7 +56,48 @@ export function CheckoutView() {
     );
   }
 
-  const message = orderMessage(cart, { name, area, note });
+  const tokenActive = codTokenActive(checkout);
+  const token = checkout.cod.tokenAmount;
+  const vpa = checkout.upi.vpa;
+  const allPriced = cart.unpricedLines === 0;
+  const upiAmount = allPriced ? cart.subtotal : null;
+
+  const payment: string[] = [];
+  if (method === "cod") {
+    payment.push(tokenActive ? `Payment: Cash on delivery, with a ${formatPrice(token)} advance token.` : "Payment: Cash on delivery.");
+    if (tokenActive) payment.push(paymentRef ? `Token paid by UPI — transaction ID ${paymentRef}.` : "Token: not paid yet.");
+  } else if (method === "upi") {
+    payment.push(`Payment: UPI${upiAmount != null ? ` — ${formatPrice(upiAmount)}` : " (after you confirm the total)"}.`);
+    payment.push(paymentRef ? `UPI transaction ID ${paymentRef}.` : "UPI payment: not made yet.");
+  }
+  const message = orderMessage(cart, { name, area, note, ref, payment });
+
+  const sendOrder = () => {
+    submitOrderCopy({
+      ref,
+      name,
+      area,
+      note,
+      payment: method,
+      paymentRef: method === "upi" || (method === "cod" && tokenActive) ? paymentRef : "",
+      items: cart.lines.map((l) => ({ slug: l.product.slug, variantId: l.variant.id, qty: l.qty })),
+    });
+    sent.current = true;
+    setOpened(true);
+  };
+
+  const optionCopy: Record<"cod" | "upi", { title: string; body: string; icon: typeof Banknote }> = {
+    cod: {
+      title: paymentLabels.cod,
+      body: [codSummary(tokenActive, token), checkout.cod.note].filter(Boolean).join(" "),
+      icon: Banknote,
+    },
+    upi: {
+      title: "UPI",
+      body: ["Google Pay, PhonePe, Paytm or any UPI app.", checkout.upi.note].filter(Boolean).join(" "),
+      icon: Smartphone,
+    },
+  };
 
   return (
     <div className="relative isolate container-luxe overflow-x-clip py-12 md:py-16">
@@ -111,18 +174,110 @@ export function CheckoutView() {
               </div>
             </div>
 
+            {options.length > 0 && (
+              <fieldset className="mt-8 border-t border-line pt-6">
+                <legend className="eyebrow float-left w-full text-charcoal">Payment</legend>
+                <div className="clear-both grid gap-3 pt-4">
+                  {options.map((o) => {
+                    const { title, body, icon: Icon } = optionCopy[o as "cod" | "upi"];
+                    const selected = method === o;
+                    return (
+                      <label
+                        key={o}
+                        className={cx(
+                          "flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-colors",
+                          selected ? "border-emerald bg-emerald/[0.05] ring-1 ring-emerald" : "border-line bg-white/60 hover:border-charcoal/40",
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="payment"
+                          value={o}
+                          checked={selected}
+                          onChange={() => setChosen(o)}
+                          aria-labelledby={`pay-${o}`}
+                          aria-describedby={body ? `pay-${o}-info` : undefined}
+                          className="mt-1 h-4 w-4 shrink-0 accent-emerald"
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span id={`pay-${o}`} className="block text-sm font-medium">{title}</span>
+                          {body && <span id={`pay-${o}-info`} className="mt-0.5 block text-xs leading-relaxed text-stone">{body}</span>}
+                        </span>
+                        <Icon className={cx("mt-0.5 h-5 w-5 shrink-0", selected ? "text-emerald" : "text-stone")} strokeWidth={1.4} aria-hidden="true" />
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {method === "upi" && (
+                  <div className="mt-4">
+                    <UpiPay
+                      vpa={vpa}
+                      payeeName={checkout.upi.payeeName}
+                      amount={upiAmount}
+                      note={`Order ${ref}`}
+                      heading={upiAmount != null ? "Pay now by UPI" : "Pay by UPI once we confirm the total"}
+                      reference={paymentRef}
+                      onReferenceChange={setPaymentRef}
+                    />
+                    {upiAmount == null && (
+                      <p className="mt-3 text-xs leading-relaxed text-stone">
+                        Some items are priced on request, so our team confirms the total on WhatsApp first — then pay the confirmed amount here or with the UPI ID above.
+                      </p>
+                    )}
+                  </div>
+                )}
+                {method === "cod" && tokenActive && (
+                  <div className="mt-4">
+                    {vpa ? (
+                      <UpiPay
+                        vpa={vpa}
+                        payeeName={checkout.upi.payeeName}
+                        amount={token}
+                        note={`Token ${ref}`}
+                        heading="Advance token to confirm your order"
+                        reference={paymentRef}
+                        onReferenceChange={setPaymentRef}
+                      />
+                    ) : (
+                      <p className="rounded-2xl border border-gold/40 bg-gold/10 p-4 text-sm leading-relaxed">
+                        A {formatPrice(token)} advance token confirms a cash-on-delivery order. Our team will share how to pay it on WhatsApp.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </fieldset>
+            )}
+
             <div className="mt-8 border-t border-line pt-6">
               <BagTotals summary={cart} />
+              {method === "cod" && (
+                <dl className="mt-4 space-y-1.5 rounded-2xl bg-ivory/70 p-4 text-sm" data-testid="due-summary">
+                  {tokenActive && (
+                    <div className="flex justify-between gap-4">
+                      <dt>Advance token (now, by UPI)</dt>
+                      <dd className="font-medium tabular-nums">{formatPrice(token)}</dd>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4">
+                    <dt>{tokenActive ? "Balance" : "To pay"}</dt>
+                    <dd className="text-right text-stone">in cash on delivery</dd>
+                  </div>
+                </dl>
+              )}
             </div>
 
+            <p className="mt-6 text-xs text-stone">
+              Order reference <span className="font-medium text-charcoal tabular-nums" data-testid="order-ref">{ref}</span>
+            </p>
             <a
-              href={whatsappUrl(message)}
+              href={wa(message)}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setOpened(true)}
-              className="btn btn-dark mt-6 w-full"
+              onClick={sendOrder}
+              className="btn btn-dark mt-3 w-full"
             >
-              <WhatsAppIcon className="h-4 w-4" /> Order on WhatsApp
+              <WhatsAppIcon className="h-4 w-4" /> Place order on WhatsApp
             </a>
 
             <p className="mt-4 flex gap-2 text-xs leading-relaxed text-stone">
