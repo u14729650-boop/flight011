@@ -36,7 +36,15 @@ What the team can do there:
 
 Changes appear on the live shop straight away.
 
-### Setting it up (about 10 minutes)
+### Setting it up on Vercel (about 2 minutes)
+
+1. In the Vercel project, open **Storage → Create Database → Supabase**, pick the free plan and the Mumbai region, and connect it to this project (Production and Preview).
+2. Redeploy. The build creates the tables by itself (`scripts/setup-database.mjs` applies `supabase/schema.sql` using the connection Vercel adds), and the site picks up `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` automatically.
+3. Open `/hc-admin`, sign in, and press **Import starter catalogue**.
+
+The admin sign-in comes from `ADMIN_USERNAME`, `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` in the project's environment variables.
+
+### Setting it up by hand (any host, about 10 minutes)
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In **SQL Editor**, run `supabase/schema.sql`. It's safe to run again after updates; for example, it adds the `banners` and `orders` tables, indexes and storage rules.

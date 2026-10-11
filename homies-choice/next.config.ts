@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 // Allow optimised (resized, AVIF/WebP, cached) delivery of photos uploaded to Supabase Storage.
 const supabaseHost = (() => {
   try {
-    return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : null;
+    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return url ? new URL(url).hostname : null;
   } catch {
     return null;
   }

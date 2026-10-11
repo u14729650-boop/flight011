@@ -17,8 +17,15 @@ export const STOREFRONT_REVALIDATE = 60 * 60 * 24;
 
 export type Db = SupabaseClient<Database>;
 
+/**
+ * The project URL and the server-only secret key. The second names are the ones
+ * Vercel's Supabase integration adds, so connecting it there needs no renaming.
+ */
+const supabaseUrl = () => process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
+
 export function supabaseConfigured(): boolean {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(supabaseUrl() && supabaseKey());
 }
 
 type CacheMode = { tags: string[]; revalidate?: number } | "no-store";
@@ -31,7 +38,7 @@ type CacheMode = { tags: string[]; revalidate?: number } | "no-store";
 export function db(cache: CacheMode = "no-store"): Db {
   const cachedFetch: typeof fetch = (input, init) =>
     fetch(input, cache === "no-store" ? { ...init, cache: "no-store" } : { ...init, next: { tags: cache.tags, revalidate: cache.revalidate ?? STOREFRONT_REVALIDATE } });
-  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  return createClient<Database>(supabaseUrl(), supabaseKey(), {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: cachedFetch },
   });
