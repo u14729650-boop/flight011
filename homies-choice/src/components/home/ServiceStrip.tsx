@@ -8,23 +8,24 @@ const items = [
   { icon: Sparkles, title: "Personal guidance", body: "Tell us what you love — we'll suggest what's next", href: "/contact", external: false },
 ];
 
+/** Floating glass bar that bridges the hero and the ivory page. */
 export function ServiceStrip() {
   return (
-    <section aria-label="How we help" className="on-dark border-t border-gold/15 bg-forest text-ivory">
-      <ul className="container-luxe grid divide-y divide-ivory/10 md:grid-cols-3 md:divide-x md:divide-y-0">
+    <section aria-label="How we help" className="relative z-10 -mt-14 px-4 md:-mt-16">
+      <ul className="glass-light container-luxe grid max-w-6xl !bg-white/80 divide-y divide-charcoal/[0.07] rounded-[1.75rem] !px-2 md:grid-cols-3 md:divide-x md:divide-y-0" data-reveal>
         {items.map(({ icon: Icon, title, body, href, external }) => (
           <li key={title}>
             <a
               href={href}
               {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className="group flex items-center gap-4 py-6 md:justify-center md:px-6"
+              className="group flex items-center gap-4 rounded-[1.4rem] px-5 py-5 transition-colors hover:bg-white/60 md:justify-center"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/35 text-gold transition-colors group-hover:bg-gold group-hover:text-forest">
-                <Icon className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald text-gold shadow-[0_8px_20px_-10px_rgba(6,59,46,0.8)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                <Icon className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
               </span>
               <span>
-                <span className="eyebrow block text-[0.62rem] text-ivory">{title}</span>
-                <span className="mt-1 block text-xs text-ivory/60">{body}</span>
+                <span className="eyebrow block text-[0.62rem] text-charcoal">{title}</span>
+                <span className="mt-1 block text-[0.8rem] text-stone">{body}</span>
               </span>
             </a>
           </li>

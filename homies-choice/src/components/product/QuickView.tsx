@@ -25,8 +25,8 @@ export function QuickView({ product, open, onOpenChange }: { product: Product; o
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/60" />
-        <Dialog.Content className="anim-dialog fixed top-1/2 left-1/2 z-50 grid max-h-[92vh] w-[min(56rem,94vw)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto bg-ivory shadow-2xl md:grid-cols-2">
+        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/50 backdrop-blur-md" />
+        <Dialog.Content className="anim-dialog fixed top-1/2 left-1/2 z-50 grid max-h-[92vh] w-[min(56rem,94vw)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[2rem] bg-ivory shadow-[0_40px_120px_-30px_rgba(0,0,0,0.6)] md:grid-cols-2">
           <ProductImage product={product} variant="hero" className="aspect-square w-full md:aspect-auto md:h-full md:min-h-[30rem]" sizes="(min-width: 768px) 28rem, 94vw" />
           <div className="flex flex-col p-6 md:p-10">
             <div className="flex items-start justify-between gap-4">
@@ -35,7 +35,7 @@ export function QuickView({ product, open, onOpenChange }: { product: Product; o
                 <Dialog.Title className="display mt-2 text-4xl text-charcoal">{product.name}</Dialog.Title>
                 <p className="mt-2 text-xs text-stone">{categoryLine(product)}</p>
               </div>
-              <Dialog.Close className="-mt-2 -mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center hover:text-emerald" aria-label="Close quick view">
+              <Dialog.Close className="-mt-2 -mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-charcoal/5 hover:text-emerald" aria-label="Close quick view">
                 <X className="h-5 w-5" strokeWidth={1.4} />
               </Dialog.Close>
             </div>
@@ -69,7 +69,7 @@ export function QuickView({ product, open, onOpenChange }: { product: Product; o
               href={whatsappUrl(productEnquiryMessage(product, variant))}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex h-11 items-center justify-center gap-2 text-xs font-semibold tracking-[0.12em] text-emerald uppercase hover:text-gold-deep"
+              className="btn btn-outline-dark mt-3"
             >
               <WhatsAppIcon className="h-4 w-4" /> Ask about this perfume
             </a>

@@ -18,30 +18,45 @@ const lightTones = new Set(["beige", "ivory"]);
 export function CollectionTiles() {
   return (
     <section className="container-luxe py-20 md:py-28" aria-labelledby="collections-title">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between" data-reveal>
         <SectionHeading eyebrow="Shop by collection" title={<span id="collections-title">Curated for every signature</span>} />
-        <Link href="/shop" className="link-underline self-start pb-1 text-sm font-semibold md:self-auto">View all fragrances</Link>
+        <Link href="/shop" className="btn btn-outline-dark self-start md:self-auto">View all fragrances</Link>
       </div>
-      <ul className="mt-12 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-        {tiles.map((t) => {
+      <ul className="mt-12 grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-4">
+        {tiles.map((t, i) => {
           const light = lightTones.has(media[t.slot].tone);
           return (
-            <li key={t.href}>
-              <Link href={t.href} className="group relative block aspect-[3/4] overflow-hidden lg:aspect-[3/4.4]">
+            <li key={t.href} data-reveal data-reveal-delay={i * 110}>
+              <Link href={t.href} className="lift group relative block aspect-[3/4] overflow-hidden rounded-[1.75rem] lg:aspect-[3/4.4]">
                 <EditorialImage
                   slot={t.slot}
                   sizes="(min-width: 1024px) 25vw, 50vw"
-                  className="absolute inset-0 transition-transform duration-[1.4s] ease-luxe group-hover:scale-[1.05]"
+                  className="absolute inset-0 transition-transform duration-[1.6s] ease-luxe group-hover:scale-[1.08]"
                 />
-                <div className={cx("absolute inset-0 bg-gradient-to-t to-transparent", light ? "from-ivory/80 via-ivory/10" : "from-black/55 via-black/5")} aria-hidden="true" />
-                <div className={cx("absolute inset-0 flex flex-col justify-between p-4 md:p-7", light ? "text-charcoal" : "text-ivory")}>
-                  <p className={cx("eyebrow text-[0.58rem]", light ? "text-gold-deep" : "text-gold")}>{t.caption}</p>
-                  <div>
-                    <h3 className="display mt-2 text-[1.45rem] md:text-[2.1rem]">{t.title}</h3>
-                    <span className="mt-4 inline-flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
-                      Explore <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </span>
-                  </div>
+                <span
+                  className={cx(
+                    "absolute top-4 left-4 rounded-full px-3 py-1.5 text-[0.55rem] font-medium tracking-[0.18em] uppercase md:top-5 md:left-5",
+                    light ? "glass-light text-gold-deep" : "glass text-ivory",
+                  )}
+                >
+                  {t.caption}
+                </span>
+                <div
+                  className={cx(
+                    "absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-3 rounded-[1.25rem] p-4 transition-transform duration-500 ease-luxe group-hover:-translate-y-1 md:inset-x-3 md:bottom-3 md:p-5",
+                    light ? "glass-light text-charcoal" : "glass text-ivory",
+                  )}
+                >
+                  <h3 className="display text-[1.3rem] md:text-[1.75rem]">{t.title}</h3>
+                  <span
+                    className={cx(
+                      "hidden h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform duration-500 group-hover:rotate-45 md:flex",
+                      light ? "bg-emerald text-ivory" : "bg-gold text-forest",
+                    )}
+                    aria-hidden="true"
+                  >
+                    <ArrowUpRight className="h-4 w-4" />
+                  </span>
                 </div>
               </Link>
             </li>

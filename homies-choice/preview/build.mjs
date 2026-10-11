@@ -57,9 +57,9 @@ writeFileSync(
   `<title>Homies Choice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300..700&display=swap">
 <style>
-:root{--font-cormorant:"Cormorant Garamond";--font-manrope:"Manrope";color-scheme:light}
+:root{--font-display:"Bodoni Moda";--font-body:"Jost";color-scheme:light}
 ${css}
 </style>
 <div id="hc-root"></div>

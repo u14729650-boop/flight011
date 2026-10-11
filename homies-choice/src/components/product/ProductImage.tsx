@@ -48,7 +48,7 @@ export function ProductImage({
       data-placeholder="product"
       className={cx("tone-ivory relative flex flex-col items-center justify-center overflow-hidden text-center", className)}
     >
-      <div className="absolute inset-[7%] border border-gold/45" aria-hidden="true" />
+      <div className="absolute inset-[6%] rounded-[1.1rem] border border-gold/40" aria-hidden="true" />
       <div className="relative flex flex-col items-center px-[12%]" aria-hidden="true">
         {variant !== "thumb" && (
           <>

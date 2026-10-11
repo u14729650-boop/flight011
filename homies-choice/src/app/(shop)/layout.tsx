@@ -7,6 +7,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/ui/JsonLd";
+import { PageTransition, RevealProvider } from "@/components/motion/RevealProvider";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
   const [catalogue, settings] = await Promise.all([getCatalogue(), getSettings()]);
@@ -21,7 +22,11 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
       <CatalogueProvider products={catalogue}>
         <CartProvider>
           <Header announcement={settings.announcement} />
-          <main id="main">{children}</main>
+          <RevealProvider>
+            <main id="main">
+              <PageTransition>{children}</PageTransition>
+            </main>
+          </RevealProvider>
           <Footer />
           <CartDrawer />
         </CartProvider>

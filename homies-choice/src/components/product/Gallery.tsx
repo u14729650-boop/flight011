@@ -20,7 +20,7 @@ export function Gallery({ product }: { product: Product }) {
               aria-selected={i === active}
               aria-label={`Show image ${i + 1}`}
               onClick={() => setActive(i)}
-              className={cx("relative h-24 w-20 shrink-0 border", i === active ? "border-emerald" : "border-transparent opacity-70 hover:opacity-100")}
+              className={cx("relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl border-2", i === active ? "border-emerald" : "border-transparent opacity-70 hover:opacity-100")}
             >
               <ProductImage product={product} index={i} variant="thumb" className="absolute inset-0" sizes="80px" />
             </button>
@@ -33,7 +33,7 @@ export function Gallery({ product }: { product: Product }) {
         variant="hero"
         priority
         sizes="(min-width: 1024px) 50vw, 100vw"
-        className="aspect-[4/5] w-full flex-1"
+        className="aspect-[4/5] w-full flex-1 rounded-[2rem]"
       />
     </div>
   );

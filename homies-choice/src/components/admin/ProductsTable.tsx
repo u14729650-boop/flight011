@@ -45,7 +45,7 @@ export function ProductsTable() {
       />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex border border-line bg-white/70" role="tablist" aria-label="Filter by category">
+        <div className="flex gap-1 rounded-full border border-line bg-white/70 p-1" role="tablist" aria-label="Filter by category">
           {tabs.map((t) => (
             <button
               key={t.value}
@@ -53,7 +53,7 @@ export function ProductsTable() {
               role="tab"
               aria-selected={tab === t.value}
               onClick={() => setTab(t.value)}
-              className={cx("px-4 py-2 text-xs font-semibold tracking-[0.1em] uppercase", tab === t.value ? "bg-emerald text-ivory" : "text-stone hover:text-charcoal")}
+              className={cx("rounded-full px-4 py-2 text-xs font-medium tracking-[0.1em] uppercase transition-colors", tab === t.value ? "bg-emerald text-ivory" : "text-stone hover:text-charcoal")}
             >
               {t.label}
             </button>
@@ -68,7 +68,7 @@ export function ProductsTable() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name or brand"
-            className="w-full border border-line bg-white py-2.5 pr-3 pl-9 text-sm focus:border-emerald focus:outline-none"
+            className="w-full rounded-full border border-line bg-white py-2.5 pr-4 pl-9 text-sm focus:border-emerald focus:outline-none"
           />
         </div>
       </div>
@@ -78,7 +78,7 @@ export function ProductsTable() {
       ) : !products ? (
         <Spinner />
       ) : rows.length === 0 ? (
-        <div className="border border-dashed border-line px-6 py-16 text-center">
+        <div className="rounded-[1.5rem] border border-dashed border-line px-6 py-16 text-center">
           <p className="font-serif text-3xl">{tab === "watch" ? "No watches yet." : "No products match."}</p>
           <p className="mt-2 text-sm text-stone">
             {tab === "watch" ? "Add your first watch and it will appear on the Watches page." : "Try a different search."}
@@ -90,7 +90,7 @@ export function ProductsTable() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto border border-line bg-white/80">
+        <div className="overflow-x-auto rounded-[1.5rem] border border-white/80 bg-white/75 shadow-[0_20px_50px_-35px_rgba(6,59,46,0.35)] backdrop-blur-xl">
           <table className="w-full min-w-[46rem] text-left text-sm">
             <thead className="border-b border-line text-[0.62rem] tracking-[0.14em] text-stone uppercase">
               <tr>

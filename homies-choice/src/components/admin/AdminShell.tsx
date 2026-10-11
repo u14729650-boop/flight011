@@ -79,7 +79,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 href={href}
                 aria-current={isActive(href) ? "page" : undefined}
                 className={cx(
-                  "flex items-center gap-3 px-3 py-2.5 text-sm transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
                   isActive(href) ? "bg-ivory/[0.08] text-gold" : "text-ivory/75 hover:bg-ivory/[0.04] hover:text-ivory",
                 )}
               >
@@ -113,7 +113,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <div className="min-w-0">
+        <div className="relative isolate min-w-0 overflow-clip">
+          <div className="orb orb-gold h-[30rem] w-[30rem] -top-20 right-0 opacity-50" aria-hidden="true" />
+          <div className="orb orb-emerald h-[26rem] w-[26rem] top-[40%] -left-32 opacity-20" aria-hidden="true" />
           <header className="on-dark flex h-16 items-center justify-between bg-forest px-5 text-ivory lg:hidden">
             <button type="button" onClick={() => setMenuOpen(true)} className="-ml-2 inline-flex h-11 w-11 items-center justify-center" aria-label="Open menu">
               <Menu className="h-5 w-5" strokeWidth={1.4} />

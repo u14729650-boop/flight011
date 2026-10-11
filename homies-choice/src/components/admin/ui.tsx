@@ -22,7 +22,7 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "success" 
     <div
       role={tone === "error" ? "alert" : "status"}
       className={cx(
-        "flex gap-3 border px-4 py-3 text-sm leading-relaxed",
+        "flex gap-3 rounded-2xl border px-4 py-3 text-sm leading-relaxed",
         tone === "success" && "border-[#2f7d5b]/30 bg-[#2f7d5b]/[0.06] text-[#1d5a40]",
         tone === "error" && "border-[#9b2c2c]/30 bg-[#9b2c2c]/[0.05] text-[#7f1d1d]",
         tone === "info" && "border-gold/40 bg-gold/[0.08] text-charcoal",
@@ -36,7 +36,7 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "success" 
 
 export function Panel({ title, description, children, className }: { title?: string; description?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("border border-line bg-white/70 p-5 md:p-7", className)}>
+    <section className={cx("rounded-[1.5rem] border border-white/80 bg-white/70 p-5 shadow-[0_20px_50px_-35px_rgba(6,59,46,0.35)] backdrop-blur-xl md:p-7", className)}>
       {title && <h2 className="font-serif text-2xl leading-tight">{title}</h2>}
       {description && <p className="mt-1 text-sm text-stone">{description}</p>}
       <div className={cx(title && "mt-6")}>{children}</div>
@@ -62,13 +62,13 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
 }
 
 export const inputClass =
-  "mt-1.5 block w-full border border-line bg-white px-3 py-2.5 text-sm text-charcoal transition-colors placeholder:text-stone/60 focus:border-emerald focus:outline-none aria-[invalid=true]:border-[#9b2c2c]";
+  "mt-1.5 block w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-charcoal transition-colors placeholder:text-stone/60 focus:border-emerald focus:outline-none aria-[invalid=true]:border-[#9b2c2c]";
 
 export function Badge({ tone = "neutral", children }: { tone?: "neutral" | "good" | "warn" | "bad" | "gold"; children: ReactNode }) {
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.08em] uppercase",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[0.65rem] font-semibold tracking-[0.08em] uppercase",
         tone === "neutral" && "bg-charcoal/[0.06] text-stone",
         tone === "good" && "bg-[#2f7d5b]/10 text-[#1d5a40]",
         tone === "warn" && "bg-[#c08a2e]/15 text-[#7a5410]",

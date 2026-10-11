@@ -18,13 +18,13 @@ export function CartDrawer() {
   return (
     <Dialog.Root open={cart.isOpen} onOpenChange={(o) => (o ? cart.open() : cart.close())}>
       <Dialog.Portal>
-        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/60" />
-        <Dialog.Content className="anim-drawer fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-ivory shadow-2xl">
+        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/50 backdrop-blur-md" />
+        <Dialog.Content className="anim-drawer fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-hidden bg-ivory shadow-2xl sm:inset-y-3 sm:right-3 sm:rounded-[2rem]">
           <div className="flex h-[4.25rem] items-center justify-between border-b border-line px-6">
             <Dialog.Title className="eyebrow text-charcoal">
               Your bag <span className="text-stone">({cart.itemCount})</span>
             </Dialog.Title>
-            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center hover:text-emerald" aria-label="Close bag">
+            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-charcoal/5 hover:text-emerald" aria-label="Close bag">
               <X className="h-5 w-5" strokeWidth={1.4} />
             </Dialog.Close>
           </div>
@@ -47,7 +47,7 @@ export function CartDrawer() {
                   return (
                     <li key={line.key} className="flex gap-4 py-5">
                       <Link href={`/products/${line.product.slug}`} onClick={cart.close} className="shrink-0" tabIndex={-1} aria-hidden="true">
-                        <ProductImage product={line.product} variant="thumb" className="h-28 w-[5.5rem]" sizes="88px" />
+                        <ProductImage product={line.product} variant="thumb" className="h-28 w-[5.5rem] rounded-2xl" sizes="88px" />
                       </Link>
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-start justify-between gap-2">
@@ -76,7 +76,7 @@ export function CartDrawer() {
                             <select
                               value={line.variant.id}
                               onChange={(e) => cart.updateVariant(line.key, e.target.value)}
-                              className="border-b border-line bg-transparent py-1 pr-1 text-xs text-charcoal"
+                              className="rounded-full border border-line bg-white/70 px-3 py-1.5 text-xs text-charcoal"
                             >
                               {line.product.variants.map((v) => (
                                 <option key={v.id} value={v.id} disabled={v.availability === "out_of_stock"}>
@@ -100,7 +100,7 @@ export function CartDrawer() {
                 })}
               </ul>
 
-              <div className="border-t border-line bg-white/60 px-6 py-6">
+              <div className="glass-light m-3 rounded-[1.5rem] px-5 py-5">
                 <BagTotals summary={cart} />
                 <Link href="/checkout" onClick={cart.close} className="btn btn-dark mt-5 w-full">
                   Review order <ArrowRight className="h-4 w-4" />

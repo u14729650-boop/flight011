@@ -78,7 +78,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <>
-      <div className="container-luxe pt-6 pb-20 md:pt-10">
+      <div className="relative isolate container-luxe overflow-x-clip pt-6 pb-20 md:pt-10">
+        <div className="orb orb-gold h-[28rem] w-[28rem] top-40 left-[20%] opacity-30" aria-hidden="true" />
         <nav aria-label="Breadcrumb" className="text-xs text-stone">
           <ol className="flex flex-wrap items-center gap-2">
             <li><Link href="/" className="hover:text-charcoal">Home</Link></li>
@@ -107,7 +108,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             {product.notes && (
               <section className="mt-12" aria-labelledby="notes-title">
                 <h2 id="notes-title" className="eyebrow text-charcoal">Fragrance notes</h2>
-                <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-line pt-5 text-sm">
+                <dl className="glass-light mt-5 grid grid-cols-3 gap-4 rounded-[1.25rem] p-5 text-sm">
                   {(["top", "heart", "base"] as const).map((tier) => (
                     <div key={tier}>
                       <dt className="eyebrow text-[0.6rem] text-gold-deep">{tier}</dt>
@@ -120,7 +121,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
             <section className="mt-12" aria-labelledby="details-title">
               <h2 id="details-title" className="eyebrow text-charcoal">Details</h2>
-              <dl className="mt-5 divide-y divide-line border-y border-line text-sm">
+              <dl className="glass-light mt-5 divide-y divide-line rounded-[1.25rem] px-5 text-sm">
                 {details.map((d) => (
                   <div key={d.label} className="flex justify-between gap-6 py-3">
                     <dt className="text-stone">{d.label}</dt>
@@ -134,7 +135,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
 
       {related.length > 0 && (
-        <section className="bg-[#f1ebdf] py-20" aria-labelledby="related-title">
+        <section className="relative isolate overflow-hidden bg-[#f1ebdf] py-20" aria-labelledby="related-title">
+          <div className="orb orb-gold h-96 w-96 -top-20 right-[15%] opacity-40" aria-hidden="true" />
           <div className="container-luxe">
             <p className="eyebrow text-gold-deep">You may also like</p>
             <h2 id="related-title" className="display mt-4 text-4xl md:text-5xl">{isWatch ? "More watches" : "Related fragrances"}</h2>

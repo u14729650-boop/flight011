@@ -27,8 +27,8 @@ export function SizeSelector({
             <label
               key={v.id}
               className={cx(
-                "relative inline-flex min-h-11 min-w-20 cursor-pointer items-center justify-center border px-4 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-gold-deep",
-                selected ? "border-emerald bg-emerald text-ivory" : "border-line hover:border-charcoal",
+                "relative inline-flex min-h-11 min-w-20 cursor-pointer items-center justify-center rounded-full border px-5 text-sm transition-all duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-gold-deep",
+                selected ? "border-emerald bg-emerald text-ivory shadow-[0_8px_20px_-10px_rgba(6,59,46,0.8)]" : "border-line bg-white/60 hover:border-charcoal",
                 sold && "text-stone line-through",
               )}
             >

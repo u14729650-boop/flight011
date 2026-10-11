@@ -37,7 +37,8 @@ export function CheckoutView() {
   const message = orderMessage(cart, { name, area, note });
 
   return (
-    <div className="container-luxe py-12 md:py-16">
+    <div className="relative isolate container-luxe overflow-x-clip py-12 md:py-16">
+      <div className="orb orb-gold h-96 w-96 top-20 right-0 opacity-40" aria-hidden="true" />
       <p className="eyebrow text-gold-deep">Order enquiry</p>
       <h1 className="display mt-4 text-5xl md:text-6xl">Review your order</h1>
 
@@ -51,7 +52,7 @@ export function CheckoutView() {
               const title = productTitle(line.product);
               return (
                 <li key={line.key} className="flex gap-5 py-6">
-                  <ProductImage product={line.product} variant="thumb" className="h-32 w-24 shrink-0" sizes="96px" />
+                  <ProductImage product={line.product} variant="thumb" className="h-32 w-24 shrink-0 rounded-2xl" sizes="96px" />
                   <div className="flex flex-1 flex-col">
                     <div className="flex justify-between gap-3">
                       <div>
@@ -60,14 +61,14 @@ export function CheckoutView() {
                           {line.product.name}
                         </Link>
                       </div>
-                      <button type="button" onClick={() => cart.remove(line.key)} className="inline-flex h-9 w-9 items-center justify-center text-stone hover:text-charcoal" aria-label={`Remove ${title}`}>
+                      <button type="button" onClick={() => cart.remove(line.key)} className="inline-flex h-9 w-9 items-center justify-center rounded-full text-stone transition-colors hover:bg-charcoal/5 hover:text-charcoal" aria-label={`Remove ${title}`}>
                         <Trash2 className="h-4 w-4" strokeWidth={1.4} />
                       </button>
                     </div>
                     {line.product.variants.length > 1 ? (
                       <label className="mt-2 text-sm text-stone">
                         <span className="sr-only">{line.product.category === "watch" ? "Option" : "Bottle size"} for {title}</span>
-                        <select value={line.variant.id} onChange={(e) => cart.updateVariant(line.key, e.target.value)} className="border-b border-line bg-transparent py-1 text-sm text-charcoal">
+                        <select value={line.variant.id} onChange={(e) => cart.updateVariant(line.key, e.target.value)} className="rounded-full border border-line bg-white/70 px-3 py-1.5 text-sm text-charcoal">
                           {line.product.variants.map((v) => (
                             <option key={v.id} value={v.id} disabled={v.availability === "out_of_stock"}>{variantLabel(v, line.product.category)}</option>
                           ))}
@@ -93,7 +94,7 @@ export function CheckoutView() {
         </section>
 
         <section aria-labelledby="details-title" className="lg:sticky lg:top-[11rem] lg:self-start">
-          <div className="bg-white/70 p-6 md:p-8">
+          <div className="glass-light rounded-[2rem] p-6 md:p-8">
             <h2 id="details-title" className="eyebrow text-charcoal">Your details <span className="font-normal normal-case tracking-normal text-stone">(optional)</span></h2>
             <div className="mt-6 space-y-6">
               <div>
@@ -130,7 +131,7 @@ export function CheckoutView() {
             </p>
 
             {opened && (
-              <div role="status" className="mt-5 border-l-2 border-gold bg-ivory p-4 text-sm leading-relaxed">
+              <div role="status" className="mt-5 rounded-2xl border border-gold/40 bg-gold/10 p-4 text-sm leading-relaxed">
                 Your order message is ready in WhatsApp — press <strong>send</strong> there to reach us. We&rsquo;ll reply to confirm
                 availability and the final amount. Your bag is kept until you empty it.
               </div>

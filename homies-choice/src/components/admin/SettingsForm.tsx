@@ -53,7 +53,7 @@ export function SettingsForm() {
             <FieldLabel htmlFor="s-href" hint="optional, a page on this site">Link</FieldLabel>
             <input id="s-href" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ href: e.target.value || null })} placeholder="/shop" />
           </div>
-          <div className="on-dark bg-forest px-4 py-2.5 text-center text-[0.6rem] font-semibold tracking-[0.2em] text-ivory/85 uppercase" aria-label="Preview">
+          <div className="on-dark rounded-full bg-forest px-4 py-2.5 text-center text-[0.6rem] font-semibold tracking-[0.2em] text-ivory/85 uppercase" aria-label="Preview">
             {a.enabled ? a.text : "Announcement bar hidden"}
           </div>
         </div>

@@ -14,7 +14,7 @@ export default async function HomePage() {
   const products = await getCatalogue();
   return (
     <>
-      <Hero />
+      <Hero products={products} />
       <ServiceStrip />
       <CollectionTiles />
       <Bestsellers products={products} />

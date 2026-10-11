@@ -103,10 +103,10 @@ export function Catalogue({
   return (
     <div className="container-luxe pb-24">
       {/* Toolbar */}
-      <div className="sticky top-[4.25rem] z-20 -mx-5 flex flex-wrap items-center gap-3 border-b border-line bg-ivory/95 px-5 py-4 backdrop-blur-sm md:-mx-10 md:px-10 lg:top-[7.5rem]">
+      <div className="glass-light sticky top-[4.75rem] z-20 mt-6 flex flex-wrap items-center gap-3 rounded-[1.5rem] px-4 py-3 md:rounded-full md:px-5 lg:top-[8.4rem]">
         {showSearch && (
           <div className="relative order-first w-full sm:order-none sm:w-72">
-            <Search className="pointer-events-none absolute top-1/2 left-0 h-4 w-4 -translate-y-1/2 text-stone" strokeWidth={1.5} aria-hidden="true" />
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-stone" strokeWidth={1.5} aria-hidden="true" />
             <label htmlFor="catalogue-search" className="sr-only">Search by name or brand</label>
             <input
               id="catalogue-search"
@@ -114,14 +114,14 @@ export function Catalogue({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name or brand"
-              className="field py-2 pl-7 text-sm"
+              className="field !mt-0 !rounded-full py-2.5 pl-11 text-sm"
             />
           </div>
         )}
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex h-10 items-center gap-2 border border-line px-4 text-xs font-semibold tracking-[0.12em] uppercase hover:border-charcoal lg:hidden"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-white/70 px-4 text-xs font-medium tracking-[0.12em] uppercase hover:border-charcoal lg:hidden"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" /> Filters{count > 0 && ` (${count})`}
         </button>
@@ -134,7 +134,7 @@ export function Catalogue({
             id="catalogue-sort"
             value={filters.sort}
             onChange={(e) => update({ sort: e.target.value as SortKey })}
-            className="h-10 border border-line bg-transparent px-3 text-sm hover:border-charcoal"
+            className="h-10 rounded-full border border-line bg-white/70 px-4 text-sm hover:border-charcoal"
           >
             {sortOptions.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -162,19 +162,19 @@ export function Catalogue({
 
       <div className={cx("mt-8 grid gap-10 lg:gap-14", scoped.length > 0 && "lg:grid-cols-[15rem_1fr]")}>
         <aside className={cx("hidden", scoped.length > 0 && "lg:block")} aria-label="Filters">
-          <div className="sticky top-[13rem]">{filterPanel}</div>
+          <div className="glass-light sticky top-[13.5rem] rounded-[1.5rem] p-6">{filterPanel}</div>
         </aside>
 
         <div>
           {hiddenUnpriced > 0 && (
-            <p className="mb-6 border-l-2 border-gold pl-4 text-sm text-stone">
+            <p className="glass-light mb-6 rounded-2xl px-5 py-3 text-sm text-stone">
               {hiddenUnpriced} fragrance{hiddenUnpriced > 1 ? "s" : ""} with price on request {hiddenUnpriced > 1 ? "are" : "is"} hidden while a price range is set.
             </p>
           )}
           {results.length > 0 ? (
             <ul className="grid grid-cols-1 gap-x-4 gap-y-12 min-[360px]:grid-cols-2 md:gap-x-5 xl:grid-cols-3 xl:gap-x-7">
               {results.map((p, i) => (
-                <li key={p.slug} className="flex">
+                <li key={p.slug} className="flex" data-reveal data-reveal-delay={(i % 3) * 90}>
                   <ProductCard product={p} priority={i < 3} />
                 </li>
               ))}
@@ -188,8 +188,8 @@ export function Catalogue({
       {/* Mobile filter drawer */}
       <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/60" />
-          <Dialog.Content className="anim-drawer fixed inset-y-0 right-0 z-50 flex w-[88vw] max-w-sm flex-col bg-ivory">
+          <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/50 backdrop-blur-md" />
+          <Dialog.Content className="anim-drawer fixed inset-y-2 right-2 z-50 flex w-[86vw] max-w-sm flex-col overflow-hidden rounded-[2rem] bg-ivory shadow-2xl">
             <div className="flex h-[4.25rem] items-center justify-between border-b border-line px-6">
               <Dialog.Title className="eyebrow">Filters</Dialog.Title>
               <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center" aria-label="Close filters">
@@ -214,7 +214,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
     <button
       type="button"
       onClick={onRemove}
-      className="inline-flex h-8 items-center gap-2 border border-line bg-white/60 px-3 text-xs hover:border-charcoal"
+      className="inline-flex h-8 items-center gap-2 rounded-full border border-line bg-white/70 px-3.5 text-xs transition-colors hover:border-charcoal"
       aria-label={`Remove filter ${label}`}
     >
       {label} <X className="h-3 w-3" />
@@ -232,7 +232,8 @@ function EmptyState({
   copy?: { eyebrow: string; title: string; body: string; ask: string };
 }) {
   return (
-    <div className="flex flex-col items-center border border-line px-6 py-20 text-center">
+    <div className="glass-light relative isolate flex flex-col items-center overflow-hidden rounded-[2rem] px-6 py-20 text-center">
+      <div className="orb orb-gold h-72 w-72 -top-20 left-1/2 -translate-x-1/2 opacity-50" aria-hidden="true" />
       <p className="eyebrow text-gold-deep">{filtered ? "No exact match" : copy?.eyebrow ?? "Coming soon"}</p>
       <p className="display mt-4 text-4xl text-balance">{filtered ? "Nothing matches those filters." : copy?.title ?? "This selection is being curated."}</p>
       <p className="mt-4 max-w-md text-sm leading-relaxed text-stone">
@@ -261,7 +262,7 @@ function EmptyState({
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="border-b border-line pb-6 [&:not(:first-child)]:pt-6">
+    <fieldset className="border-b border-line pb-6 last:border-b-0 last:pb-0 [&:not(:first-child)]:pt-6">
       <legend className="eyebrow float-left mb-4 w-full text-[0.62rem] text-charcoal">{title}</legend>
       <div className="clear-both space-y-1">{children}</div>
     </fieldset>
@@ -357,7 +358,7 @@ function FilterPanel({
                   type="button"
                   aria-pressed={on}
                   onClick={() => onChange({ size: toggle(filters.size, s) })}
-                  className={cx("h-9 min-w-16 border px-3 text-sm", on ? "border-emerald bg-emerald text-ivory" : "border-line hover:border-charcoal")}
+                  className={cx("h-9 min-w-16 rounded-full border px-4 text-sm transition-colors", on ? "border-emerald bg-emerald text-ivory" : "border-line bg-white/70 hover:border-charcoal")}
                 >
                   {s} ml
                 </button>
@@ -370,12 +371,12 @@ function FilterPanel({
         <form onSubmit={applyPrice} className="flex items-end gap-3">
           <label className="flex-1 text-xs text-stone">
             Min
-            <input inputMode="numeric" type="number" min={0} value={min} onChange={(e) => setMin(e.target.value)} onBlur={() => applyPrice()} className="field py-1.5" />
+            <input inputMode="numeric" type="number" min={0} value={min} onChange={(e) => setMin(e.target.value)} onBlur={() => applyPrice()} className="field py-2" />
           </label>
           <span className="pb-2 text-stone" aria-hidden="true">–</span>
           <label className="flex-1 text-xs text-stone">
             Max
-            <input inputMode="numeric" type="number" min={0} value={max} onChange={(e) => setMax(e.target.value)} onBlur={() => applyPrice()} className="field py-1.5" />
+            <input inputMode="numeric" type="number" min={0} value={max} onChange={(e) => setMax(e.target.value)} onBlur={() => applyPrice()} className="field py-2" />
           </label>
           <button type="submit" className="sr-only">Apply price range</button>
         </form>

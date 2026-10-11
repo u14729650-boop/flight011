@@ -71,9 +71,9 @@ export function Dashboard() {
         </Panel>
       )}
 
-      <dl className="grid grid-cols-2 gap-px border border-line bg-line lg:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white/80 p-5 md:p-6">
+          <div key={s.label} className="rounded-[1.5rem] border border-white/80 bg-white/75 p-5 shadow-[0_20px_50px_-35px_rgba(6,59,46,0.35)] backdrop-blur-xl md:p-6">
             <dt className="eyebrow text-[0.58rem] text-stone">{s.label}</dt>
             <dd className="mt-3 font-serif text-5xl leading-none tabular-nums">{s.value}</dd>
             <dd className="mt-2 text-xs text-stone">{s.note}</dd>

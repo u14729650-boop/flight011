@@ -70,8 +70,10 @@ export function Header({ announcement }: { announcement: Announcement }) {
 
         <div
           className={cx(
-            "border-b transition-colors duration-500 ease-luxe",
-            transparent ? "border-ivory/10 bg-transparent" : "border-gold/15 bg-emerald/[0.97] backdrop-blur-sm",
+            "border-b transition-[background-color,box-shadow,border-color] duration-700 ease-luxe",
+            transparent
+              ? "border-ivory/10 bg-transparent"
+              : "border-ivory/10 bg-forest/[0.86] shadow-[0_18px_50px_-25px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150",
           )}
         >
           <div className="container-luxe grid h-[4.25rem] grid-cols-[1fr_auto_1fr] items-center lg:h-[4.75rem]">
@@ -79,7 +81,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
               <button
                 type="button"
                 onClick={() => setMenuOpen(true)}
-                className="-ml-2 inline-flex h-11 w-11 items-center justify-center hover:text-gold lg:hidden"
+                className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-ivory/10 hover:text-gold lg:hidden"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" strokeWidth={1.4} />
@@ -87,7 +89,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="inline-flex h-11 items-center gap-2.5 px-2 text-ivory hover:text-gold lg:-ml-2"
+                className="inline-flex h-11 items-center gap-2.5 rounded-full px-3 text-ivory transition-colors hover:bg-ivory/10 hover:text-gold lg:-ml-3 lg:border lg:border-ivory/15 lg:px-4"
                 aria-label="Search perfumes"
               >
                 <Search className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
@@ -109,7 +111,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
                 href={whatsappUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 w-11 items-center justify-center hover:text-gold"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-ivory/10 hover:text-gold"
                 aria-label="Chat with us on WhatsApp (opens in a new tab)"
               >
                 <WhatsAppIcon className="h-[1.15rem] w-[1.15rem]" />
@@ -117,7 +119,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
               <button
                 type="button"
                 onClick={cart.open}
-                className="relative -mr-2 inline-flex h-11 w-11 items-center justify-center hover:text-gold"
+                className="relative -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-ivory/10 hover:text-gold"
                 aria-label={`Open shopping bag, ${cart.itemCount} item${cart.itemCount === 1 ? "" : "s"}`}
               >
                 <ShoppingBag className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
@@ -131,7 +133,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
           </div>
 
           <nav aria-label="Main" className="hidden lg:block">
-            <ul className="container-luxe flex h-11 items-center justify-center gap-6 border-t xl:gap-9 border-ivory/[0.07]">
+            <ul className="container-luxe flex h-12 items-center justify-center gap-1 border-t border-ivory/[0.07] xl:gap-2">
               {navigation.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
@@ -140,8 +142,8 @@ export function Header({ announcement }: { announcement: Announcement }) {
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       className={cx(
-                        "link-underline eyebrow pb-1 text-[0.65rem] transition-colors",
-                        active ? "text-gold" : "text-ivory/85 hover:text-gold",
+                        "eyebrow rounded-full px-3.5 py-2 text-[0.64rem] transition-all duration-300 xl:px-4",
+                        active ? "bg-ivory/10 text-gold shadow-[inset_0_0_0_1px_rgba(213,180,119,0.35)]" : "text-ivory/85 hover:bg-ivory/[0.07] hover:text-gold",
                       )}
                     >
                       {item.label}
@@ -155,7 +157,7 @@ export function Header({ announcement }: { announcement: Announcement }) {
       </header>
 
       {/* Reserve space under the fixed header on every page except the home hero. */}
-      {!overHero && <div aria-hidden="true" className={cx(announcement.enabled ? "h-[6.6rem] lg:h-[9.65rem]" : "h-[4.25rem] lg:h-[7.5rem]")} />}
+      {!overHero && <div aria-hidden="true" className={cx(announcement.enabled ? "h-[6.6rem] lg:h-[9.95rem]" : "h-[4.25rem] lg:h-[7.8rem]")} />}
 
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} isActive={(href) => isActive(pathname, href)} />

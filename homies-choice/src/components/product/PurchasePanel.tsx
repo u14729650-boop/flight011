@@ -23,7 +23,7 @@ export function PurchasePanel({ product }: { product: Product }) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-5">
+      <div className="glass-light flex flex-wrap items-center justify-between gap-3 rounded-[1.25rem] px-5 py-4">
         <PriceTag variant={variant} className="text-2xl" />
         <AvailabilityBadge availability={variant.availability} />
       </div>

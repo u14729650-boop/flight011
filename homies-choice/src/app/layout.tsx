@@ -1,19 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Bodoni_Moda, Jost } from "next/font/google";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+// Display: Bodoni Moda — a high-contrast fashion serif with optical sizing.
+const display = Bodoni_Moda({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  axes: ["opsz"],
+  variable: "--font-display",
   display: "swap",
 });
 
-const manrope = Manrope({
+// Body: Jost — a geometric sans that echoes the HOMIES CHOICE wordmark.
+const body = Jost({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -52,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${cormorant.variable} ${manrope.variable}`} data-scroll-behavior="smooth">
+    <html lang="en-IN" className={`${display.variable} ${body.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-screen">{children}</body>
     </html>
   );

@@ -32,7 +32,7 @@ export function LoginForm() {
         <div className="flex justify-center">
           <Logo />
         </div>
-        <form onSubmit={submit} className="mt-12 bg-ivory p-8 shadow-2xl" aria-labelledby="login-title">
+        <form onSubmit={submit} className="glass-light mt-12 rounded-[2rem] !bg-ivory/[0.95] p-8" aria-labelledby="login-title">
           <div className="flex items-center gap-2 text-gold-deep">
             <Lock className="h-3.5 w-3.5" aria-hidden="true" />
             <p className="eyebrow text-[0.6rem]">Private</p>

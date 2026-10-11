@@ -335,7 +335,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                         type="button"
                         aria-pressed={draft.category === c}
                         onClick={() => setDraft(toDraft(null, c))}
-                        className={cx("border px-4 py-2 text-sm", draft.category === c ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}
+                        className={cx("rounded-full border px-5 py-2 text-sm transition-colors", draft.category === c ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}
                       >
                         {c === "watch" ? "Watch" : "Fragrance"}
                       </button>
@@ -355,7 +355,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
               </div>
               <div className="sm:col-span-2">
                 <FieldLabel htmlFor="p-slug" hint="Used in the page address">Web address</FieldLabel>
-                <div className="mt-1.5 flex items-stretch border border-line bg-white focus-within:border-emerald">
+                <div className="mt-1.5 flex items-stretch overflow-hidden rounded-xl border border-line bg-white focus-within:border-emerald">
                   <span className="flex items-center bg-ivory px-3 text-xs text-stone">/products/</span>
                   <input
                     id="p-slug"
@@ -407,7 +407,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
             {err("variants") && <div className="mb-4"><Notice tone="error">{err("variants")}</Notice></div>}
             <div className="space-y-3">
               {draft.variants.map((v, i) => (
-                <div key={v.key} className="grid grid-cols-2 gap-3 border border-line bg-ivory/50 p-3 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] md:items-end">
+                <div key={v.key} className="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-ivory/60 p-3 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] md:items-end">
                   {isWatch ? (
                     <div className="col-span-2 md:col-span-1">
                       <FieldLabel htmlFor={`v-label-${v.key}`}>Option</FieldLabel>
@@ -442,7 +442,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                     type="button"
                     onClick={() => setDraft({ ...draft, variants: draft.variants.filter((x) => x.key !== v.key) })}
                     disabled={draft.variants.length === 1}
-                    className="inline-flex h-10 w-10 items-center justify-center justify-self-end border border-line bg-white text-stone hover:text-[#9b2c2c] disabled:opacity-30"
+                    className="inline-flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-line bg-white text-stone hover:text-[#9b2c2c] disabled:opacity-30"
                     aria-label="Remove this option"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -459,9 +459,9 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
             {draft.images.length > 0 && (
               <ul className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {draft.images.map((img, i) => (
-                  <li key={img.src + i} className="border border-line bg-white p-2">
+                  <li key={img.src + i} className="rounded-2xl border border-line bg-white p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.src} alt={img.alt} className="aspect-[4/5] w-full bg-ivory object-contain" />
+                    <img src={img.src} alt={img.alt} className="aspect-[4/5] w-full rounded-xl bg-ivory object-contain" />
                     <label className="mt-2 block">
                       <span className="sr-only">Alt text for image {i + 1}</span>
                       <input
@@ -491,8 +491,8 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
               <span className="text-xs text-stone">or add a link</span>
               <div className="flex flex-1 gap-2">
                 <label htmlFor="p-image-url" className="sr-only">Image link</label>
-                <input id="p-image-url" className="min-w-0 flex-1 border border-line bg-white px-3 py-2 text-sm focus:border-emerald focus:outline-none" placeholder="https://…" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-                <button type="button" onClick={addImageUrl} className="border border-line bg-white px-3 text-xs font-semibold uppercase hover:border-charcoal">Add</button>
+                <input id="p-image-url" className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-2 text-sm focus:border-emerald focus:outline-none" placeholder="https://…" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                <button type="button" onClick={addImageUrl} className="rounded-full border border-line bg-white px-4 text-xs font-medium uppercase hover:border-charcoal">Add</button>
               </div>
             </div>
           </Panel>
@@ -506,9 +506,9 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                 {draft.specs.map((s) => (
                   <div key={s.key} className="grid grid-cols-[1fr_1.6fr_auto] gap-2">
                     <label className="sr-only" htmlFor={`spec-l-${s.key}`}>Specification name</label>
-                    <input id={`spec-l-${s.key}`} list="spec-labels" className="border border-line bg-white px-3 py-2 text-sm focus:border-emerald focus:outline-none" value={s.label} placeholder="e.g. Movement" onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, label: e.target.value } : x)) })} />
+                    <input id={`spec-l-${s.key}`} list="spec-labels" className="rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none" value={s.label} placeholder="e.g. Movement" onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, label: e.target.value } : x)) })} />
                     <label className="sr-only" htmlFor={`spec-v-${s.key}`}>Value</label>
-                    <input id={`spec-v-${s.key}`} className="border border-line bg-white px-3 py-2 text-sm focus:border-emerald focus:outline-none" value={s.value} placeholder={SPEC_EXAMPLES[s.label] ?? "Value"} onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, value: e.target.value } : x)) })} />
+                    <input id={`spec-v-${s.key}`} className="rounded-xl border border-line bg-white px-3.5 py-2 text-sm focus:border-emerald focus:outline-none" value={s.value} placeholder={SPEC_EXAMPLES[s.label] ?? "Value"} onChange={(e) => setDraft({ ...draft, specs: draft.specs.map((x) => (x.key === s.key ? { ...x, value: e.target.value } : x)) })} />
                     <button type="button" onClick={() => setDraft({ ...draft, specs: draft.specs.filter((x) => x.key !== s.key) })} className="px-2 text-stone hover:text-[#9b2c2c]" aria-label="Remove specification"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 ))}
@@ -523,7 +523,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                 <legend className="eyebrow text-[0.6rem] text-stone">Fragrance family</legend>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(Object.keys(fragranceFamilies) as FragranceFamily[]).map((f) => (
-                    <button key={f} type="button" aria-pressed={draft.families.includes(f)} onClick={() => setDraft({ ...draft, families: toggleIn(draft.families, f) })} className={cx("border px-3 py-1.5 text-sm", draft.families.includes(f) ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}>
+                    <button key={f} type="button" aria-pressed={draft.families.includes(f)} onClick={() => setDraft({ ...draft, families: toggleIn(draft.families, f) })} className={cx("rounded-full border px-3.5 py-1.5 text-sm transition-colors", draft.families.includes(f) ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}>
                       {fragranceFamilies[f]}
                     </button>
                   ))}
@@ -533,7 +533,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
                 <legend className="eyebrow text-[0.6rem] text-stone">Mood</legend>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(Object.keys(moods) as Mood[]).map((m) => (
-                    <button key={m} type="button" aria-pressed={draft.moods.includes(m)} onClick={() => setDraft({ ...draft, moods: toggleIn(draft.moods, m) })} className={cx("border px-3 py-1.5 text-sm", draft.moods.includes(m) ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}>
+                    <button key={m} type="button" aria-pressed={draft.moods.includes(m)} onClick={() => setDraft({ ...draft, moods: toggleIn(draft.moods, m) })} className={cx("rounded-full border px-3.5 py-1.5 text-sm transition-colors", draft.moods.includes(m) ? "border-emerald bg-emerald text-ivory" : "border-line bg-white hover:border-charcoal")}>
                       {moods[m].label}
                     </button>
                   ))}
@@ -599,7 +599,7 @@ export function ProductEditor({ slug, initialCategory = "fragrance" }: { slug?: 
         </aside>
       </div>
 
-      <div className="sticky bottom-0 -mx-5 flex justify-end gap-2 border-t border-line bg-[#f3eee4]/95 px-5 py-4 backdrop-blur md:-mx-10 md:px-10">
+      <div className="glass-light sticky bottom-4 flex justify-end gap-2 rounded-full px-3 py-3">
         <Link href="/hc-admin/products" className="btn btn-outline-dark h-11 min-h-0 px-5">Cancel</Link>
         <button type="submit" disabled={saving || !canWrite} className="btn btn-dark h-11 min-h-0 px-6">{saving ? "Saving…" : "Save product"}</button>
       </div>

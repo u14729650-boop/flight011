@@ -21,11 +21,11 @@ export function MobileMenu({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/60" />
-        <Dialog.Content className="anim-drawer-left on-dark fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-sm flex-col bg-forest text-ivory">
+        <Dialog.Overlay className="anim-overlay fixed inset-0 z-50 bg-forest/50 backdrop-blur-md" />
+        <Dialog.Content className="anim-drawer-left on-dark fixed inset-y-2 left-2 z-50 flex w-[86vw] max-w-sm flex-col overflow-hidden rounded-[2rem] bg-forest/95 text-ivory shadow-2xl backdrop-blur-xl">
           <div className="flex h-[4.25rem] items-center justify-between border-b border-ivory/10 px-5">
             <Logo compact />
-            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center hover:text-gold" aria-label="Close menu">
+            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-ivory/10 hover:text-gold" aria-label="Close menu">
               <X className="h-5 w-5" strokeWidth={1.4} />
             </Dialog.Close>
           </div>

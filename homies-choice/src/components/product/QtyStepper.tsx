@@ -19,12 +19,12 @@ export function QtyStepper({
 }) {
   const h = size === "sm" ? "h-9" : "h-12";
   return (
-    <div className={cx("inline-flex items-center border border-line", h)} role="group" aria-label={label}>
+    <div className={cx("inline-flex items-center rounded-full border border-line bg-white/70 px-1", h)} role="group" aria-label={label}>
       <button
         type="button"
         onClick={() => onChange(value - 1)}
         disabled={value <= min}
-        className={cx("inline-flex items-center justify-center hover:text-emerald disabled:opacity-30", h, size === "sm" ? "w-9" : "w-11")}
+        className={cx("inline-flex items-center justify-center rounded-full transition-colors hover:bg-charcoal/5 hover:text-emerald disabled:opacity-30", h, size === "sm" ? "w-9" : "w-11")}
         aria-label="Decrease quantity"
       >
         <Minus className="h-3.5 w-3.5" />
@@ -36,7 +36,7 @@ export function QtyStepper({
         type="button"
         onClick={() => onChange(value + 1)}
         disabled={value >= MAX_QTY}
-        className={cx("inline-flex items-center justify-center hover:text-emerald disabled:opacity-30", h, size === "sm" ? "w-9" : "w-11")}
+        className={cx("inline-flex items-center justify-center rounded-full transition-colors hover:bg-charcoal/5 hover:text-emerald disabled:opacity-30", h, size === "sm" ? "w-9" : "w-11")}
         aria-label="Increase quantity"
       >
         <Plus className="h-3.5 w-3.5" />

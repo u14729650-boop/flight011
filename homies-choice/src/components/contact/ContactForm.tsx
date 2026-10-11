@@ -37,7 +37,7 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <div className="border border-line bg-white/60 p-8" role="status">
+      <div className="rounded-[1.5rem] border border-line bg-white/70 p-8" role="status">
         <CheckCircle2 className="h-7 w-7 text-emerald" strokeWidth={1.2} aria-hidden="true" />
         <p className="display mt-5 text-3xl">Your message is ready in WhatsApp.</p>
         <p className="mt-3 text-sm leading-relaxed text-stone">

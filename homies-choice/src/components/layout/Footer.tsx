@@ -26,7 +26,9 @@ const policyLinks = [
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="on-dark bg-forest text-ivory">
+    <footer className="on-dark relative isolate mt-6 overflow-hidden rounded-t-[2.5rem] bg-forest text-ivory">
+      <div className="orb orb-emerald h-[30rem] w-[30rem] -top-40 left-[10%]" aria-hidden="true" />
+      <div className="orb orb-gold h-[22rem] w-[22rem] -right-20 bottom-0 opacity-25" aria-hidden="true" />
       <div className="container-luxe grid gap-12 py-16 md:grid-cols-2 md:py-20 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <Link href="/" aria-label={`${siteConfig.name} — home`} className="inline-block">
@@ -40,7 +42,7 @@ export function Footer() {
               href={whatsappUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center border border-gold/30 text-gold hover:border-gold"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-ivory/[0.04] text-gold transition-all hover:-translate-y-0.5 hover:bg-gold hover:text-forest"
               aria-label="WhatsApp (opens in a new tab)"
             >
               <WhatsAppIcon className="h-4 w-4" />
@@ -50,7 +52,7 @@ export function Footer() {
                 href={siteConfig.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-10 w-10 items-center justify-center border border-gold/30 text-gold hover:border-gold"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-ivory/[0.04] text-gold transition-all hover:-translate-y-0.5 hover:bg-gold hover:text-forest"
                 aria-label="Instagram (opens in a new tab)"
               >
                 <InstagramIcon className="h-4 w-4" />

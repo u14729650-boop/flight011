@@ -52,20 +52,20 @@ export function EnquiriesTable() {
                 role="tab"
                 aria-selected={filter === f}
                 onClick={() => setFilter(f)}
-                className={cx("border px-4 py-2 text-xs font-semibold tracking-[0.1em] uppercase", filter === f ? "border-emerald bg-emerald text-ivory" : "border-line bg-white text-stone")}
+                className={cx("rounded-full border px-4 py-2 text-xs font-medium tracking-[0.1em] uppercase", filter === f ? "border-emerald bg-emerald text-ivory" : "border-line bg-white text-stone")}
               >
                 {f === "open" ? "To reply" : "All"}
               </button>
             ))}
           </div>
           {rows.length === 0 ? (
-            <p className="border border-dashed border-line px-6 py-14 text-center text-sm text-stone">
+            <p className="rounded-[1.5rem] border border-dashed border-line px-6 py-14 text-center text-sm text-stone">
               {filter === "open" ? "You're all caught up." : "No enquiries yet."}
             </p>
           ) : (
             <ul className="space-y-3">
               {rows.map((e) => (
-                <li key={e.id} className={cx("border border-line bg-white/80 p-5", e.handled && "opacity-70")}>
+                <li key={e.id} className={cx("rounded-[1.5rem] border border-white/80 bg-white/75 p-5 backdrop-blur-xl", e.handled && "opacity-70")}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-serif text-xl leading-tight">{e.name}</p>

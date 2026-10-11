@@ -30,10 +30,13 @@ test.describe("navigation & pages", () => {
   });
 
   test("no horizontal overflow", async ({ page }) => {
-    for (const path of ["/", "/shop", "/products/emporio-armani-stronger-with-you-intensely", "/contact", "/checkout"]) {
+    for (const path of ["/", "/shop", "/watches", "/products/emporio-armani-stronger-with-you-intensely", "/contact", "/checkout"]) {
       await page.goto(path);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-      expect(overflow, path).toBeLessThanOrEqual(0);
+      // Compare with the device width: on phones, overflowing content widens the layout viewport itself.
+      const width = page.viewportSize()!.width;
+      const sizes = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth }));
+      expect(sizes.scroll, path).toBeLessThanOrEqual(width);
+      expect(sizes.inner, path).toBeLessThanOrEqual(width);
     }
   });
 
